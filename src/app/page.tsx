@@ -1,83 +1,103 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
-
-type Herb = {
-  id: number
-  name: string
-  rarity: string
-  elements: string[]
-  description: string | null
-}
+import Link from 'next/link'
+import { useProfile } from '@/lib/profile'
 
 export default function Home() {
-  const [herbs, setHerbs] = useState<Herb[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    async function fetchHerbs() {
-      const { data, error } = await supabase
-        .from('herbs')
-        .select('*')
-        .order('name')
-
-      if (error) {
-        setError(error.message)
-      } else {
-        setHerbs(data || [])
-      }
-      setLoading(false)
-    }
-
-    fetchHerbs()
-  }, [])
+  const { profile, isLoaded } = useProfile()
 
   return (
     <div className="min-h-screen bg-zinc-900 text-zinc-100 p-8">
-      <h1 className="text-3xl font-bold mb-6">🌿 Herbalism Tool</h1>
-      
-      <h2 className="text-xl font-semibold mb-4">Connection Test - Your Herbs:</h2>
-
-      {loading && <p className="text-zinc-400">Loading...</p>}
-      
-      {error && (
-        <div className="bg-red-900/50 border border-red-500 rounded p-4 mb-4">
-          <p className="text-red-300">Error: {error}</p>
-          <p className="text-red-400 text-sm mt-2">
-            Check that your .env.local file has the correct Supabase URL and key.
-          </p>
+      <div className="max-w-2xl mx-auto">
+        <div className="flex justify-between items-start mb-8">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">🌿 Herbalism Tool</h1>
+            <p className="text-zinc-400">D&D Homebrew Herbalism System</p>
+          </div>
+          
+          <Link
+            href="/profile"
+            className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg px-4 py-2 text-sm transition-colors"
+          >
+            {isLoaded && profile.name ? (
+              <span>👤 {profile.name}</span>
+            ) : (
+              <span>👤 Profile</span>
+            )}
+          </Link>
         </div>
-      )}
 
-      {!loading && !error && herbs.length === 0 && (
-        <p className="text-zinc-400">No herbs found. Add some in Supabase!</p>
-      )}
-
-      {herbs.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {herbs.map((herb) => (
-            <div
-              key={herb.id}
-              className="bg-zinc-800 rounded-lg p-4 border border-zinc-700"
-            >
-              <h3 className="font-semibold text-lg">{herb.name}</h3>
-              <p className="text-zinc-400 text-sm capitalize">{herb.rarity}</p>
-              <div className="flex gap-2 mt-2">
-                {herb.elements.map((element, i) => (
-                  <span
-                    key={i}
-                    className="px-2 py-1 bg-zinc-700 rounded text-xs capitalize"
-                  >
-                    {element}
-                  </span>
-                ))}
-              </div>
+        {/* Profile Summary (if set) */}
+        {isLoaded && profile.name && (
+          <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700 mb-6">
+            <div className="flex gap-6 text-sm">
+              <span className="text-zinc-400">
+                {profile.isHerbalist ? (
+                  <span className="text-green-400">🧪 Herbalist</span>
+                ) : (
+                  '⚔️ Adventurer'
+                )}
+              </span>
+              <span className="text-zinc-400">
+                Foraging: <span className="text-zinc-100">{profile.foragingModifier >= 0 ? '+' : ''}{profile.foragingModifier}</span>
+              </span>
+              {profile.isHerbalist && (
+                <span className="text-zinc-400">
+                  Brewing: <span className="text-zinc-100">{profile.brewingModifier >= 0 ? '+' : ''}{profile.brewingModifier}</span>
+                </span>
+              )}
             </div>
-          ))}
+          </div>
+        )}
+
+        <div className="grid gap-4">
+          <Link
+            href="/forage"
+            className="block bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 hover:border-green-600 rounded-lg p-6 transition-colors"
+          >
+            <h2 className="text-xl font-semibold text-green-400 mb-2">🔍 Forage</h2>
+            <p className="text-zinc-400">
+              Search a biome for herbs. Roll your foraging check and discover what you find.
+            </p>
+          </Link>
+
+          <Link
+            href="/inventory"
+            className="block bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 hover:border-blue-600 rounded-lg p-6 transition-colors"
+          >
+            <h2 className="text-xl font-semibold text-blue-400 mb-2">🎒 Inventory</h2>
+            <p className="text-zinc-400">
+              View your collected herbs and crafted items.
+            </p>
+          </Link>
+
+          <Link
+            href="/brew"
+            className={`block bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 hover:border-purple-600 rounded-lg p-6 transition-colors ${
+              !profile.isHerbalist ? 'opacity-50 pointer-events-none' : ''
+            }`}
+          >
+            <h2 className="text-xl font-semibold text-purple-400 mb-2">⚗️ Brew</h2>
+            <p className="text-zinc-400">
+              Combine herbs to create elixirs and bombs.
+            </p>
+            {!profile.isHerbalist && isLoaded && (
+              <span className="text-xs text-zinc-500 mt-2 inline-block">Herbalists only</span>
+            )}
+          </Link>
+
+          <Link
+            href="/recipes"
+            className="block bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 hover:border-amber-600 rounded-lg p-6 transition-colors opacity-50 pointer-events-none"
+          >
+            <h2 className="text-xl font-semibold text-amber-400 mb-2">📖 Recipes</h2>
+            <p className="text-zinc-400">
+              View known recipes and unlock new ones.
+            </p>
+            <span className="text-xs text-zinc-500 mt-2 inline-block">Coming soon</span>
+          </Link>
         </div>
-      )}
+      </div>
     </div>
   )
 }

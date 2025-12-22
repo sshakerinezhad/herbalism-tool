@@ -388,7 +388,7 @@ function RecipeCard({ recipe }: { recipe: UserRecipe }) {
             <div className="absolute -right-1 top-0 bottom-0 w-3 bg-gradient-to-l from-amber-900/40 to-transparent rounded-r-full" />
             
             {/* Parchment body */}
-            <div className="relative bg-gradient-to-b from-amber-100 to-amber-50 rounded px-4 py-2.5 shadow-inner">
+            <div className="relative bg-gradient-to-b from-amber-100/70 to-amber-50/70 rounded px-4 py-2.5 shadow-inner">
               {/* Subtle texture overlay */}
               <div 
                 className="absolute inset-0 opacity-[0.15] rounded pointer-events-none"

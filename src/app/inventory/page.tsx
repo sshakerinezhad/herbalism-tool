@@ -31,25 +31,25 @@ const ELEMENT_SYMBOLS: Record<string, string> = {
 // Element colors for section theming
 const ELEMENT_COLORS: Record<string, { bg: string; border: string; header: string; row1: string; row2: string }> = {
   fire: {
-    bg: 'bg-orange-950/20',
-    border: 'border-orange-800/50',
-    header: 'bg-orange-900/40',
-    row1: 'bg-orange-950/30',
-    row2: 'bg-orange-950/10',
+    bg: 'bg-red-950/20',
+    border: 'border-red-800/50',
+    header: 'bg-red-900/40',
+    row1: 'bg-red-950/30',
+    row2: 'bg-red-950/10',
   },
   water: {
     bg: 'bg-blue-950/20',
     border: 'border-blue-800/50',
-    header: 'bg-blue-900/40',
-    row1: 'bg-blue-950/30',
-    row2: 'bg-blue-950/10',
+    header: 'bg-blue-600/40',
+    row1: 'bg-blue-600/20',
+    row2: 'bg-blue-600/5',
   },
   earth: {
-    bg: 'bg-amber-950/20',
-    border: 'border-amber-800/50',
-    header: 'bg-amber-900/40',
-    row1: 'bg-amber-950/30',
-    row2: 'bg-amber-950/10',
+    bg: 'bg-green-950/20',
+    border: 'border-green-800/50',
+    header: 'bg-green-900/40',
+    row1: 'bg-green-950/30',
+    row2: 'bg-green-950/10',
   },
   air: {
     bg: 'bg-cyan-950/20',

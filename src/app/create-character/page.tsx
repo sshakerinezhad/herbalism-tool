@@ -27,6 +27,8 @@ import {
   fetchArmorSlots, 
   createCharacter,
   hasCharacter,
+  updateCharacterMoney,
+  setCharacterArmorBatch,
 } from '@/lib/db/characters'
 import {
   RACES,
@@ -279,17 +281,40 @@ export default function CreateCharacterPage() {
       appearance: data.appearance || null,
     })
 
-    if (error) {
-      setSubmitError(error)
+    if (error || !character) {
+      setSubmitError(error || 'Failed to create character')
       setIsSubmitting(false)
       return
     }
 
-    // TODO: Set starting armor and weapons based on preset
-    // TODO: Set starting money
+    // Set starting money
+    if (data.gold > 0 || data.silver > 0 || data.copper > 0) {
+      const { error: moneyError } = await updateCharacterMoney(character.id, {
+        gold: data.gold,
+        silver: data.silver,
+        copper: data.copper,
+      })
+      if (moneyError) {
+        console.error('Failed to set starting money:', moneyError)
+        // Non-fatal, continue
+      }
+    }
 
-    // Success! Redirect to home
-    router.push('/')
+    // Set starting armor based on preset
+    if (data.armorPreset && armorSlots.length > 0) {
+      const { error: armorError } = await setCharacterArmorBatch(
+        character.id,
+        armorSlots.map(s => ({ id: s.id, slot_key: s.slot_key })),
+        data.armorPreset.pieces
+      )
+      if (armorError) {
+        console.error('Failed to set starting armor:', armorError)
+        // Non-fatal, continue
+      }
+    }
+
+    // Success! Redirect to profile to see the new character
+    router.push('/profile')
   }
 
   // Loading states

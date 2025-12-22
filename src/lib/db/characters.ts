@@ -323,6 +323,46 @@ export async function setCharacterArmor(
 }
 
 /**
+ * Set multiple armor pieces at once (for character creation)
+ * Uses slot_key to look up slot_id
+ */
+export async function setCharacterArmorBatch(
+  characterId: string,
+  armorSlots: Array<{ id: number; slot_key: string }>,
+  pieces: Array<{ slot_key: string; armor_type: ArmorType }>
+): Promise<{ error: string | null }> {
+  // Map slot_key to slot_id
+  const slotKeyToId = new Map(armorSlots.map(s => [s.slot_key, s.id]))
+  
+  const armorRows = pieces
+    .filter(p => slotKeyToId.has(p.slot_key))
+    .map(p => ({
+      character_id: characterId,
+      slot_id: slotKeyToId.get(p.slot_key)!,
+      armor_type: p.armor_type,
+      custom_name: null,
+      material: null,
+      is_magical: false,
+      properties: null,
+      notes: null,
+    }))
+
+  if (armorRows.length === 0) {
+    return { error: null }
+  }
+
+  const { error } = await supabase
+    .from('character_armor')
+    .insert(armorRows)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  return { error: null }
+}
+
+/**
  * Remove armor from a character slot
  */
 export async function removeCharacterArmor(

@@ -51,6 +51,8 @@ import {
 
 ## 📊 Database Tables
 
+**Herbalism (Legacy):**
+
 | Table | Purpose | Key Fields |
 |-------|---------|------------|
 | `profiles` | Users | id (uuid), username, is_herbalist |
@@ -62,18 +64,30 @@ import {
 | `user_brewed` | Crafted items | user_id, type, effects[], choices |
 | `user_recipes` | Known recipes | user_id, recipe_id |
 
+**Knights of Belyar (New):**
+
+| Table | Purpose |
+|-------|---------|
+| `characters` | Core character data (stats, class, race, etc.) |
+| `skills` | Reference: 26 skills |
+| `armor_slots` | Reference: 12 body slots |
+| `character_skills` | Skill proficiencies |
+| `character_armor` | Equipped armor |
+| `character_weapons` | Weapons |
+| `character_items` | General inventory |
+
 ---
 
 ## 🔌 Context Hooks
 
 ```typescript
-// Auth state
+// Auth state (required - no guest mode)
 const { user, session, isLoading, signIn, signUp, signOut } = useAuth()
 
-// Profile state
+// Profile state (requires authenticated user)
 const { 
   profile,           // User's character data
-  profileId,         // UUID (auth or guest)
+  profileId,         // UUID from auth.uid()
   isLoaded,          // Profile loaded?
   sessionsUsedToday, // Foraging sessions spent
   updateProfile,     // Update profile fields
@@ -81,6 +95,8 @@ const {
   longRest           // Reset sessions
 } = useProfile()
 ```
+
+**Note:** If `!user`, pages redirect to `/login`.
 
 ---
 
@@ -140,12 +156,13 @@ export default function Page() {
 
 ## ⚠️ Gotchas
 
-1. **Field Mismatch:** `brewingModifier` in app = `herbalism_modifier` in DB
-2. **Type Casting:** Use `as unknown as Type` for Supabase joins
-3. **RLS OFF:** Row Level Security not enabled yet
-4. **Sessions in localStorage:** Foraging sessions don't sync across devices
-5. **Navigation in useEffect:** Always use `router.push()` inside `useEffect`, never during render
-6. **RecipeType:** Defined in `constants.ts`, re-exported from `types.ts` for convenience
+1. **Auth Required:** No guest mode. Pages redirect to `/login` if not authenticated.
+2. **Field Mismatch:** `brewingModifier` in app = `herbalism_modifier` in DB
+3. **Type Casting:** Use `as unknown as Type` for Supabase joins
+4. **RLS Status:** ON for new character tables, OFF for legacy herbalism tables
+5. **Sessions in localStorage:** Foraging sessions don't sync across devices
+6. **Navigation in useEffect:** Always use `router.push()` inside `useEffect`, never during render
+7. **RecipeType:** Defined in `constants.ts`, re-exported from `types.ts` for convenience
 
 ---
 

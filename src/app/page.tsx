@@ -1,12 +1,28 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useProfile } from '@/lib/profile'
 import { useAuth } from '@/lib/auth'
+import { LoadingState } from '@/components/ui'
 
 export default function Home() {
   const { profile, isLoaded } = useProfile()
   const { user, isLoading: authLoading, signOut } = useAuth()
+  const router = useRouter()
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login')
+    }
+  }, [authLoading, user, router])
+
+  // Show loading while checking auth or redirecting
+  if (authLoading || !user) {
+    return <LoadingState message="Loading..." />
+  }
 
   return (
     <div className="min-h-screen bg-zinc-900 text-zinc-100 p-8">
@@ -29,47 +45,21 @@ export default function Home() {
               )}
             </Link>
             
-            {!authLoading && (
-              user ? (
-                <button
-                  onClick={signOut}
-                  className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg px-4 py-2 text-sm transition-colors text-zinc-400"
-                >
-                  Sign Out
-                </button>
-              ) : (
-                <Link
-                  href="/login"
-                  className="bg-emerald-700 hover:bg-emerald-600 rounded-lg px-4 py-2 text-sm transition-colors"
-                >
-                  Sign In
-                </Link>
-              )
-            )}
+            <button
+              onClick={signOut}
+              className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg px-4 py-2 text-sm transition-colors text-zinc-400"
+            >
+              Sign Out
+            </button>
           </div>
         </div>
 
-        {/* Auth Status Banner */}
-        {!authLoading && !user && (
-          <div className="bg-amber-900/20 border border-amber-700/50 rounded-lg p-4 mb-6">
-            <p className="text-amber-200 text-sm">
-              <strong>Guest Mode:</strong> Your data is saved locally on this device only.{' '}
-              <Link href="/login" className="underline hover:text-amber-100">
-                Sign in
-              </Link>
-              {' '}to access your profile from any device.
-            </p>
-          </div>
-        )}
-
         {/* Signed in confirmation */}
-        {!authLoading && user && (
-          <div className="bg-emerald-900/20 border border-emerald-700/50 rounded-lg p-4 mb-6">
-            <p className="text-emerald-200 text-sm">
-              ✓ Signed in as <strong>{user.email}</strong> — your profile syncs across all devices.
-            </p>
-          </div>
-        )}
+        <div className="bg-emerald-900/20 border border-emerald-700/50 rounded-lg p-4 mb-6">
+          <p className="text-emerald-200 text-sm">
+            ✓ Signed in as <strong>{user.email}</strong> — your profile syncs across all devices.
+          </p>
+        </div>
 
         {/* Profile Summary (if set) */}
         {isLoaded && profile.name && (

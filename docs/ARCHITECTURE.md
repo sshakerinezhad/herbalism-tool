@@ -186,45 +186,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 | Method | Use Case | Notes |
 |--------|----------|-------|
 | `signIn(email, password)` | Returning users | |
-| `signUp(email, password)` | New accounts | Sends confirmation email |
-| `signInWithMagicLink(email)` | Passwordless | Email contains one-time link |
-| `signOut()` | Clear session | Also clears guest ID |
+| `signUp(email, password)` | New accounts | |
+| `signOut()` | Clear session | |
 
 ### Supabase Auth Configuration
 
 Configured in Supabase dashboard:
 
 - **Email provider:** Enabled
-- **Confirm email:** ON (must verify before first sign-in)
+- **Confirm email:** Currently OFF (for easier testing)
 - **New signups:** Allowed
 - **Anonymous sign-ins:** Disabled
-- **OAuth providers:** All disabled (Google was considered)
+- **OAuth providers:** All disabled
 
 ---
 
 ## Profile Management
 
-### Guest vs Authenticated Users
+### Authentication Required
 
-The app supports two user types with a unified interface:
+The app requires authentication. Unauthenticated users are redirected to `/login`.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    ProfileProvider                          │
 │  ┌─────────────────────────────────────────────────────┐   │
-│  │  profileId = user?.id || guestId                    │   │
+│  │  profileId = user.id (from auth.uid())              │   │
 │  │                                                      │   │
-│  │  Authenticated:  profileId = auth.uid()             │   │
-│  │  Guest:          profileId = localStorage UUID      │   │
+│  │  No user? → Profile stays at defaults               │   │
+│  │            → Pages redirect to /login               │   │
 │  └─────────────────────────────────────────────────────┘   │
 │                           │                                 │
 │                           ▼                                 │
-│              getOrCreateProfile(profileId)                  │
+│              getOrCreateProfile(user.id)                    │
 │                           │                                 │
 │                           ▼                                 │
 │              Profile loaded into context                    │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+**Note:** Guest mode was removed. Users must sign up to use the app.
 
 ### Profile Creation Flow
 

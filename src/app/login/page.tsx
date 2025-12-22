@@ -11,7 +11,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { LoadingState, ErrorDisplay } from '@/components/ui'
 
 type AuthMode = 'login' | 'signup'
@@ -151,15 +150,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Footer */}
-        <div className="mt-6 text-center">
-          <Link href="/" className="text-zinc-400 hover:text-zinc-200 text-sm">
-            ← Continue as guest
-          </Link>
-          <p className="text-zinc-500 text-xs mt-2">
-            (Guest data is only saved on this device)
-          </p>
-        </div>
       </div>
     </div>
   )

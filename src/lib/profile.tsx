@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
 import { Profile } from './types'
-import { getOrCreateProfile, updateProfile, getGuestId } from './profiles'
+import { getOrCreateProfile, updateProfile } from './profiles'
 import { useAuth } from './auth'
 
 // Re-export the type for convenience
@@ -45,9 +45,17 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     // Don't load until we know the auth state
     if (authLoading) return
 
+    // If no user, nothing to load - profile state stays at defaults
+    if (!user) {
+      return
+    }
+
+    // Reset state when starting to load for a user
+    setIsLoaded(false)
+    setLoadError(null)
+
     async function initProfile() {
-      // Use authenticated user ID if available, otherwise fall back to guest
-      const { id, profile: loadedProfile, error } = await getOrCreateProfile(user?.id)
+      const { id, profile: loadedProfile, error } = await getOrCreateProfile(user!.id)
       
       if (error) {
         setLoadError(error)
@@ -70,13 +78,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
       setIsLoaded(true)
     }
-
-    // Reset state when auth changes
-    setIsLoaded(false)
-    setLoadError(null)
     
     initProfile()
-  }, [user?.id, authLoading])
+  }, [user, authLoading])
+
+  // Derive isLoaded for no-user case (avoids setState in effect)
+  const effectiveIsLoaded = !user ? !authLoading : isLoaded
 
   // Save sessions to localStorage when it changes
   useEffect(() => {
@@ -90,10 +97,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     // Optimistically update local state
     setProfile(prev => ({ ...prev, ...updates }))
 
-    // Sync to database
-    const currentId = profileId || getGuestId()
-    if (currentId) {
-      const { error } = await updateProfile(currentId, updates)
+    // Sync to database (only if we have a profile ID, which requires being signed in)
+    if (profileId) {
+      const { error } = await updateProfile(profileId, updates)
       if (error) {
         console.error('Failed to sync profile to database:', error)
         // Could revert optimistic update here, but for now just log
@@ -114,7 +120,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       profile, 
       profileId,
       updateProfile: updateProfileHandler, 
-      isLoaded,
+      isLoaded: effectiveIsLoaded,
       loadError,
       sessionsUsedToday,
       spendForagingSessions,

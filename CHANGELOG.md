@@ -7,6 +7,13 @@ All notable changes to the herbalism-tool project.
 ## [Unreleased]
 
 ### Added
+- **Knights of Belyar character system foundation:**
+  - New database tables: `characters`, `skills`, `armor_slots`, `character_skills`, `character_armor`, `character_weapons`, `character_items`
+  - 26 skills across 7 stats (STR, DEX, CON, INT, WIS, CHA, HON)
+  - 12 armor slot system with light/medium/heavy armor support
+  - SQL migrations in `supabase/migrations/`
+  - RLS policies for all new tables
+  - Planning document: `docs/PLANNING-KNIGHTS.md`
 - Comprehensive documentation suite:
   - `README.md` - Complete project overview and quick start
   - `docs/ARCHITECTURE.md` - Technical deep-dive
@@ -14,6 +21,12 @@ All notable changes to the herbalism-tool project.
   - `docs/DATABASE.md` - Schema reference
 
 ### Changed
+- **Authentication now required (guest mode removed):**
+  - `getOrCreateProfile()` now requires authenticated user ID
+  - Home page (`/`) redirects to `/login` if not authenticated
+  - Profile page (`/profile`) requires authentication
+  - Removed "Continue as guest" option from login page
+  - Removed `getGuestId()` function and guest ID localStorage handling
 - **Inventory operations optimized for scale:**
   - `addHerbsToInventory`: Batched SELECT + INSERT + chunked parallel UPDATEs
   - `removeHerbsFromInventory`: Batched SELECT + DELETE + chunked parallel UPDATEs
@@ -26,6 +39,10 @@ All notable changes to the herbalism-tool project.
 - Duplicate `RecipeType` definition consolidated (now defined in `constants.ts`, re-exported from `types.ts`)
 - Missing `recipe_text` field in brewing query
 - TypeScript errors with Supabase query builder return types in chunked operations
+
+### Migration Notes
+- Existing herbalism tables (`user_inventory`, `user_brewed`, `user_recipes`) now have `character_id` column (nullable, for future migration)
+- Guest profiles in database will become orphaned - users must sign up to continue using the app
 
 ---
 

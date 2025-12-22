@@ -2,14 +2,12 @@
  * Profile Management
  * 
  * Handles creating, loading, and updating user profiles.
- * Supports both authenticated users and guest users (via localStorage ID).
+ * Requires authenticated users (no guest mode).
  */
 
 import { supabase } from './supabase'
 import { Profile } from './types'
 import { initializeBaseRecipes } from './recipes'
-
-const GUEST_ID_KEY = 'herbalism-guest-id'
 
 // Default profile values for new users
 const DEFAULT_PROFILE: Profile = {
@@ -23,52 +21,39 @@ const DEFAULT_PROFILE: Profile = {
 /**
  * Get or create a user profile.
  * 
- * @param userId - Optional authenticated user ID. If not provided, uses guest ID from localStorage.
+ * @param userId - Authenticated user ID (required)
  * @returns The profile ID, profile data, and any error
  */
-export async function getOrCreateProfile(userId?: string): Promise<{
+export async function getOrCreateProfile(userId: string): Promise<{
   id: string
   profile: Profile
   error: string | null
 }> {
-  // Determine which ID to use: authenticated user or guest
-  const profileId = userId || localStorage.getItem(GUEST_ID_KEY)
-
-  if (profileId) {
-    // Try to fetch existing profile
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', profileId)
-      .single()
-
-    if (data && !error) {
-      return {
-        id: profileId,
-        profile: mapDatabaseToProfile(data),
-        error: null
-      }
+  if (!userId) {
+    return {
+      id: '',
+      profile: DEFAULT_PROFILE,
+      error: 'User ID is required'
     }
-
-    // If authenticated user but no profile exists, create one
-    if (userId) {
-      return await createProfile(userId)
-    }
-
-    // Guest profile not found (maybe deleted from DB), create a new one
-    console.warn('Guest profile not found in DB, creating new one')
   }
 
-  // Create new guest profile with random UUID
-  const newGuestId = crypto.randomUUID()
-  const result = await createProfile(newGuestId)
-  
-  if (!result.error) {
-    // Store guest ID in localStorage for future sessions
-    localStorage.setItem(GUEST_ID_KEY, newGuestId)
+  // Try to fetch existing profile
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single()
+
+  if (data && !error) {
+    return {
+      id: userId,
+      profile: mapDatabaseToProfile(data),
+      error: null
+    }
   }
-  
-  return result
+
+  // Profile doesn't exist, create one
+  return await createProfile(userId)
 }
 
 /**
@@ -142,13 +127,6 @@ export async function updateProfile(
   }
 
   return { error: null }
-}
-
-/**
- * Get the current guest ID from localStorage (if exists)
- */
-export function getGuestId(): string | null {
-  return localStorage.getItem(GUEST_ID_KEY)
 }
 
 /**

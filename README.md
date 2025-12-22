@@ -46,9 +46,10 @@ This app implements a custom tabletop RPG system where:
 
 ### User Types
 
-- **Guests**: Can use the app without an account. Data stored in Supabase with a localStorage UUID.
-- **Authenticated Users**: Email/password or magic link login. Data syncs across devices.
+- **Authenticated Users**: Email/password login required. Data syncs across devices.
 - **Herbalists**: Characters with the Herbalist vocation can brew. Others can only forage.
+
+**Note:** Guest mode has been removed. Users must create an account to use the app.
 
 ---
 
@@ -119,11 +120,13 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
 1. **All Client Components**: The entire app is client-rendered (`'use client'`). No server components. This was chosen for simplicity with real-time Supabase updates.
 
-2. **Guest-First**: Users can use the app immediately without signing up. A UUID is stored in localStorage and used as the profile ID in Supabase.
+2. **Auth Required**: Users must sign up to use the app. Profile ID is the authenticated user's `auth.uid()`.
 
 3. **Optimistic UI**: Profile updates are optimistic (state updates immediately, then syncs to DB).
 
 4. **Session Tracking in localStorage**: Foraging session usage (resets on long rest) is stored in localStorage, not the database.
+
+5. **Expanding to Knights of Belyar**: The app is being expanded from a simple herbalism tool to a full character tracker for the Knights of Belyar homebrew system. See `docs/PLANNING-KNIGHTS.md` for the roadmap.
 
 ---
 
@@ -258,7 +261,7 @@ This mapping is handled in `src/lib/profiles.ts`.
 ```sql
 -- Example: users can only see/modify their own inventory
 CREATE POLICY "Users can view own inventory" ON user_inventory
-  FOR SELECT USING (auth.uid() = user_id OR user_id = current_setting('app.guest_id')::uuid);
+  FOR SELECT USING (auth.uid() = user_id);
 ```
 
 ---
@@ -341,8 +344,10 @@ With potency 3: "Heals 3d8 hit points"
 
 Simple dashboard with navigation cards. Shows:
 - Profile summary (if name set)
-- Auth status (guest vs signed in)
+- Auth status (signed in user email)
 - Links to Forage, Inventory, Brew (if herbalist), Recipes
+
+**Note:** Redirects to `/login` if not authenticated.
 
 ### Forage (`/forage`)
 
@@ -501,7 +506,6 @@ Page Component (useState for local UI state)
 
 | Key | Purpose |
 |-----|---------|
-| `herbalism-guest-id` | UUID for guest users |
 | `herbalism-sessions-used` | Foraging sessions used today |
 
 ---
@@ -517,19 +521,13 @@ Page Component (useState for local UI state)
 ┌─────────────────┐    Yes    ┌─────────────────┐
 │ Auth session?   │──────────►│ Use auth.uid()  │
 └────────┬────────┘           │ as profile ID   │
-         │ No                 └─────────────────┘
-         ▼
-┌─────────────────┐    Yes    ┌─────────────────┐
-│ Guest ID in     │──────────►│ Use guest ID    │
-│ localStorage?   │           │ as profile ID   │
-└────────┬────────┘           └─────────────────┘
-         │ No
-         ▼
-┌─────────────────┐
-│ Generate UUID   │
-│ Store in        │
-│ localStorage    │
-└─────────────────┘
+         │ No                 └────────┬────────┘
+         ▼                             │
+┌─────────────────┐                    ▼
+│ Redirect to     │           ┌─────────────────┐
+│ /login          │           │ Load/create     │
+└─────────────────┘           │ profile         │
+                              └─────────────────┘
 ```
 
 ### On Sign In
@@ -538,13 +536,11 @@ Page Component (useState for local UI state)
 2. `getOrCreateProfile(user.id)` is called
 3. If no profile exists for that user ID, one is created
 4. Base recipes are initialized
-5. Guest ID remains in localStorage (for if they sign out)
 
 ### On Sign Out
 
 1. `signOut()` clears Supabase session
-2. Guest ID is removed from localStorage
-3. On next load, a new guest profile is created
+2. User is redirected to `/login`
 
 ---
 
@@ -708,7 +704,6 @@ The `user_brewed.effects` column stores a PostgreSQL array, but when retrieved i
 | **DC** | Difficulty Class; the target number to beat on a d20 roll |
 | **Recipe** | A formula mapping element pairs to effects |
 | **Secret Recipe** | A recipe that must be unlocked with a code |
-| **Guest User** | Someone using the app without an account |
 
 ---
 

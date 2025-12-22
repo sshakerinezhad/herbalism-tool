@@ -8,16 +8,32 @@
  * - Herbalist vocation toggle
  * - Foraging sessions per day
  * - Foraging and brewing modifiers
+ * 
+ * Requires authentication.
  */
 
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useProfile } from '@/lib/profile'
 import { useAuth } from '@/lib/auth'
-import Link from 'next/link'
 import { PageLayout, LoadingState, ErrorDisplay } from '@/components/ui'
 
 export default function ProfilePage() {
   const { profile, updateProfile, isLoaded, loadError, sessionsUsedToday, longRest } = useProfile()
   const { user, isLoading: authLoading, signOut } = useAuth()
+  const router = useRouter()
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login')
+    }
+  }, [authLoading, user, router])
+
+  // Show loading while checking auth
+  if (authLoading || !user) {
+    return <LoadingState message="Loading..." />
+  }
 
   if (!isLoaded) {
     return <LoadingState message="Loading profile..." />
@@ -28,12 +44,10 @@ export default function ProfilePage() {
       <h1 className="text-3xl font-bold mb-6">👤 Character Profile</h1>
 
       {/* Auth Status */}
-      {!authLoading && (
-        <AuthStatusBanner 
-          user={user} 
-          onSignOut={signOut} 
-        />
-      )}
+      <AuthStatusBanner 
+        user={user} 
+        onSignOut={signOut} 
+      />
 
       {/* Error Display */}
       {loadError && (
@@ -164,50 +178,27 @@ function AuthStatusBanner({
   user, 
   onSignOut 
 }: { 
-  user: { email?: string } | null
+  user: { email?: string }
   onSignOut: () => void 
 }) {
   return (
-    <div className={`rounded-lg p-4 mb-6 ${
-      user 
-        ? 'bg-emerald-900/20 border border-emerald-700/50' 
-        : 'bg-amber-900/20 border border-amber-700/50'
-    }`}>
-      {user ? (
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-emerald-200 text-sm">
-              ✓ Signed in as <strong>{user.email}</strong>
-            </p>
-            <p className="text-emerald-300/60 text-xs mt-1">
-              Your profile syncs across all devices
-            </p>
-          </div>
-          <button
-            onClick={onSignOut}
-            className="text-sm text-emerald-300 hover:text-emerald-100 underline"
-          >
-            Sign out
-          </button>
+    <div className="rounded-lg p-4 mb-6 bg-emerald-900/20 border border-emerald-700/50">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-emerald-200 text-sm">
+            ✓ Signed in as <strong>{user.email}</strong>
+          </p>
+          <p className="text-emerald-300/60 text-xs mt-1">
+            Your profile syncs across all devices
+          </p>
         </div>
-      ) : (
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-amber-200 text-sm">
-              <strong>Guest Mode</strong>
-            </p>
-            <p className="text-amber-300/60 text-xs mt-1">
-              Data saved locally only
-            </p>
-          </div>
-          <Link
-            href="/login"
-            className="bg-emerald-700 hover:bg-emerald-600 rounded-lg px-4 py-2 text-sm transition-colors"
-          >
-            Sign In
-          </Link>
-        </div>
-      )}
+        <button
+          onClick={onSignOut}
+          className="text-sm text-emerald-300 hover:text-emerald-100 underline"
+        >
+          Sign out
+        </button>
+      </div>
     </div>
   )
 }

@@ -69,8 +69,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function signOut() {
     await supabase.auth.signOut()
-    // Clear the old guest ID from localStorage to start fresh
-    localStorage.removeItem('herbalism-guest-id')
   }
 
   return (

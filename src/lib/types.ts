@@ -23,6 +23,7 @@ export type Recipe = {
   type: 'elixir' | 'bomb' | string
   name: string
   description: string | null
+  lore: string | null
   is_secret: boolean
   unlock_code: string | null
 }

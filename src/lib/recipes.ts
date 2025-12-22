@@ -23,6 +23,7 @@ export async function getUserRecipes(userId: string): Promise<{
         type,
         name,
         description,
+        lore,
         is_secret,
         unlock_code
       )

@@ -302,8 +302,6 @@ export default function RecipesPage() {
 
 // Recipe Card Component
 function RecipeCard({ recipe }: { recipe: UserRecipe }) {
-  const [expanded, setExpanded] = useState(false)
-
   // Parse description to show potency template
   const displayDescription = recipe.description
     ? recipe.description
@@ -313,70 +311,98 @@ function RecipeCard({ recipe }: { recipe: UserRecipe }) {
         .replace(/\{([^:}]+):([^}]+)\}/g, '[$1]') // Replace choice templates with [variable]
     : null
 
+  const isElixir = recipe.type === 'elixir'
+
   return (
     <div
-      className={`rounded-lg border overflow-hidden transition-colors ${
-        recipe.type === 'elixir'
-          ? 'border-blue-800/50 bg-blue-950/20'
-          : 'border-red-800/50 bg-red-950/20'
+      className={`relative rounded-lg overflow-hidden shadow-lg ${
+        isElixir
+          ? 'bg-gradient-to-br from-blue-950/80 via-blue-900/40 to-blue-950/60'
+          : 'bg-gradient-to-br from-red-950/80 via-red-900/40 to-red-950/60'
       }`}
     >
-      {/* Header - always visible */}
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors text-left"
-      >
-        <div className="flex items-center gap-3">
-          {/* Elements */}
-          <span className="text-lg">
-            {recipe.elements.map((el, i) => (
-              <span key={i} title={el}>{getElementSymbol(el)}</span>
-            ))}
-          </span>
-          
-          {/* Name */}
-          <span className="font-medium text-zinc-100">{recipe.name}</span>
+      {/* Left accent bar */}
+      <div 
+        className={`absolute left-0 top-0 bottom-0 w-1 ${
+          isElixir ? 'bg-blue-500' : 'bg-red-500'
+        }`} 
+      />
+      
+      <div className="pl-5 pr-4 py-4">
+        {/* Header row */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            {/* Name and elements */}
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-zinc-100 text-lg leading-tight">
+                {recipe.name}
+              </h3>
+              {/* Elements inline with name */}
+              <div className="flex items-center gap-0.5">
+                {recipe.elements.map((el, i) => (
+                  <span 
+                    key={i} 
+                    title={el}
+                    className={`text-base px-1.5 py-0.5 rounded ${
+                      isElixir ? 'bg-blue-800/50' : 'bg-red-800/50'
+                    }`}
+                  >
+                    {getElementSymbol(el)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
           
           {/* Secret badge */}
           {recipe.is_secret && (
-            <span className="text-xs px-2 py-0.5 rounded bg-amber-900/50 text-amber-300">
-              Secret
+            <span className="text-xs px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 font-medium">
+              ✦ Secret
             </span>
           )}
         </div>
-        
-        <span className="text-zinc-500 text-sm">
-          {expanded ? '▲' : '▼'}
-        </span>
-      </button>
 
-      {/* Expanded content */}
-      {expanded && (
-        <div className="px-4 pb-4 space-y-3">
-          {/* Mechanical description */}
-          {displayDescription && (
-            <div className="bg-zinc-900/50 rounded-lg p-3">
-              <p className="text-xs text-zinc-500 uppercase tracking-wide mb-1">Effect</p>
-              <p className="text-zinc-200 text-sm">{displayDescription}</p>
-              <p className="text-zinc-500 text-xs mt-2 italic">
-                × = potency (number of matching element pairs used)
+        {/* Effect box */}
+        {displayDescription && (
+          <div className={`rounded-md px-3 py-2.5 mb-2 ${
+            isElixir 
+              ? 'bg-zinc-900/80 border border-blue-600/40' 
+              : 'bg-zinc-900/80 border border-red-600/40'
+          }`}>
+            <p className="text-zinc-100 text-sm leading-relaxed">
+              <span className={`font-semibold uppercase text-xs tracking-wide mr-2 ${
+                isElixir ? 'text-blue-400' : 'text-red-400'
+              }`}>
+                Effect:
+              </span>
+              {displayDescription}
+            </p>
+          </div>
+        )}
+
+        {/* Lore text - parchment scroll style */}
+        {recipe.lore && (
+          <div className="relative mt-3">
+            {/* Scroll edges */}
+            <div className="absolute -left-1 top-0 bottom-0 w-3 bg-gradient-to-r from-amber-900/40 to-transparent rounded-l-full" />
+            <div className="absolute -right-1 top-0 bottom-0 w-3 bg-gradient-to-l from-amber-900/40 to-transparent rounded-r-full" />
+            
+            {/* Parchment body */}
+            <div className="relative bg-gradient-to-b from-amber-100 to-amber-50 rounded px-4 py-2.5 shadow-inner">
+              {/* Subtle texture overlay */}
+              <div 
+                className="absolute inset-0 opacity-[0.15] rounded pointer-events-none"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+                }}
+              />
+              <p className="relative text-amber-950 text-sm italic leading-relaxed font-serif whitespace-pre-line">
+                {recipe.lore}
               </p>
             </div>
-          )}
-
-          {/* Element combination hint */}
-          <div className="text-sm text-zinc-400">
-            <span className="text-zinc-500">Combine: </span>
-            {recipe.elements.map((el, i) => (
-              <span key={i}>
-                {i > 0 && ' + '}
-                <span className="capitalize">{el}</span>
-                <span className="ml-0.5">{getElementSymbol(el)}</span>
-              </span>
-            ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

@@ -75,6 +75,7 @@ export async function fetchUserRecipes(userId: string): Promise<{ recipes: Recip
         type,
         name,
         description,
+        lore,
         is_secret,
         unlock_code
       )

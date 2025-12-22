@@ -6,7 +6,7 @@ import { getInventory, InventoryItem, removeHerbsFromInventory } from '@/lib/inv
 import { 
   buildElementPool, 
   getTotalElements,
-  fetchRecipes,
+  fetchUserRecipes,
   findRecipeForPair,
   canCombineEffects,
   parseTemplateVariables,
@@ -61,7 +61,7 @@ export default function BrewPage() {
 
       const [invResult, recResult] = await Promise.all([
         getInventory(profileId),
-        fetchRecipes()
+        fetchUserRecipes(profileId)
       ])
       
       if (invResult.error) {

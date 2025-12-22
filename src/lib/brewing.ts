@@ -44,7 +44,8 @@ export function getTotalElements(pool: ElementPool): number {
 }
 
 /**
- * Fetch all recipes from database
+ * Fetch all recipes from database (all recipes, for reference)
+ * @deprecated Use fetchUserRecipes for brewing - only shows recipes the user knows
  */
 export async function fetchRecipes(): Promise<{ recipes: Recipe[]; error: string | null }> {
   const { data, error } = await supabase
@@ -57,6 +58,40 @@ export async function fetchRecipes(): Promise<{ recipes: Recipe[]; error: string
   }
 
   return { recipes: data || [], error: null }
+}
+
+/**
+ * Fetch recipes known by a specific user (from user_recipes)
+ * This is what should be used for brewing
+ */
+export async function fetchUserRecipes(userId: string): Promise<{ recipes: Recipe[]; error: string | null }> {
+  const { data, error } = await supabase
+    .from('user_recipes')
+    .select(`
+      recipe_id,
+      recipes (
+        id,
+        elements,
+        type,
+        name,
+        description,
+        is_secret,
+        unlock_code
+      )
+    `)
+    .eq('user_id', userId)
+
+  if (error) {
+    return { recipes: [], error: `Failed to load recipes: ${error.message}` }
+  }
+
+  // Extract the joined recipe data
+  const recipes: Recipe[] = (data || [])
+    .filter(row => row.recipes)
+    .map(row => row.recipes as unknown as Recipe)
+    .sort((a, b) => a.name.localeCompare(b.name))
+
+  return { recipes, error: null }
 }
 
 /**

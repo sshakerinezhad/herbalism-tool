@@ -132,13 +132,12 @@ export default function Home() {
 
           <Link
             href="/recipes"
-            className="block bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 hover:border-amber-600 rounded-lg p-6 transition-colors opacity-50 pointer-events-none"
+            className="block bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 hover:border-amber-600 rounded-lg p-6 transition-colors"
           >
             <h2 className="text-xl font-semibold text-amber-400 mb-2">📖 Recipes</h2>
             <p className="text-zinc-400">
               View known recipes and unlock new ones.
             </p>
-            <span className="text-xs text-zinc-500 mt-2 inline-block">Coming soon</span>
           </Link>
         </div>
       </div>

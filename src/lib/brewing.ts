@@ -159,6 +159,12 @@ export function parseTemplateVariables(template: string): {
     if (content === 'n' || content.startsWith('n*') || content.startsWith('n+')) {
       continue
     }
+    
+    // Skip {n|singular|plural} - that's for potency-based pluralization
+    // Format: starts with 'n|' followed by singular|plural
+    if (content.startsWith('n|')) {
+      continue
+    }
 
     // Check for options (variable:opt1|opt2|opt3)
     if (content.includes(':')) {
@@ -195,6 +201,11 @@ export function fillTemplate(
   // Replace {n+X} with potency + X
   result = result.replace(/\{n\+(\d+)\}/g, (_, addend) => {
     return (potency + parseInt(addend)).toString()
+  })
+  
+  // Replace {n|singular|plural} with appropriate word based on potency
+  result = result.replace(/\{n\|([^|]+)\|([^}]+)\}/g, (_, singular, plural) => {
+    return potency === 1 ? singular : plural
   })
 
   // Replace choice variables
@@ -317,5 +328,51 @@ export async function getBrewedItems(userId: string): Promise<{
   }))
 
   return { items, error: null }
+}
+
+/**
+ * Remove/expend brewed items from inventory
+ * Decrements quantity; removes row if quantity reaches 0
+ */
+export async function removeBrewedItem(
+  brewedId: number,
+  quantity: number = 1
+): Promise<{ error: string | null }> {
+  // Get current item
+  const { data: existing, error: fetchError } = await supabase
+    .from('user_brewed')
+    .select('id, quantity')
+    .eq('id', brewedId)
+    .single()
+
+  if (fetchError || !existing) {
+    return { error: 'Brewed item not found' }
+  }
+
+  const newQuantity = existing.quantity - quantity
+
+  if (newQuantity <= 0) {
+    // Delete the row entirely
+    const { error } = await supabase
+      .from('user_brewed')
+      .delete()
+      .eq('id', brewedId)
+
+    if (error) {
+      return { error: `Failed to remove item: ${error.message}` }
+    }
+  } else {
+    // Update quantity
+    const { error } = await supabase
+      .from('user_brewed')
+      .update({ quantity: newQuantity })
+      .eq('id', brewedId)
+
+    if (error) {
+      return { error: `Failed to update item: ${error.message}` }
+    }
+  }
+
+  return { error: null }
 }
 

@@ -1,28 +1,37 @@
+/**
+ * Profile Management
+ * 
+ * Handles creating, loading, and updating user profiles.
+ * Supports both authenticated users and guest users (via localStorage ID).
+ */
+
 import { supabase } from './supabase'
 import { Profile } from './types'
 import { initializeBaseRecipes } from './recipes'
 
 const GUEST_ID_KEY = 'herbalism-guest-id'
 
+// Default profile values for new users
+const DEFAULT_PROFILE: Profile = {
+  name: '',
+  isHerbalist: false,
+  foragingModifier: 0,
+  brewingModifier: 0,
+  maxForagingSessions: 1,
+}
+
 /**
  * Get or create a user profile.
- * - If userId is provided (authenticated), use that
- * - Otherwise, fall back to guest ID from localStorage
+ * 
+ * @param userId - Optional authenticated user ID. If not provided, uses guest ID from localStorage.
+ * @returns The profile ID, profile data, and any error
  */
 export async function getOrCreateProfile(userId?: string): Promise<{
   id: string
   profile: Profile
   error: string | null
 }> {
-  const defaultProfile: Profile = {
-    name: '',
-    isHerbalist: false,
-    foragingModifier: 0,
-    brewingModifier: 0,
-    maxForagingSessions: 1,
-  }
-
-  // Determine which ID to use
+  // Determine which ID to use: authenticated user or guest
   const profileId = userId || localStorage.getItem(GUEST_ID_KEY)
 
   if (profileId) {
@@ -36,26 +45,26 @@ export async function getOrCreateProfile(userId?: string): Promise<{
     if (data && !error) {
       return {
         id: profileId,
-        profile: dbProfileToLocal(data),
+        profile: mapDatabaseToProfile(data),
         error: null
       }
     }
 
-    // If authenticated user but no profile, create one with their ID
+    // If authenticated user but no profile exists, create one
     if (userId) {
       return await createProfile(userId)
     }
 
-    // Guest profile not found (maybe deleted), create a new one
+    // Guest profile not found (maybe deleted from DB), create a new one
     console.warn('Guest profile not found in DB, creating new one')
   }
 
-  // Create new guest profile
+  // Create new guest profile with random UUID
   const newGuestId = crypto.randomUUID()
   const result = await createProfile(newGuestId)
   
   if (!result.error) {
-    // Store guest ID in localStorage
+    // Store guest ID in localStorage for future sessions
     localStorage.setItem(GUEST_ID_KEY, newGuestId)
   }
   
@@ -70,29 +79,22 @@ async function createProfile(id: string): Promise<{
   profile: Profile
   error: string | null
 }> {
-  const defaultProfile: Profile = {
-    name: '',
-    isHerbalist: false,
-    foragingModifier: 0,
-    brewingModifier: 0,
-    maxForagingSessions: 1,
-  }
-
   const { error } = await supabase
     .from('profiles')
     .insert({
       id,
-      username: '',
-      is_herbalist: false,
-      foraging_modifier: 0,
-      herbalism_modifier: 0,
-      max_foraging_sessions: 1,
+      username: DEFAULT_PROFILE.name,
+      is_herbalist: DEFAULT_PROFILE.isHerbalist,
+      foraging_modifier: DEFAULT_PROFILE.foragingModifier,
+      // Note: DB column is "herbalism_modifier" but app uses "brewingModifier"
+      herbalism_modifier: DEFAULT_PROFILE.brewingModifier,
+      max_foraging_sessions: DEFAULT_PROFILE.maxForagingSessions,
     })
 
   if (error) {
     return {
       id: '',
-      profile: defaultProfile,
+      profile: DEFAULT_PROFILE,
       error: `Failed to create profile: ${error.message}`
     }
   }
@@ -106,13 +108,16 @@ async function createProfile(id: string): Promise<{
 
   return {
     id,
-    profile: defaultProfile,
+    profile: DEFAULT_PROFILE,
     error: null
   }
 }
 
 /**
- * Update profile in database
+ * Update a profile in the database
+ * 
+ * @param id - The profile ID to update
+ * @param updates - Partial profile updates
  */
 export async function updateProfile(
   id: string, 
@@ -123,6 +128,7 @@ export async function updateProfile(
   if (updates.name !== undefined) dbUpdates.username = updates.name
   if (updates.isHerbalist !== undefined) dbUpdates.is_herbalist = updates.isHerbalist
   if (updates.foragingModifier !== undefined) dbUpdates.foraging_modifier = updates.foragingModifier
+  // Note: DB column is "herbalism_modifier" but app uses "brewingModifier"
   if (updates.brewingModifier !== undefined) dbUpdates.herbalism_modifier = updates.brewingModifier
   if (updates.maxForagingSessions !== undefined) dbUpdates.max_foraging_sessions = updates.maxForagingSessions
 
@@ -139,16 +145,20 @@ export async function updateProfile(
 }
 
 /**
- * Get the current guest ID (if exists)
+ * Get the current guest ID from localStorage (if exists)
  */
 export function getGuestId(): string | null {
   return localStorage.getItem(GUEST_ID_KEY)
 }
 
 /**
- * Convert database profile row to local Profile type
+ * Map database row to Profile type
+ * 
+ * Handles the field name mapping between database and app:
+ * - DB "username" → App "name"
+ * - DB "herbalism_modifier" → App "brewingModifier"
  */
-function dbProfileToLocal(dbRow: {
+function mapDatabaseToProfile(dbRow: {
   username: string
   is_herbalist: boolean
   foraging_modifier: number
@@ -164,6 +174,3 @@ function dbProfileToLocal(dbRow: {
   }
 }
 
-// Legacy export for backwards compatibility
-export const getOrCreateGuestProfile = () => getOrCreateProfile()
-export const updateGuestProfile = updateProfile

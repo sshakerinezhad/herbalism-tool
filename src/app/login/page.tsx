@@ -1,11 +1,27 @@
 'use client'
 
+/**
+ * Login Page
+ * 
+ * Authentication page supporting:
+ * - Email/password login
+ * - Email/password signup
+ * - Magic link (passwordless) login
+ */
+
 import { useState } from 'react'
 import { useAuth } from '@/lib/auth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { LoadingState, ErrorDisplay } from '@/components/ui'
 
 type AuthMode = 'login' | 'signup' | 'magic-link'
+
+const AUTH_MODES = [
+  { mode: 'login' as const, label: 'Login' },
+  { mode: 'signup' as const, label: 'Sign Up' },
+  { mode: 'magic-link' as const, label: 'Magic Link' },
+]
 
 export default function LoginPage() {
   const { signIn, signUp, signInWithMagicLink, user, isLoading } = useAuth()
@@ -18,7 +34,7 @@ export default function LoginPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // If already logged in, redirect to home
+  // Redirect if already logged in
   if (!isLoading && user) {
     router.push('/')
     return null
@@ -59,16 +75,13 @@ export default function LoginPage() {
   }
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-zinc-900 text-zinc-100 flex items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    )
+    return <LoadingState />
   }
 
   return (
     <div className="min-h-screen bg-zinc-900 text-zinc-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">🌿 Herbalism Tool</h1>
           <p className="text-zinc-400">
@@ -80,38 +93,22 @@ export default function LoginPage() {
 
         {/* Mode Tabs */}
         <div className="flex gap-1 mb-6 bg-zinc-800 p-1 rounded-lg">
-          <button
-            onClick={() => setMode('login')}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-              mode === 'login'
-                ? 'bg-zinc-700 text-zinc-100'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            Login
-          </button>
-          <button
-            onClick={() => setMode('signup')}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-              mode === 'signup'
-                ? 'bg-zinc-700 text-zinc-100'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            Sign Up
-          </button>
-          <button
-            onClick={() => setMode('magic-link')}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-              mode === 'magic-link'
-                ? 'bg-zinc-700 text-zinc-100'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            Magic Link
-          </button>
+          {AUTH_MODES.map(({ mode: m, label }) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                mode === m
+                  ? 'bg-zinc-700 text-zinc-100'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-2">Email</label>
@@ -145,11 +142,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          {error && (
-            <div className="bg-red-900/30 border border-red-700 rounded-lg p-3">
-              <p className="text-red-300 text-sm">{error}</p>
-            </div>
-          )}
+          {error && <ErrorDisplay message={error} />}
 
           {success && (
             <div className="bg-emerald-900/30 border border-emerald-700 rounded-lg p-3">
@@ -170,6 +163,7 @@ export default function LoginPage() {
           </button>
         </form>
 
+        {/* Footer */}
         <div className="mt-6 text-center">
           <Link href="/" className="text-zinc-400 hover:text-zinc-200 text-sm">
             ← Continue as guest
@@ -182,4 +176,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

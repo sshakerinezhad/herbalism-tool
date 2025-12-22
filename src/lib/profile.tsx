@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
 import { Profile } from './types'
-import { getOrCreateProfile, updateProfile, getGuestId } from './guest'
+import { getOrCreateProfile, updateProfile, getGuestId } from './profiles'
 import { useAuth } from './auth'
 
 // Re-export the type for convenience

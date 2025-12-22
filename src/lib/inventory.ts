@@ -182,8 +182,8 @@ export async function addHerbsToInventory(
   if (toUpdate.length > 0) {
     const updateResults = await chunkedParallel<{ id: number; quantity: number }, MutationResult>(
       toUpdate,
-      ({ id, quantity }) =>
-        supabase
+      async ({ id, quantity }) =>
+        await supabase
           .from('user_inventory')
           .update({ quantity })
           .eq('id', id)
@@ -279,8 +279,8 @@ export async function removeHerbsFromInventory(
   if (toUpdate.length > 0) {
     const updateResults = await chunkedParallel<{ id: number; quantity: number }, MutationResult>(
       toUpdate,
-      ({ id, quantity }) =>
-        supabase
+      async ({ id, quantity }) =>
+        await supabase
           .from('user_inventory')
           .update({ quantity })
           .eq('id', id)

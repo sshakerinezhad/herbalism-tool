@@ -9,7 +9,7 @@
  * - Magic link (passwordless) login
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -34,10 +34,16 @@ export default function LoginPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Redirect if already logged in
-  if (!isLoading && user) {
-    router.push('/')
-    return null
+  // Redirect if already logged in (must be in useEffect to avoid render-phase state updates)
+  useEffect(() => {
+    if (!isLoading && user) {
+      router.push('/')
+    }
+  }, [isLoading, user, router])
+
+  // Show loading while checking auth or while redirecting
+  if (isLoading || user) {
+    return <LoadingState />
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -72,10 +78,6 @@ export default function LoginPage() {
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  if (isLoading) {
-    return <LoadingState />
   }
 
   return (

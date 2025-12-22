@@ -725,6 +725,11 @@ class ErrorBoundary extends React.Component<Props, State> {
 1. **Lazy Loading:** Each page only fetches data it needs
 2. **Memoization:** Uses React.memo for expensive components
 3. **Debounced Updates:** Profile saves are debounced
+4. **Batched Inventory Operations:** `addHerbsToInventory` and `removeHerbsFromInventory` use:
+   - Single SELECT with `IN` clause instead of N queries
+   - Batch INSERT for new items
+   - Chunked parallel UPDATEs (max 20 concurrent) to avoid rate limits
+   - Configurable chunk sizes (`MAX_CONCURRENT_REQUESTS`, `MAX_IN_CLAUSE_SIZE`)
 
 ### Potential Improvements
 

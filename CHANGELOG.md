@@ -13,8 +13,19 @@ All notable changes to the herbalism-tool project.
   - `docs/CONTRIBUTING.md` - Development guidelines
   - `docs/DATABASE.md` - Schema reference
 
+### Changed
+- **Inventory operations optimized for scale:**
+  - `addHerbsToInventory`: Batched SELECT + INSERT + chunked parallel UPDATEs
+  - `removeHerbsFromInventory`: Batched SELECT + DELETE + chunked parallel UPDATEs
+  - Configurable limits: `MAX_CONCURRENT_REQUESTS` (20), `MAX_IN_CLAUSE_SIZE` (500)
+  - Handles hundreds of herbs without hitting rate limits or query size limits
+
 ### Fixed
 - Auth gracefully handles expired/invalid refresh tokens instead of throwing console errors
+- Login page redirect now uses `useEffect` (fixes React render-phase state update error)
+- Duplicate `RecipeType` definition consolidated (now defined in `constants.ts`, re-exported from `types.ts`)
+- Missing `recipe_text` field in brewing query
+- TypeScript errors with Supabase query builder return types in chunked operations
 
 ---
 

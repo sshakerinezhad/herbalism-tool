@@ -6,7 +6,6 @@
  * Authentication page supporting:
  * - Email/password login
  * - Email/password signup
- * - Magic link (passwordless) login
  */
 
 import { useState, useEffect } from 'react'
@@ -15,16 +14,15 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { LoadingState, ErrorDisplay } from '@/components/ui'
 
-type AuthMode = 'login' | 'signup' | 'magic-link'
+type AuthMode = 'login' | 'signup'
 
 const AUTH_MODES = [
   { mode: 'login' as const, label: 'Login' },
   { mode: 'signup' as const, label: 'Sign Up' },
-  { mode: 'magic-link' as const, label: 'Magic Link' },
 ]
 
 export default function LoginPage() {
-  const { signIn, signUp, signInWithMagicLink, user, isLoading } = useAuth()
+  const { signIn, signUp, user, isLoading } = useAuth()
   const router = useRouter()
   
   const [mode, setMode] = useState<AuthMode>('login')
@@ -53,14 +51,7 @@ export default function LoginPage() {
     setIsSubmitting(true)
 
     try {
-      if (mode === 'magic-link') {
-        const { error } = await signInWithMagicLink(email)
-        if (error) {
-          setError(error)
-        } else {
-          setSuccess('Check your email for a magic link to sign in!')
-        }
-      } else if (mode === 'signup') {
+      if (mode === 'signup') {
         const { error } = await signUp(email, password)
         if (error) {
           setError(error)
@@ -89,7 +80,6 @@ export default function LoginPage() {
           <p className="text-zinc-400">
             {mode === 'login' && 'Sign in to access your profile'}
             {mode === 'signup' && 'Create an account to save your progress'}
-            {mode === 'magic-link' && 'Sign in with a magic link (no password!)'}
           </p>
         </div>
 
@@ -124,25 +114,23 @@ export default function LoginPage() {
             />
           </div>
 
-          {mode !== 'magic-link' && (
-            <div>
-              <label className="block text-sm font-medium mb-2">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                minLength={6}
-                className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-600"
-              />
-              {mode === 'signup' && (
-                <p className="text-zinc-500 text-sm mt-1">
-                  At least 6 characters
-                </p>
-              )}
-            </div>
-          )}
+          <div>
+            <label className="block text-sm font-medium mb-2">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              minLength={6}
+              className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-600"
+            />
+            {mode === 'signup' && (
+              <p className="text-zinc-500 text-sm mt-1">
+                At least 6 characters
+              </p>
+            )}
+          </div>
 
           {error && <ErrorDisplay message={error} />}
 
@@ -158,9 +146,7 @@ export default function LoginPage() {
             className="w-full py-3 bg-emerald-700 hover:bg-emerald-600 disabled:bg-zinc-700 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
           >
             {isSubmitting ? 'Please wait...' : (
-              mode === 'login' ? 'Sign In' :
-              mode === 'signup' ? 'Create Account' :
-              'Send Magic Link'
+              mode === 'login' ? 'Sign In' : 'Create Account'
             )}
           </button>
         </form>

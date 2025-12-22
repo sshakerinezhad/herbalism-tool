@@ -10,7 +10,6 @@ type AuthContextType = {
   isLoading: boolean
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
   signUp: (email: string, password: string) => Promise<{ error: string | null }>
-  signInWithMagicLink: (email: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
 }
 
@@ -68,18 +67,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: null }
   }
 
-  async function signInWithMagicLink(email: string) {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: typeof window !== 'undefined' 
-          ? `${window.location.origin}/` 
-          : undefined,
-      },
-    })
-    return { error: error?.message ?? null }
-  }
-
   async function signOut() {
     await supabase.auth.signOut()
     // Clear the old guest ID from localStorage to start fresh
@@ -93,7 +80,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       signIn,
       signUp,
-      signInWithMagicLink,
       signOut,
     }}>
       {children}

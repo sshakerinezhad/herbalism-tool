@@ -144,6 +144,8 @@ export default function Page() {
 2. **Type Casting:** Use `as unknown as Type` for Supabase joins
 3. **RLS OFF:** Row Level Security not enabled yet
 4. **Sessions in localStorage:** Foraging sessions don't sync across devices
+5. **Navigation in useEffect:** Always use `router.push()` inside `useEffect`, never during render
+6. **RecipeType:** Defined in `constants.ts`, re-exported from `types.ts` for convenience
 
 ---
 

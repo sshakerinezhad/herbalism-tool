@@ -19,6 +19,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
 import { LoadingState } from '@/components/ui'
 import { 
@@ -142,6 +143,9 @@ export default function CreateCharacterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
+  // Character existence state
+  const [hasExistingCharacter, setHasExistingCharacter] = useState<boolean | null>(null)
+
   // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
@@ -149,17 +153,15 @@ export default function CreateCharacterPage() {
     }
   }, [authLoading, user, router])
 
-  // Check if user already has a character
+  // Check if user already has a character (but don't redirect)
   useEffect(() => {
     async function checkExisting() {
       if (!user) return
       const { exists } = await hasCharacter(user.id)
-      if (exists) {
-        router.push('/') // Already has character
-      }
+      setHasExistingCharacter(exists)
     }
     checkExisting()
-  }, [user, router])
+  }, [user])
 
   // Load reference data
   useEffect(() => {
@@ -295,8 +297,37 @@ export default function CreateCharacterPage() {
     return <LoadingState message="Loading..." />
   }
 
-  if (loadingRef) {
+  if (loadingRef || hasExistingCharacter === null) {
     return <LoadingState message="Loading character options..." />
+  }
+
+  // If user already has a character, show message instead of wizard
+  if (hasExistingCharacter) {
+    return (
+      <div className="min-h-screen bg-zinc-900 text-zinc-100 flex items-center justify-center p-8">
+        <div className="max-w-md text-center">
+          <div className="text-6xl mb-4">⚔️</div>
+          <h1 className="text-2xl font-bold mb-3">You Already Have a Knight</h1>
+          <p className="text-zinc-400 mb-6">
+            You&apos;ve already created a character. You can view and edit your knight from the profile page.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Link
+              href="/profile"
+              className="px-6 py-3 bg-emerald-700 hover:bg-emerald-600 rounded-lg font-medium transition-colors"
+            >
+              View My Knight
+            </Link>
+            <Link
+              href="/"
+              className="px-6 py-3 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium transition-colors"
+            >
+              Go Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

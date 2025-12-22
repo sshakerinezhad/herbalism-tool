@@ -1,19 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useProfile } from '@/lib/profile'
 import { useAuth } from '@/lib/auth'
 import { LoadingState } from '@/components/ui'
-// Import from db module
-import { hasCharacter } from '@/lib/db/characters'
 
 export default function Home() {
   const { profile, isLoaded } = useProfile()
   const { user, isLoading: authLoading, signOut } = useAuth()
   const router = useRouter()
-  const [checkingCharacter, setCheckingCharacter] = useState(true)
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -22,32 +19,8 @@ export default function Home() {
     }
   }, [authLoading, user, router])
 
-  // Check if user has a character, redirect to create if not
-  useEffect(() => {
-    async function checkCharacter() {
-      if (!user) return
-      
-      const { exists, error } = await hasCharacter(user.id)
-      if (error) {
-        console.error('Failed to check character:', error)
-        setCheckingCharacter(false)
-        return
-      }
-      
-      if (!exists) {
-        router.push('/create-character')
-      } else {
-        setCheckingCharacter(false)
-      }
-    }
-    
-    if (!authLoading && user) {
-      checkCharacter()
-    }
-  }, [authLoading, user, router])
-
-  // Show loading while checking auth or character
-  if (authLoading || !user || checkingCharacter) {
+  // Show loading while checking auth
+  if (authLoading || !user) {
     return <LoadingState message="Loading..." />
   }
 

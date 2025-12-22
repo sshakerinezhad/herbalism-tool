@@ -26,8 +26,10 @@ export type Biome = {
   description: string | null
 }
 
-/** Valid recipe/brew types */
-export type RecipeType = 'elixir' | 'bomb' | 'oil'
+import { RecipeType } from './constants'
+
+// Re-export for convenience
+export type { RecipeType }
 
 export type Recipe = {
   id: number

@@ -7,7 +7,7 @@
  * Supports two modes:
  * - "By Herbs": Select herbs first, then pair elements to create effects
  * - "By Recipe": Select recipes first, then find matching herbs
- */
+ */                                       
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'

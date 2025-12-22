@@ -22,21 +22,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setIsLoading(false)
-    })
-
-    // Listen for auth changes
+    // Set up auth state listener FIRST so it catches all events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        // Let Supabase handle all auth state - just sync to React state
         setSession(session)
         setUser(session?.user ?? null)
         setIsLoading(false)
       }
     )
+
+    // Then get initial session
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        // Invalid refresh token or stale session - sign out to clear bad data
+        // The onAuthStateChange listener will handle updating React state
+        console.warn('Session invalid, signing out:', error.message)
+        supabase.auth.signOut()
+      } else {
+        setSession(session)
+        setUser(session?.user ?? null)
+      }
+      setIsLoading(false)
+    })
 
     return () => subscription.unsubscribe()
   }, [])

@@ -161,34 +161,34 @@ export default function RecipesPage() {
   return (
     <PageLayout maxWidth="max-w-3xl">
       {/* Header */}
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-1">📖 Recipe Book</h1>
-          {stats && (
-            <p className="text-zinc-500 text-sm">
-              {stats.known} recipe{stats.known !== 1 ? 's' : ''} known
-              {stats.secretsUnlocked > 0 && (
-                <span className="text-amber-500 ml-2">
-                  • {stats.secretsUnlocked} secret{stats.secretsUnlocked !== 1 ? 's' : ''} unlocked
-                </span>
-              )}
-            </p>
-          )}
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h1 className="text-3xl font-bold mb-1">📖 Recipe Book</h1>
+            {stats && (
+              <p className="text-zinc-500 text-sm">
+                {stats.known} recipe{stats.known !== 1 ? 's' : ''} known
+                {stats.secretsUnlocked > 0 && (
+                  <span className="text-amber-500 ml-2">
+                    • {stats.secretsUnlocked} secret{stats.secretsUnlocked !== 1 ? 's' : ''} unlocked
+                  </span>
+                )}
+              </p>
+            )}
+          </div>
+          
+          <button
+            onClick={() => setShowUnlockModal(true)}
+            className="px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+          >
+            <span>🔓</span>
+            <span>Discover Recipe</span>
+          </button>
         </div>
-        
-        <button
-          onClick={() => setShowUnlockModal(true)}
-          className="px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-        >
-          <span>🔓</span>
-          <span>Discover Recipe</span>
-        </button>
-      </div>
 
       {error && <ErrorDisplay message={error} className="mb-6" />}
 
-      {/* Type Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-zinc-800 pb-4">
+        {/* Type Tabs */}
+        <div className="flex gap-2 mb-6 border-b border-zinc-800 pb-4">
         {RECIPE_TABS.map(tab => (
           <button
             key={tab.type}
@@ -203,25 +203,25 @@ export default function RecipesPage() {
             <span className="ml-2 text-xs opacity-70">({recipesByType[tab.type].length})</span>
           </button>
         ))}
-      </div>
+        </div>
 
-      {/* Type Description */}
+        {/* Type Description */}
       <TypeDescription type={viewTab} />
 
-      {/* Empty State */}
-      {currentRecipes.length === 0 && (
-        <div className="bg-zinc-800/50 rounded-lg p-8 text-center">
-          <p className="text-zinc-400 mb-4">
-            No {viewTab} recipes known yet
-          </p>
-        </div>
-      )}
+        {/* Empty State */}
+        {currentRecipes.length === 0 && (
+          <div className="bg-zinc-800/50 rounded-lg p-8 text-center">
+            <p className="text-zinc-400 mb-4">
+              No {viewTab} recipes known yet
+            </p>
+          </div>
+        )}
 
-      {/* Recipe List */}
-      <div className="space-y-4">
-        {currentRecipes.map((recipe) => (
-          <RecipeCard key={recipe.id} recipe={recipe} />
-        ))}
+        {/* Recipe List */}
+        <div className="space-y-4">
+          {currentRecipes.map((recipe) => (
+            <RecipeCard key={recipe.id} recipe={recipe} />
+          ))}
       </div>
 
       {/* Unlock Modal */}
@@ -267,72 +267,72 @@ type UnlockModalProps = {
 
 function UnlockModal({ code, onCodeChange, onUnlock, onClose, loading, result }: UnlockModalProps) {
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-      <div className="bg-zinc-800 rounded-xl border border-zinc-700 max-w-md w-full p-6">
-        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <span>🔓</span>
-          <span>Discover New Recipe</span>
-        </h2>
-        
-        <p className="text-zinc-400 text-sm mb-4">
-          Enter a secret code to unlock a hidden recipe. Codes are discovered through 
-          gameplay, quests, or special discoveries in the world.
-        </p>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+          <div className="bg-zinc-800 rounded-xl border border-zinc-700 max-w-md w-full p-6">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <span>🔓</span>
+              <span>Discover New Recipe</span>
+            </h2>
+            
+            <p className="text-zinc-400 text-sm mb-4">
+              Enter a secret code to unlock a hidden recipe. Codes are discovered through 
+              gameplay, quests, or special discoveries in the world.
+            </p>
 
-        <div className="space-y-4">
-          <input
-            type="text"
+            <div className="space-y-4">
+              <input
+                type="text"
             value={code}
             onChange={(e) => onCodeChange(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && onUnlock()}
-            placeholder="Enter unlock code..."
-            className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-amber-500 text-center font-mono tracking-wider"
-            autoFocus
-          />
+                placeholder="Enter unlock code..."
+                className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-amber-500 text-center font-mono tracking-wider"
+                autoFocus
+              />
 
-          {/* Result Message */}
+              {/* Result Message */}
           {result && (
-            <div className={`p-4 rounded-lg ${
+                <div className={`p-4 rounded-lg ${
               result.success
-                ? 'bg-green-900/30 border border-green-700'
-                : 'bg-red-900/30 border border-red-700'
-            }`}>
+                    ? 'bg-green-900/30 border border-green-700'
+                    : 'bg-red-900/30 border border-red-700'
+                }`}>
               <p className={result.success ? 'text-green-300' : 'text-red-300'}>
                 {result.success ? '✓ ' : '✗ '}{result.message}
-              </p>
-              {result.recipe && (
-                <div className="mt-3 pt-3 border-t border-green-700/50">
-                  <p className="text-zinc-300 text-sm">
-                    <span className="mr-2">
-                      {result.recipe.elements.map((el, i) => (
-                        <span key={i}>{getElementSymbol(el)}</span>
-                      ))}
-                    </span>
-                    <strong>{result.recipe.name}</strong>
                   </p>
+              {result.recipe && (
+                    <div className="mt-3 pt-3 border-t border-green-700/50">
+                      <p className="text-zinc-300 text-sm">
+                        <span className="mr-2">
+                      {result.recipe.elements.map((el, i) => (
+                            <span key={i}>{getElementSymbol(el)}</span>
+                          ))}
+                        </span>
+                    <strong>{result.recipe.name}</strong>
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          )}
 
-          <div className="flex gap-3">
-            <button
+              <div className="flex gap-3">
+                <button
               onClick={onClose}
-              className="flex-1 py-3 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium transition-colors"
-            >
+                  className="flex-1 py-3 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium transition-colors"
+                >
               {result?.success ? 'Close' : 'Cancel'}
-            </button>
+                </button>
             {!result?.success && (
-              <button
+                  <button
                 onClick={onUnlock}
                 disabled={!code.trim() || loading}
-                className="flex-1 py-3 bg-amber-700 hover:bg-amber-600 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
-              >
+                    className="flex-1 py-3 bg-amber-700 hover:bg-amber-600 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
+                  >
                 {loading ? 'Checking...' : 'Unlock'}
-              </button>
-            )}
-          </div>
-        </div>
+                  </button>
+                )}
+              </div>
+            </div>
       </div>
     </div>
   )

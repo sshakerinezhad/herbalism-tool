@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useProfile } from '@/lib/profile'
 import { getInventory, InventoryItem } from '@/lib/inventory'
 import { getBrewedItems } from '@/lib/brewing'
@@ -52,18 +52,18 @@ const ELEMENT_COLORS: Record<string, { bg: string; border: string; header: strin
     row2: 'bg-green-950/10',
   },
   air: {
-    bg: 'bg-cyan-950/20',
-    border: 'border-cyan-800/50',
-    header: 'bg-cyan-900/40',
-    row1: 'bg-cyan-950/30',
-    row2: 'bg-cyan-950/10',
+    bg: 'bg-zinc-700/20',
+    border: 'border-zinc-500/50',
+    header: 'bg-zinc-300/40',
+    row1: 'bg-zinc-400/30',
+    row2: 'bg-zinc-400/10',
   },
   positive: {
-    bg: 'bg-yellow-950/20',
-    border: 'border-yellow-800/50',
-    header: 'bg-yellow-900/40',
-    row1: 'bg-yellow-950/30',
-    row2: 'bg-yellow-950/10',
+    bg: 'bg-yellow-500/10',
+    border: 'border-yellow-400/50',
+    header: 'bg-yellow-400/30',
+    row1: 'bg-yellow-400/20',
+    row2: 'bg-yellow-400/10',
   },
   negative: {
     bg: 'bg-purple-950/20',
@@ -118,6 +118,7 @@ export default function InventoryPage() {
   const [error, setError] = useState<string | null>(null)
   const [sortMode, setSortMode] = useState<SortMode>('element')
   const [viewTab, setViewTab] = useState<ViewTab>('herbs')
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     async function loadData() {
@@ -149,8 +150,59 @@ export default function InventoryPage() {
     loadData()
   }, [profileLoaded, profileId])
 
-  // Group inventory by rarity
-  const groupedByRarity = inventory.reduce((acc, item) => {
+  // Relevance-based search scoring
+  const getSearchScore = (item: InventoryItem, query: string): number => {
+    if (!query) return 1
+    const q = query.toLowerCase().trim()
+    const name = item.herb.name.toLowerCase()
+    const rarity = item.herb.rarity.toLowerCase()
+    const elements = item.herb.elements.map(e => e.toLowerCase())
+    
+    let score = 0
+    
+    // Exact name match (highest priority)
+    if (name === q) return 100
+    
+    // Name starts with query
+    if (name.startsWith(q)) score += 50
+    
+    // Name contains query as substring
+    else if (name.includes(q)) score += 30
+    
+    // Check each word in the name
+    const nameWords = name.split(/\s+/)
+    for (const word of nameWords) {
+      if (word.startsWith(q)) score += 40
+      else if (word.includes(q)) score += 20
+    }
+    
+    // Element exact or starts with
+    for (const el of elements) {
+      if (el === q) score += 50
+      else if (el.startsWith(q)) score += 35
+    }
+    
+    // Rarity exact or starts with
+    if (rarity === q) score += 40
+    else if (rarity.startsWith(q)) score += 25
+    else if (rarity.includes(q)) score += 15
+    
+    return score
+  }
+
+  // Filter and sort inventory by search relevance
+  const filteredInventory = useMemo(() => {
+    if (!searchQuery.trim()) return inventory
+    
+    return inventory
+      .map(item => ({ item, score: getSearchScore(item, searchQuery) }))
+      .filter(({ score }) => score >= 15) // Require meaningful match
+      .sort((a, b) => b.score - a.score)
+      .map(({ item }) => item)
+  }, [inventory, searchQuery])
+
+  // Group inventory by rarity (use filtered results)
+  const groupedByRarity = filteredInventory.reduce((acc, item) => {
     const rarity = item.herb.rarity
     if (!acc[rarity]) acc[rarity] = []
     acc[rarity].push(item)
@@ -162,8 +214,8 @@ export default function InventoryPage() {
     (a, b) => rarityOrder.indexOf(a.toLowerCase()) - rarityOrder.indexOf(b.toLowerCase())
   )
 
-  // Group inventory by primary element, then by rarity within each
-  const groupedByElement = inventory.reduce((acc, item) => {
+  // Group inventory by primary element, then by rarity within each (use filtered results)
+  const groupedByElement = filteredInventory.reduce((acc, item) => {
     const primary = getPrimaryElement(item.herb.elements) || 'Mixed'
     if (!acc[primary]) acc[primary] = {}
     
@@ -210,7 +262,7 @@ export default function InventoryPage() {
         <span className="text-zinc-100 truncate">{item.herb.name}</span>
         
         {/* Element symbols after name */}
-        <span className="text-sm flex-shrink-0">
+        <span className="text-lg flex-shrink-0">
           {item.herb.elements.map((el, i) => (
             <span key={i} title={el}>{getElementSymbol(el)}</span>
           ))}
@@ -261,11 +313,38 @@ export default function InventoryPage() {
           )}
         </div>
 
+        {/* Search Bar */}
+        {viewTab === 'herbs' && inventory.length > 0 && (
+          <div className="mb-4">
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500">🔍</span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search herbs by name, element, or rarity..."
+                className="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Herbs Tab Header */}
         {viewTab === 'herbs' && inventory.length > 0 && (
           <div className="flex justify-between items-center mb-4">
             <p className="text-zinc-500 text-sm">
-              {totalHerbs} herb{totalHerbs !== 1 ? 's' : ''} • {uniqueHerbs} unique
+              {searchQuery 
+                ? `${filteredInventory.length} result${filteredInventory.length !== 1 ? 's' : ''}`
+                : `${totalHerbs} herb${totalHerbs !== 1 ? 's' : ''} • ${uniqueHerbs} unique`
+              }
             </p>
             
             {/* Sort Toggle */}
@@ -415,13 +494,14 @@ export default function InventoryPage() {
                         const showRarityHeader = rarity !== currentRarity
                         if (showRarityHeader) {
                           currentRarity = rarity
+                          rowIndex = 0 // Reset alternation for each rarity section
                         }
                         
                         const row = (
                           <div key={item.id}>
                             {showRarityHeader && (
-                              <div className={`px-4 py-1.5 ${colors.row1} border-t border-zinc-800/50`}>
-                                <span className="text-xs font-medium uppercase tracking-wide text-zinc-400">
+                              <div className="px-4 py-1.5 bg-zinc-900/80 border-y border-zinc-700/50">
+                                <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
                                   {rarity}
                                 </span>
                               </div>

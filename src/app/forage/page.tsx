@@ -9,7 +9,7 @@ import { addHerbsToInventory } from '@/lib/inventory'
 import Link from 'next/link'
 
 export default function ForagePage() {
-  const { profile, guestId, isLoaded: profileLoaded, sessionsUsedToday, spendForagingSessions, longRest } = useProfile()
+  const { profile, profileId, isLoaded: profileLoaded, sessionsUsedToday, spendForagingSessions, longRest } = useProfile()
   const [biomes, setBiomes] = useState<Biome[]>([])
   const [biomeAllocations, setBiomeAllocations] = useState<Record<number, number>>({})
   const [state, setState] = useState<ForageState>({ phase: 'setup' })
@@ -166,13 +166,13 @@ export default function ForagePage() {
 
   // Add all found herbs to inventory
   async function handleAddToInventory() {
-    if (state.phase !== 'results' || !guestId) return
+    if (state.phase !== 'results' || !profileId) return
     
     const allHerbs = state.sessionResults.flatMap(r => r.herbsFound || [])
     if (allHerbs.length === 0) return
 
     setAddingToInventory(true)
-    const { error: addError } = await addHerbsToInventory(guestId, allHerbs)
+    const { error: addError } = await addHerbsToInventory(profileId, allHerbs)
     setAddingToInventory(false)
 
     if (addError) {

@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
 import { Profile } from './types'
-import { getOrCreateGuestProfile, updateGuestProfile, getGuestId } from './guest'
+import { getOrCreateProfile, updateProfile, getGuestId } from './guest'
+import { useAuth } from './auth'
 
 // Re-export the type for convenience
 export type { Profile }
@@ -17,7 +18,7 @@ const DEFAULT_PROFILE: Profile = {
 
 type ProfileContextType = {
   profile: Profile
-  guestId: string | null
+  profileId: string | null
   updateProfile: (updates: Partial<Profile>) => Promise<void>
   isLoaded: boolean
   loadError: string | null
@@ -32,23 +33,28 @@ const ProfileContext = createContext<ProfileContextType | null>(null)
 const SESSIONS_KEY = 'herbalism-sessions-used'
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
+  const { user, isLoading: authLoading } = useAuth()
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE)
-  const [guestId, setGuestId] = useState<string | null>(null)
+  const [profileId, setProfileId] = useState<string | null>(null)
   const [sessionsUsedToday, setSessionsUsedToday] = useState(0)
   const [isLoaded, setIsLoaded] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
 
-  // Load profile from database on mount
+  // Load profile from database when auth state is ready
   useEffect(() => {
+    // Don't load until we know the auth state
+    if (authLoading) return
+
     async function initProfile() {
-      const { guestId: id, profile: loadedProfile, error } = await getOrCreateGuestProfile()
+      // Use authenticated user ID if available, otherwise fall back to guest
+      const { id, profile: loadedProfile, error } = await getOrCreateProfile(user?.id)
       
       if (error) {
         setLoadError(error)
         // Fall back to defaults
         setProfile(DEFAULT_PROFILE)
       } else {
-        setGuestId(id)
+        setProfileId(id)
         setProfile(loadedProfile)
       }
 
@@ -65,8 +71,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       setIsLoaded(true)
     }
 
+    // Reset state when auth changes
+    setIsLoaded(false)
+    setLoadError(null)
+    
     initProfile()
-  }, [])
+  }, [user?.id, authLoading])
 
   // Save sessions to localStorage when it changes
   useEffect(() => {
@@ -81,15 +91,15 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     setProfile(prev => ({ ...prev, ...updates }))
 
     // Sync to database
-    const currentGuestId = guestId || getGuestId()
-    if (currentGuestId) {
-      const { error } = await updateGuestProfile(currentGuestId, updates)
+    const currentId = profileId || getGuestId()
+    if (currentId) {
+      const { error } = await updateProfile(currentId, updates)
       if (error) {
         console.error('Failed to sync profile to database:', error)
         // Could revert optimistic update here, but for now just log
       }
     }
-  }, [guestId])
+  }, [profileId])
 
   function spendForagingSessions(count: number) {
     setSessionsUsedToday(prev => prev + count)
@@ -102,7 +112,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   return (
     <ProfileContext.Provider value={{ 
       profile, 
-      guestId,
+      profileId,
       updateProfile: updateProfileHandler, 
       isLoaded,
       loadError,

@@ -8,6 +8,7 @@ export type Herb = {
   rarity: string
   elements: string[]
   description?: string | null
+  property?: string | null
 }
 
 export type Biome = {
@@ -30,7 +31,7 @@ export type BiomeHerb = {
   id: number
   biome_id: number
   herb_id: number
-  weight: number
+  weight: number // Decimal weight for foraging probability
   herbs: Herb // Joined data from herbs table
 }
 

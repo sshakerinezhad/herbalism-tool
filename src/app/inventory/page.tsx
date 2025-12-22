@@ -111,7 +111,7 @@ function getPrimaryElement(elements: string[]): string | null {
 }
 
 export default function InventoryPage() {
-  const { guestId, isLoaded: profileLoaded, profile } = useProfile()
+  const { profileId, isLoaded: profileLoaded, profile } = useProfile()
   const [inventory, setInventory] = useState<InventoryItem[]>([])
   const [brewedItems, setBrewedItems] = useState<BrewedItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -121,11 +121,11 @@ export default function InventoryPage() {
 
   useEffect(() => {
     async function loadData() {
-      if (!profileLoaded || !guestId) return
+      if (!profileLoaded || !profileId) return
 
       const [invResult, brewedResult] = await Promise.all([
-        getInventory(guestId),
-        getBrewedItems(guestId)
+        getInventory(profileId),
+        getBrewedItems(profileId)
       ])
       
       if (invResult.error) {
@@ -147,7 +147,7 @@ export default function InventoryPage() {
     }
 
     loadData()
-  }, [profileLoaded, guestId])
+  }, [profileLoaded, profileId])
 
   // Group inventory by rarity
   const groupedByRarity = inventory.reduce((acc, item) => {

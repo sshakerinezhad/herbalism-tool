@@ -40,7 +40,7 @@ type BrewPhase =
   | { phase: 'result'; success: boolean; roll: number; total: number; type: string; description: string; selectedHerbs: InventoryItem[] }
 
 export default function BrewPage() {
-  const { profile, guestId, isLoaded: profileLoaded } = useProfile()
+  const { profile, profileId, isLoaded: profileLoaded } = useProfile()
   const [inventory, setInventory] = useState<InventoryItem[]>([])
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [loading, setLoading] = useState(true)
@@ -57,10 +57,10 @@ export default function BrewPage() {
   // Load inventory and recipes
   useEffect(() => {
     async function loadData() {
-      if (!profileLoaded || !guestId) return
+      if (!profileLoaded || !profileId) return
 
       const [invResult, recResult] = await Promise.all([
-        getInventory(guestId),
+        getInventory(profileId),
         fetchRecipes()
       ])
       
@@ -80,7 +80,7 @@ export default function BrewPage() {
     }
 
     loadData()
-  }, [profileLoaded, guestId])
+  }, [profileLoaded, profileId])
 
   // Get selected herbs as full items
   const selectedHerbs = useMemo(() => 
@@ -205,7 +205,7 @@ export default function BrewPage() {
 
   // Execute the brew
   async function executeBrew() {
-    if (!guestId) return
+    if (!profileId) return
 
     const dc = 15 // Brewing DC
     const roll = rollD20()
@@ -218,7 +218,7 @@ export default function BrewPage() {
       quantity: 1
     }))
     
-    await removeHerbsFromInventory(guestId, herbRemovals)
+    await removeHerbsFromInventory(profileId, herbRemovals)
 
     // Calculate result
     const type = pairingValidation.type || 'unknown'
@@ -231,7 +231,7 @@ export default function BrewPage() {
       )
       
       await saveBrewedItem(
-        guestId,
+        profileId,
         type,
         effectNames,
         Object.keys(choices).length > 0 ? choices : null,
@@ -258,8 +258,8 @@ export default function BrewPage() {
     setPhase({ phase: 'select-herbs' })
     
     // Reload inventory
-    if (guestId) {
-      getInventory(guestId).then(result => {
+    if (profileId) {
+      getInventory(profileId).then(result => {
         if (!result.error) {
           setInventory(result.items)
         }

@@ -4,12 +4,12 @@ import { Profile } from './types'
 const GUEST_ID_KEY = 'herbalism-guest-id'
 
 /**
- * Get or create a guest user profile.
- * - If a guest ID exists in localStorage, fetch that profile from DB
- * - If not, create a new guest profile in DB and store the ID
+ * Get or create a user profile.
+ * - If userId is provided (authenticated), use that
+ * - Otherwise, fall back to guest ID from localStorage
  */
-export async function getOrCreateGuestProfile(): Promise<{
-  guestId: string
+export async function getOrCreateProfile(userId?: string): Promise<{
+  id: string
   profile: Profile
   error: string | null
 }> {
@@ -21,66 +21,93 @@ export async function getOrCreateGuestProfile(): Promise<{
     maxForagingSessions: 1,
   }
 
-  // Check for existing guest ID
-  const existingGuestId = localStorage.getItem(GUEST_ID_KEY)
+  // Determine which ID to use
+  const profileId = userId || localStorage.getItem(GUEST_ID_KEY)
 
-  if (existingGuestId) {
+  if (profileId) {
     // Try to fetch existing profile
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('id', existingGuestId)
+      .eq('id', profileId)
       .single()
 
     if (data && !error) {
       return {
-        guestId: existingGuestId,
+        id: profileId,
         profile: dbProfileToLocal(data),
         error: null
       }
     }
 
-    // Profile not found (maybe deleted), create a new one
+    // If authenticated user but no profile, create one with their ID
+    if (userId) {
+      return await createProfile(userId)
+    }
+
+    // Guest profile not found (maybe deleted), create a new one
     console.warn('Guest profile not found in DB, creating new one')
   }
 
   // Create new guest profile
   const newGuestId = crypto.randomUUID()
+  const result = await createProfile(newGuestId)
+  
+  if (!result.error) {
+    // Store guest ID in localStorage
+    localStorage.setItem(GUEST_ID_KEY, newGuestId)
+  }
+  
+  return result
+}
+
+/**
+ * Create a new profile with the given ID
+ */
+async function createProfile(id: string): Promise<{
+  id: string
+  profile: Profile
+  error: string | null
+}> {
+  const defaultProfile: Profile = {
+    name: '',
+    isHerbalist: false,
+    foragingModifier: 0,
+    brewingModifier: 0,
+    maxForagingSessions: 1,
+  }
 
   const { error } = await supabase
     .from('profiles')
     .insert({
-      id: newGuestId,
+      id,
       username: '',
       is_herbalist: false,
       foraging_modifier: 0,
-      herbalism_modifier: 0,  // This is the brewing modifier in your DB
+      herbalism_modifier: 0,
       max_foraging_sessions: 1,
     })
 
   if (error) {
     return {
-      guestId: '',
+      id: '',
       profile: defaultProfile,
-      error: `Failed to create guest profile: ${error.message}`
+      error: `Failed to create profile: ${error.message}`
     }
   }
 
-  // Store guest ID in localStorage
-  localStorage.setItem(GUEST_ID_KEY, newGuestId)
-
   return {
-    guestId: newGuestId,
+    id,
     profile: defaultProfile,
     error: null
   }
 }
 
 /**
- * Update guest profile in database
+ * Update profile in database
  */
-export async function updateGuestProfile(
-  guestId: string, 
+export async function updateProfile(
+  id: string, 
   updates: Partial<Profile>
 ): Promise<{ error: string | null }> {
   const dbUpdates: Record<string, unknown> = {}
@@ -94,7 +121,7 @@ export async function updateGuestProfile(
   const { error } = await supabase
     .from('profiles')
     .update(dbUpdates)
-    .eq('id', guestId)
+    .eq('id', id)
 
   if (error) {
     return { error: `Failed to update profile: ${error.message}` }
@@ -117,7 +144,7 @@ function dbProfileToLocal(dbRow: {
   username: string
   is_herbalist: boolean
   foraging_modifier: number
-  herbalism_modifier: number  // DB calls it herbalism, we call it brewing
+  herbalism_modifier: number
   max_foraging_sessions: number
 }): Profile {
   return {
@@ -128,3 +155,7 @@ function dbProfileToLocal(dbRow: {
     maxForagingSessions: dbRow.max_foraging_sessions ?? 1,
   }
 }
+
+// Legacy export for backwards compatibility
+export const getOrCreateGuestProfile = () => getOrCreateProfile()
+export const updateGuestProfile = updateProfile

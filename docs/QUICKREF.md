@@ -165,6 +165,9 @@ import { HerbRow, BrewedItemCard, ElementSummary } from '@/components/inventory'
 
 // Recipes
 import { RecipeCard } from '@/components/recipes'
+
+// Character
+import { ArmorDiagram } from '@/components/ArmorDiagram'
 ```
 
 ---

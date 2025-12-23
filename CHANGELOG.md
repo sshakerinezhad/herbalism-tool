@@ -14,6 +14,12 @@ All notable changes to the herbalism-tool project.
   - SQL migrations in `supabase/migrations/`
   - RLS policies for all new tables
   - Planning document: `docs/PLANNING-KNIGHTS.md`
+- **ArmorDiagram component** (`src/components/ArmorDiagram.tsx`):
+  - Visual armor slot editor with character silhouette
+  - 12 slots split into left/right columns
+  - Lock/unlock editing mode
+  - AC and armor level display
+  - Strength requirement validation
 - Comprehensive documentation suite:
   - `README.md` - Complete project overview and quick start
   - `docs/ARCHITECTURE.md` - Technical deep-dive

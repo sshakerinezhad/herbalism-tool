@@ -52,18 +52,43 @@ ProfileProvider lives inside AuthProvider because:
 
 ```
 Pages
-  ├── components/*   (UI components)
-  ├── lib/constants  (shared constants)
-  ├── lib/types      (shared types)
-  └── lib/*          (domain logic + DB operations)
+  ├── components/*       (UI components)
+  ├── lib/hooks          (React Query hooks - DATA LAYER)
+  ├── lib/constants      (shared constants)
+  ├── lib/types          (shared types)
+  └── lib/*              (domain logic + DB operations)
         └── lib/supabase (database client)
 ```
 
 Rules:
 - Pages can import from anywhere
+- Pages use `@/lib/hooks` for data fetching (not direct lib/*.ts calls)
 - Components import from lib/ but not other pages
+- lib/hooks imports from lib/*.ts for actual DB operations
 - lib/ modules can import from each other
 - supabase.ts is the leaf - imports nothing from app
+
+### Data Flow (with React Query)
+
+```
+User navigates to page
+         │
+         ▼
+    useXxx hook (from @/lib/hooks)
+         │
+         ├─► Cache hit? → Return cached data immediately
+         │
+         └─► Cache miss? → Call fetcher function
+                              │
+                              ▼
+                         lib/*.ts (DB operations)
+                              │
+                              ▼
+                         Supabase
+                              │
+                              ▼
+                    Cache data, return to component
+```
 
 ---
 
@@ -723,27 +748,97 @@ class ErrorBoundary extends React.Component<Props, State> {
 
 ### Current Optimizations
 
-1. **Lazy Loading:** Each page only fetches data it needs
-2. **Memoization:** Uses React.memo for expensive components
-3. **Debounced Updates:** Profile saves are debounced
-4. **Batched Inventory Operations:** `addHerbsToInventory` and `removeHerbsFromInventory` use:
+1. **React Query Caching:** All data fetching uses TanStack Query (`@/lib/hooks/queries.ts`)
+   - Automatic caching across components
+   - Request deduplication (same query = single request)
+   - Configurable stale time (biomes: 30min, static data: infinite)
+   - No refetch on tab switch
+
+2. **Prefetching:** Data loads before navigation
+   - `PrefetchLink` component prefetches on hover (100ms delay)
+   - Home page prefetches common data on load
+   - Near-instant navigation after initial load
+
+3. **Skeleton Loading:** Instant perceived performance
+   - Page structure shows immediately
+   - Animated placeholders during data fetch
+   - Per-page skeletons match actual layout
+
+4. **Memoization:** Uses React.memo for expensive components
+
+5. **Debounced Updates:** Profile saves are debounced
+
+6. **Batched Inventory Operations:** `addHerbsToInventory` and `removeHerbsFromInventory` use:
    - Single SELECT with `IN` clause instead of N queries
    - Batch INSERT for new items
    - Chunked parallel UPDATEs (max 20 concurrent) to avoid rate limits
    - Configurable chunk sizes (`MAX_CONCURRENT_REQUESTS`, `MAX_IN_CLAUSE_SIZE`)
 
-### Potential Improvements
+### React Query Architecture
 
-1. **React Query:** Replace manual fetching with react-query for caching
-2. **Virtual Lists:** For large inventories, use react-window
-3. **Supabase Subscriptions:** Real-time updates instead of polling
-4. **Image Optimization:** If herb images are added, use next/image
+```typescript
+// Centralized in @/lib/hooks/queries.ts
+
+// 1. Query Keys (for cache management)
+export const queryKeys = {
+  inventory: (profileId: string) => ['inventory', profileId],
+  biomes: ['biomes'],
+  // ...
+}
+
+// 2. Shared Fetchers (DRY - used by hooks and prefetch)
+const fetchers = {
+  inventory: async (profileId: string) => { /* ... */ },
+  biomes: async () => { /* ... */ },
+}
+
+// 3. Hooks (used in components)
+export function useInventory(profileId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.inventory(profileId ?? ''),
+    queryFn: () => fetchers.inventory(profileId!),
+    enabled: !!profileId,
+  })
+}
+
+// 4. Prefetch (called on link hover)
+export function usePrefetch() {
+  const queryClient = useQueryClient()
+  return {
+    prefetchInventory: (profileId: string | null) => {
+      if (!profileId) return
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.inventory(profileId),
+        queryFn: () => fetchers.inventory(profileId),
+      })
+    },
+  }
+}
+
+// 5. Invalidation (after mutations)
+export function useInvalidateQueries() {
+  const queryClient = useQueryClient()
+  return {
+    invalidateInventory: (profileId: string) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory(profileId) })
+    },
+  }
+}
+```
+
+### Potential Future Improvements
+
+1. **Virtual Lists:** For large inventories, use react-window
+2. **Supabase Subscriptions:** Real-time updates instead of polling
+3. **Image Optimization:** If herb images are added, use next/image
+4. **Service Worker:** Offline support for reference data
 
 ### Bundle Size
 
-Current dependencies are minimal:
+Current dependencies:
 - next, react, react-dom (core)
 - @supabase/supabase-js (database)
+- @tanstack/react-query (data fetching)
 - tailwindcss (styling)
 
 No animation libraries or heavy UI frameworks.

@@ -39,19 +39,31 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [sessionsUsedToday, setSessionsUsedToday] = useState(0)
   const [isLoaded, setIsLoaded] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
+  // Track which user we've loaded data for to avoid re-fetching
+  const [loadedForUserId, setLoadedForUserId] = useState<string | null>(null)
 
   // Load profile from database when auth state is ready
   useEffect(() => {
     // Don't load until we know the auth state
     if (authLoading) return
 
-    // If no user, nothing to load - profile state stays at defaults
+    // If no user, reset to defaults if we had a user before
     if (!user) {
+      if (loadedForUserId) {
+        setProfile(DEFAULT_PROFILE)
+        setProfileId(null)
+        setLoadedForUserId(null)
+        setIsLoaded(false)
+      }
       return
     }
 
-    // Reset state when starting to load for a user
-    setIsLoaded(false)
+    // If we've already loaded for this user, don't reload
+    if (loadedForUserId === user.id) {
+      return
+    }
+
+    // Only reset state when loading for a NEW user
     setLoadError(null)
 
     async function initProfile() {
@@ -76,11 +88,12 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      setLoadedForUserId(user!.id)
       setIsLoaded(true)
     }
     
     initProfile()
-  }, [user, authLoading])
+  }, [user, authLoading, loadedForUserId])
 
   // Derive isLoaded for no-user case (avoids setState in effect)
   const effectiveIsLoaded = !user ? !authLoading : isLoaded

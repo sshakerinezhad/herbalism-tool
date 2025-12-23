@@ -16,12 +16,17 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useProfile } from '@/lib/profile'
 import { useAuth } from '@/lib/auth'
-import { PageLayout, LoadingState, ErrorDisplay } from '@/components/ui'
 import { 
-  fetchCharacter, 
-  fetchCharacterSkills, 
-  fetchCharacterArmor, 
-  fetchArmorSlots,
+  useCharacter, 
+  useCharacterSkills, 
+  useCharacterArmor, 
+  useArmorSlots,
+  useInvalidateQueries,
+  CharacterSkillData,
+  CharacterArmorData,
+} from '@/lib/hooks'
+import { PageLayout, LoadingState, ErrorDisplay, ProfileSkeleton } from '@/components/ui'
+import { 
   setCharacterArmor,
   removeCharacterArmor,
 } from '@/lib/db/characters'
@@ -36,27 +41,11 @@ import {
   getAbilityModifier,
   calculateMaxHP,
 } from '@/lib/constants'
-import type { Character, Skill, ArmorSlot, ArmorType } from '@/lib/types'
+import type { Character, ArmorSlot, ArmorType } from '@/lib/types'
+import { ArmorDiagram } from '@/components/ArmorDiagram'
 
-// Type for character skill data
-type CharacterSkillData = {
-  skill: Skill
-  is_proficient: boolean
-  is_expertise: boolean
-}
-
-// Type for character armor data
-type CharacterArmorData = {
-  id: string
-  slot_id: number
-  armor_type: ArmorType
-  custom_name: string | null
-  material: string | null
-  is_magical: boolean
-  properties: Record<string, unknown> | null
-  notes: string | null
-  slot: ArmorSlot
-}
+// Types imported from @/lib/hooks:
+// CharacterSkillData, CharacterArmorData
 
 // Calculate AC from armor pieces
 function calculateArmorClass(
@@ -119,14 +108,29 @@ export default function ProfilePage() {
   const { profile, updateProfile, isLoaded, loadError, sessionsUsedToday, longRest } = useProfile()
   const { user, isLoading: authLoading, signOut } = useAuth()
   const router = useRouter()
+  const { invalidateCharacterArmor } = useInvalidateQueries()
 
-  // Character state
-  const [character, setCharacter] = useState<Character | null>(null)
-  const [characterSkills, setCharacterSkills] = useState<CharacterSkillData[]>([])
-  const [characterArmor, setCharacterArmor] = useState<CharacterArmorData[]>([])
-  const [allArmorSlots, setAllArmorSlots] = useState<ArmorSlot[]>([])
-  const [loadingCharacter, setLoadingCharacter] = useState(true)
-  const [characterError, setCharacterError] = useState<string | null>(null)
+  // React Query handles character data fetching and caching
+  const { 
+    data: character, 
+    isLoading: characterLoading, 
+    error: characterError 
+  } = useCharacter(user?.id ?? null)
+  
+  const { 
+    data: characterSkills = [], 
+    isLoading: skillsLoading 
+  } = useCharacterSkills(character?.id ?? null)
+  
+  const { 
+    data: characterArmor = [], 
+    isLoading: armorLoading 
+  } = useCharacterArmor(character?.id ?? null)
+  
+  const { 
+    data: allArmorSlots = [], 
+    isLoading: slotsLoading 
+  } = useArmorSlots()
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -134,52 +138,9 @@ export default function ProfilePage() {
       router.push('/login')
     }
   }, [authLoading, user, router])
-
-  // Load character data
-  useEffect(() => {
-    async function loadCharacterData() {
-      if (!user) return
-
-      setLoadingCharacter(true)
-      setCharacterError(null)
-
-      // First fetch the character
-      const charResult = await fetchCharacter(user.id)
-
-      if (charResult.error) {
-        setCharacterError(charResult.error)
-        setLoadingCharacter(false)
-        return
-      }
-
-      setCharacter(charResult.data)
-
-      // If character exists, fetch their skills and armor
-      if (charResult.data) {
-        const [skillsResult, armorResult, slotsResult] = await Promise.all([
-          fetchCharacterSkills(charResult.data.id),
-          fetchCharacterArmor(charResult.data.id),
-          fetchArmorSlots(),
-        ])
-        
-        if (skillsResult.data) {
-          setCharacterSkills(skillsResult.data)
-        }
-        if (armorResult.data) {
-          setCharacterArmor(armorResult.data)
-        }
-        if (slotsResult.data) {
-          setAllArmorSlots(slotsResult.data)
-        }
-      }
-
-      setLoadingCharacter(false)
-    }
-
-    if (!authLoading && user) {
-      loadCharacterData()
-    }
-  }, [authLoading, user])
+  
+  // Derived loading state
+  const loadingCharacter = characterLoading || (character && (skillsLoading || armorLoading || slotsLoading))
 
   // Show loading while checking auth
   if (authLoading || !user) {
@@ -187,7 +148,7 @@ export default function ProfilePage() {
   }
 
   if (loadingCharacter) {
-    return <LoadingState message="Loading character..." />
+    return <ProfileSkeleton />
   }
 
   // No character - show create CTA
@@ -211,7 +172,7 @@ export default function ProfilePage() {
         characterSkills={characterSkills}
         characterArmor={characterArmor}
         allArmorSlots={allArmorSlots}
-        onArmorChange={setCharacterArmor}
+        onArmorChanged={() => character && invalidateCharacterArmor(character.id)}
         user={user}
         onSignOut={signOut}
         // Herbalism props (only relevant if character is an herbalist)
@@ -304,7 +265,7 @@ function CharacterView({
   characterSkills,
   characterArmor,
   allArmorSlots,
-  onArmorChange,
+  onArmorChanged,
   user,
   onSignOut,
   profile,
@@ -318,7 +279,7 @@ function CharacterView({
   characterSkills: CharacterSkillData[]
   characterArmor: CharacterArmorData[]
   allArmorSlots: ArmorSlot[]
-  onArmorChange: (armor: CharacterArmorData[]) => void
+  onArmorChanged: () => void
   user: { email?: string }
   onSignOut: () => void
   profile: { 
@@ -335,7 +296,6 @@ function CharacterView({
   longRest: () => void
 }) {
   const [armorLocked, setArmorLocked] = useState(true)
-  const [armorSaving, setArmorSaving] = useState<number | null>(null)
 
   const maxHP = calculateMaxHP(character.con)
   const isHerbalist = character.vocation === 'herbalist'
@@ -348,42 +308,19 @@ function CharacterView({
   // Calculate AC from armor
   const { totalAC, armorLevel } = calculateArmorClass(characterArmor, allArmorSlots, character.dex)
 
-  // Armor management functions
+  // Armor management - called by ArmorDiagram
   async function handleSetArmor(slotId: number, armorType: ArmorType | null) {
-    if (armorLocked) return
-
-    setArmorSaving(slotId)
-
     if (armorType === null) {
       const { error } = await removeCharacterArmor(character.id, slotId)
       if (!error) {
-        onArmorChange(characterArmor.filter(a => a.slot_id !== slotId))
+        onArmorChanged() // Invalidate cache to refetch armor
       }
     } else {
       const { error } = await setCharacterArmor(character.id, slotId, armorType)
       if (!error) {
-        const { data } = await fetchCharacterArmor(character.id)
-        if (data) {
-          onArmorChange(data)
-        }
+        onArmorChanged() // Invalidate cache to refetch armor
       }
     }
-
-    setArmorSaving(null)
-  }
-
-  function isArmorAvailable(slot: ArmorSlot, type: ArmorType): boolean {
-    if (type === 'light') return slot.light_available
-    if (type === 'medium') return slot.medium_available
-    if (type === 'heavy') return slot.heavy_available
-    return false
-  }
-
-  function meetsStrengthRequirement(type: ArmorType): boolean {
-    if (type === 'light') return true
-    if (type === 'medium') return character.str >= 13
-    if (type === 'heavy') return character.str >= 15
-    return true
   }
 
   return (
@@ -513,196 +450,18 @@ function CharacterView({
         </div>
       </div>
 
-      {/* Armor Section - Body Diagram Style */}
-      <div className="mt-6 bg-zinc-800 rounded-lg p-5 border border-zinc-700">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center gap-3">
-            <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wide">Armor</h2>
-            <button
-              onClick={() => setArmorLocked(!armorLocked)}
-              className={`p-1.5 rounded transition-colors ${
-                armorLocked 
-                  ? 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600' 
-                  : 'bg-amber-700/50 text-amber-300 hover:bg-amber-600/50'
-              }`}
-              title={armorLocked ? 'Click to unlock and edit armor' : 'Click to lock armor'}
-            >
-              {armorLocked ? '🔒' : '🔓'}
-            </button>
-            {!armorLocked && (
-              <span className="text-xs text-amber-400">Editing enabled</span>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <span className={`text-xs px-2 py-1 rounded ${
-              armorLevel === 'heavy' ? 'bg-zinc-600 text-zinc-200' :
-              armorLevel === 'medium' ? 'bg-blue-900/50 text-blue-300' :
-              armorLevel === 'light' ? 'bg-emerald-900/50 text-emerald-300' :
-              'bg-zinc-700 text-zinc-400'
-            }`}>
-              {armorLevel === 'none' ? 'Unarmored' : `${armorLevel.charAt(0).toUpperCase() + armorLevel.slice(1)} Armor`}
-            </span>
-            <div className="bg-blue-900/30 border border-blue-700 rounded px-3 py-1">
-              <span className="text-blue-300 font-bold">AC {totalAC}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Body Diagram Layout */}
-        <div className="grid grid-cols-12 gap-2">
-          {/* Row 1: Head */}
-          <div className="col-span-12 flex justify-center">
-            <ArmorSlotCard 
-              slot={allArmorSlots.find(s => s.slot_key === 'head')}
-              armor={characterArmor}
-              locked={armorLocked}
-              saving={armorSaving}
-              onSetArmor={handleSetArmor}
-              isArmorAvailable={isArmorAvailable}
-              meetsStrengthRequirement={meetsStrengthRequirement}
-            />
-          </div>
-
-          {/* Row 2: Neck */}
-          <div className="col-span-12 flex justify-center">
-            <ArmorSlotCard 
-              slot={allArmorSlots.find(s => s.slot_key === 'neck')}
-              armor={characterArmor}
-              locked={armorLocked}
-              saving={armorSaving}
-              onSetArmor={handleSetArmor}
-              isArmorAvailable={isArmorAvailable}
-              meetsStrengthRequirement={meetsStrengthRequirement}
-            />
-          </div>
-
-          {/* Row 3: Shoulders + Chest */}
-          <div className="col-span-4 flex justify-end">
-            <ArmorSlotCard 
-              slot={allArmorSlots.find(s => s.slot_key === 'left_shoulder')}
-              armor={characterArmor}
-              locked={armorLocked}
-              saving={armorSaving}
-              onSetArmor={handleSetArmor}
-              isArmorAvailable={isArmorAvailable}
-              meetsStrengthRequirement={meetsStrengthRequirement}
-            />
-          </div>
-          <div className="col-span-4 flex justify-center">
-            <ArmorSlotCard 
-              slot={allArmorSlots.find(s => s.slot_key === 'chest')}
-              armor={characterArmor}
-              locked={armorLocked}
-              saving={armorSaving}
-              onSetArmor={handleSetArmor}
-              isArmorAvailable={isArmorAvailable}
-              meetsStrengthRequirement={meetsStrengthRequirement}
-              large
-            />
-          </div>
-          <div className="col-span-4 flex justify-start">
-            <ArmorSlotCard 
-              slot={allArmorSlots.find(s => s.slot_key === 'right_shoulder')}
-              armor={characterArmor}
-              locked={armorLocked}
-              saving={armorSaving}
-              onSetArmor={handleSetArmor}
-              isArmorAvailable={isArmorAvailable}
-              meetsStrengthRequirement={meetsStrengthRequirement}
-            />
-          </div>
-
-          {/* Row 4: Hands */}
-          <div className="col-span-6 flex justify-end pr-4">
-            <ArmorSlotCard 
-              slot={allArmorSlots.find(s => s.slot_key === 'left_hand')}
-              armor={characterArmor}
-              locked={armorLocked}
-              saving={armorSaving}
-              onSetArmor={handleSetArmor}
-              isArmorAvailable={isArmorAvailable}
-              meetsStrengthRequirement={meetsStrengthRequirement}
-            />
-          </div>
-          <div className="col-span-6 flex justify-start pl-4">
-            <ArmorSlotCard 
-              slot={allArmorSlots.find(s => s.slot_key === 'right_hand')}
-              armor={characterArmor}
-              locked={armorLocked}
-              saving={armorSaving}
-              onSetArmor={handleSetArmor}
-              isArmorAvailable={isArmorAvailable}
-              meetsStrengthRequirement={meetsStrengthRequirement}
-            />
-          </div>
-
-          {/* Row 5: Groin */}
-          <div className="col-span-12 flex justify-center">
-            <ArmorSlotCard 
-              slot={allArmorSlots.find(s => s.slot_key === 'groin')}
-              armor={characterArmor}
-              locked={armorLocked}
-              saving={armorSaving}
-              onSetArmor={handleSetArmor}
-              isArmorAvailable={isArmorAvailable}
-              meetsStrengthRequirement={meetsStrengthRequirement}
-            />
-          </div>
-
-          {/* Row 6: Knees */}
-          <div className="col-span-6 flex justify-end pr-4">
-            <ArmorSlotCard 
-              slot={allArmorSlots.find(s => s.slot_key === 'left_knee')}
-              armor={characterArmor}
-              locked={armorLocked}
-              saving={armorSaving}
-              onSetArmor={handleSetArmor}
-              isArmorAvailable={isArmorAvailable}
-              meetsStrengthRequirement={meetsStrengthRequirement}
-            />
-          </div>
-          <div className="col-span-6 flex justify-start pl-4">
-            <ArmorSlotCard 
-              slot={allArmorSlots.find(s => s.slot_key === 'right_knee')}
-              armor={characterArmor}
-              locked={armorLocked}
-              saving={armorSaving}
-              onSetArmor={handleSetArmor}
-              isArmorAvailable={isArmorAvailable}
-              meetsStrengthRequirement={meetsStrengthRequirement}
-            />
-          </div>
-
-          {/* Row 7: Feet */}
-          <div className="col-span-6 flex justify-end pr-4">
-            <ArmorSlotCard 
-              slot={allArmorSlots.find(s => s.slot_key === 'left_foot')}
-              armor={characterArmor}
-              locked={armorLocked}
-              saving={armorSaving}
-              onSetArmor={handleSetArmor}
-              isArmorAvailable={isArmorAvailable}
-              meetsStrengthRequirement={meetsStrengthRequirement}
-            />
-          </div>
-          <div className="col-span-6 flex justify-start pl-4">
-            <ArmorSlotCard 
-              slot={allArmorSlots.find(s => s.slot_key === 'right_foot')}
-              armor={characterArmor}
-              locked={armorLocked}
-              saving={armorSaving}
-              onSetArmor={handleSetArmor}
-              isArmorAvailable={isArmorAvailable}
-              meetsStrengthRequirement={meetsStrengthRequirement}
-            />
-          </div>
-        </div>
-
-        {!armorLocked && (
-          <p className="text-xs text-zinc-500 mt-4 text-center">
-            Click on a slot to change armor. Changes save immediately.
-          </p>
-        )}
+      {/* Armor Diagram */}
+      <div className="mt-6">
+        <ArmorDiagram
+          armor={characterArmor}
+          armorSlots={allArmorSlots}
+          locked={armorLocked}
+          onToggleLock={() => setArmorLocked(!armorLocked)}
+          onSetArmor={handleSetArmor}
+          totalAC={totalAC}
+          armorLevel={armorLevel}
+          strengthScore={character.str}
+        />
       </div>
 
       {/* Appearance */}
@@ -803,110 +562,6 @@ function CharacterView({
           </p>
         </div>
       )}
-    </div>
-  )
-}
-
-// ============ Armor Slot Card Component ============
-
-function ArmorSlotCard({
-  slot,
-  armor,
-  locked,
-  saving,
-  onSetArmor,
-  isArmorAvailable,
-  meetsStrengthRequirement,
-  large = false,
-}: {
-  slot: ArmorSlot | undefined
-  armor: CharacterArmorData[]
-  locked: boolean
-  saving: number | null
-  onSetArmor: (slotId: number, armorType: ArmorType | null) => void
-  isArmorAvailable: (slot: ArmorSlot, type: ArmorType) => boolean
-  meetsStrengthRequirement: (type: ArmorType) => boolean
-  large?: boolean
-}) {
-  if (!slot) return null
-
-  const piece = armor.find(a => a.slot_id === slot.id)
-  const isSaving = saving === slot.id
-
-  const pieceName = piece ? (
-    piece.custom_name || (
-      piece.armor_type === 'light' ? slot.light_piece_name :
-      piece.armor_type === 'medium' ? slot.medium_piece_name :
-      slot.heavy_piece_name
-    ) || piece.armor_type
-  ) : null
-
-  const bonus = piece ? (
-    piece.armor_type === 'light' ? slot.light_bonus :
-    piece.armor_type === 'medium' ? slot.medium_bonus :
-    slot.heavy_bonus
-  ) : null
-
-  const baseClasses = `rounded-lg border transition-all ${large ? 'p-3 min-w-[140px]' : 'p-2 min-w-[120px]'}`
-  
-  const stateClasses = piece 
-    ? piece.armor_type === 'heavy' 
-      ? 'bg-zinc-700/50 border-zinc-600' 
-      : piece.armor_type === 'medium'
-        ? 'bg-blue-900/20 border-blue-700/50'
-        : 'bg-emerald-900/20 border-emerald-700/50'
-    : 'bg-zinc-900/50 border-zinc-700 border-dashed'
-
-  const magicalClasses = piece?.is_magical ? 'ring-1 ring-purple-500/50' : ''
-
-  // If locked, show read-only view
-  if (locked) {
-    return (
-      <div className={`${baseClasses} ${stateClasses} ${magicalClasses}`}>
-        <div className="text-xs text-zinc-400 mb-1">{slot.display_name}</div>
-        {piece ? (
-          <>
-            <div className={`text-sm font-medium flex items-center gap-1 ${large ? '' : 'text-xs'}`}>
-              {piece.is_magical && <span className="text-purple-400">✦</span>}
-              {pieceName}
-            </div>
-            {bonus && <div className="text-xs text-zinc-500">+{bonus} AC</div>}
-          </>
-        ) : (
-          <div className="text-zinc-600 text-sm">Empty</div>
-        )}
-      </div>
-    )
-  }
-
-  // Unlocked - show editable dropdown
-  return (
-    <div className={`${baseClasses} ${stateClasses} ${magicalClasses}`}>
-      <div className="text-xs text-zinc-400 mb-1">{slot.display_name}</div>
-      <select
-        value={piece?.armor_type || ''}
-        onChange={(e) => onSetArmor(slot.id, e.target.value ? e.target.value as ArmorType : null)}
-        disabled={isSaving}
-        className="w-full px-1.5 py-1 bg-zinc-800 border border-zinc-600 rounded text-xs focus:outline-none focus:border-amber-500 disabled:opacity-50"
-      >
-        <option value="">None</option>
-        {isArmorAvailable(slot, 'light') && (
-          <option value="light" disabled={!meetsStrengthRequirement('light')}>
-            {slot.light_piece_name || 'Light'} (+{slot.light_bonus})
-          </option>
-        )}
-        {isArmorAvailable(slot, 'medium') && (
-          <option value="medium" disabled={!meetsStrengthRequirement('medium')}>
-            {slot.medium_piece_name || 'Medium'} (+{slot.medium_bonus})
-          </option>
-        )}
-        {isArmorAvailable(slot, 'heavy') && (
-          <option value="heavy" disabled={!meetsStrengthRequirement('heavy')}>
-            {slot.heavy_piece_name || 'Heavy'} (+{slot.heavy_bonus})
-          </option>
-        )}
-      </select>
-      {isSaving && <div className="text-xs text-amber-400 mt-1">Saving...</div>}
     </div>
   )
 }

@@ -7,11 +7,12 @@
  * Supports sorting by element or rarity, search, and item management.
  */
 
-import { useEffect, useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useProfile } from '@/lib/profile'
-import { getInventory, InventoryItem, removeHerbsFromInventory } from '@/lib/inventory'
-import { getBrewedItems, removeBrewedItem } from '@/lib/brewing'
+import { useInventory, useBrewedItems, useInvalidateQueries, InventoryItem } from '@/lib/hooks'
+import { removeHerbsFromInventory } from '@/lib/inventory'
+import { removeBrewedItem } from '@/lib/brewing'
 import { 
   getElementSymbol, 
   getElementColors, 
@@ -19,7 +20,7 @@ import {
   ELEMENT_ORDER,
   RARITY_ORDER 
 } from '@/lib/constants'
-import { PageLayout, LoadingState, ErrorDisplay } from '@/components/ui'
+import { PageLayout, ErrorDisplay, InventorySkeleton } from '@/components/ui'
 import { HerbRow, BrewedItemCard, ElementSummary } from '@/components/inventory'
 
 // ============ Types ============
@@ -41,18 +42,27 @@ type BrewedItem = {
 
 export default function InventoryPage() {
   const { profileId, isLoaded: profileLoaded, profile } = useProfile()
+  const { invalidateInventory, invalidateBrewedItems } = useInvalidateQueries()
   
-  // Data state
-  const [inventory, setInventory] = useState<InventoryItem[]>([])
-  const [brewedItems, setBrewedItems] = useState<BrewedItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // React Query handles data fetching and caching
+  const { 
+    data: inventory = [], 
+    isLoading: inventoryLoading, 
+    error: inventoryError 
+  } = useInventory(profileId)
+  
+  const { 
+    data: brewedItems = [], 
+    isLoading: brewedLoading, 
+    error: brewedError 
+  } = useBrewedItems(profileId)
   
   // UI state
   const [sortMode, setSortMode] = useState<SortMode>('element')
   const [viewTab, setViewTab] = useState<ViewTab>('herbs')
   const [searchQuery, setSearchQuery] = useState('')
   const [brewedTypeFilter, setBrewedTypeFilter] = useState<BrewedTypeFilter>('all')
+  const [mutationError, setMutationError] = useState<string | null>(null)
   
   // Herb deletion state
   const [deletingHerbId, setDeletingHerbId] = useState<number | null>(null)
@@ -63,36 +73,6 @@ export default function InventoryPage() {
   const [deletingBrewedId, setDeletingBrewedId] = useState<number | null>(null)
   const [deleteBrewedConfirmId, setDeleteBrewedConfirmId] = useState<number | null>(null)
   const [deleteAllBrewedConfirmId, setDeleteAllBrewedConfirmId] = useState<number | null>(null)
-
-  // Load data
-  useEffect(() => {
-    async function loadData() {
-      if (!profileLoaded || !profileId) return
-
-      const [invResult, brewedResult] = await Promise.all([
-        getInventory(profileId),
-        getBrewedItems(profileId)
-      ])
-      
-      if (invResult.error) {
-        setError(invResult.error)
-      } else {
-        setInventory(invResult.items)
-      }
-      
-      if (brewedResult.error) {
-        if (!brewedResult.error.includes('does not exist')) {
-          console.warn('Brewed items:', brewedResult.error)
-        }
-      } else {
-        setBrewedItems(brewedResult.items)
-      }
-      
-      setLoading(false)
-    }
-
-    loadData()
-  }, [profileLoaded, profileId])
 
   // ============ Herb Actions ============
 
@@ -107,6 +87,7 @@ export default function InventoryPage() {
     
     setDeleteConfirmId(null)
     setDeletingHerbId(herbId)
+    setMutationError(null)
     
     const { error: removeError } = await removeHerbsFromInventory(profileId, [
       { herbId, quantity: 1 }
@@ -115,17 +96,10 @@ export default function InventoryPage() {
     setDeletingHerbId(null)
     
     if (removeError) {
-      setError(removeError)
+      setMutationError(removeError)
     } else {
-      setInventory(prev => 
-        prev.map(item => {
-          if (item.herb.id === herbId) {
-            const newQuantity = item.quantity - 1
-            return newQuantity <= 0 ? null : { ...item, quantity: newQuantity }
-          }
-          return item
-        }).filter((item): item is InventoryItem => item !== null)
-      )
+      // Invalidate cache to refetch updated data
+      invalidateInventory(profileId)
     }
   }
 
@@ -135,6 +109,7 @@ export default function InventoryPage() {
     setDeletingHerbId(herbId)
     setDeleteConfirmId(null)
     setDeleteAllConfirmId(null)
+    setMutationError(null)
     
     const { error: removeError } = await removeHerbsFromInventory(profileId, [
       { herbId, quantity }
@@ -143,15 +118,17 @@ export default function InventoryPage() {
     setDeletingHerbId(null)
     
     if (removeError) {
-      setError(removeError)
+      setMutationError(removeError)
     } else {
-      setInventory(prev => prev.filter(item => item.herb.id !== herbId))
+      invalidateInventory(profileId)
     }
   }
 
   // ============ Brewed Item Actions ============
 
   async function handleExpendBrewedItem(brewedId: number) {
+    if (!profileId) return
+    
     if (deleteBrewedConfirmId !== brewedId) {
       setDeleteBrewedConfirmId(brewedId)
       setDeleteAllBrewedConfirmId(null)
@@ -160,39 +137,35 @@ export default function InventoryPage() {
     
     setDeleteBrewedConfirmId(null)
     setDeletingBrewedId(brewedId)
+    setMutationError(null)
     
     const { error: removeError } = await removeBrewedItem(brewedId, 1)
     
     setDeletingBrewedId(null)
     
     if (removeError) {
-      setError(removeError)
+      setMutationError(removeError)
     } else {
-      setBrewedItems(prev => 
-        prev.map(item => {
-          if (item.id === brewedId) {
-            const newQuantity = item.quantity - 1
-            return newQuantity <= 0 ? null : { ...item, quantity: newQuantity }
-          }
-          return item
-        }).filter((item): item is BrewedItem => item !== null)
-      )
+      invalidateBrewedItems(profileId)
     }
   }
 
   async function handleExpendAllBrewedItem(brewedId: number, quantity: number) {
+    if (!profileId) return
+    
     setDeletingBrewedId(brewedId)
     setDeleteBrewedConfirmId(null)
     setDeleteAllBrewedConfirmId(null)
+    setMutationError(null)
     
     const { error: removeError } = await removeBrewedItem(brewedId, quantity)
     
     setDeletingBrewedId(null)
     
     if (removeError) {
-      setError(removeError)
+      setMutationError(removeError)
     } else {
-      setBrewedItems(prev => prev.filter(item => item.id !== brewedId))
+      invalidateBrewedItems(profileId)
     }
   }
 
@@ -320,9 +293,11 @@ export default function InventoryPage() {
 
   const totalHerbs = inventory.reduce((sum, item) => sum + item.quantity, 0)
   const uniqueHerbs = inventory.length
+  const isLoading = !profileLoaded || inventoryLoading || brewedLoading
+  const error = inventoryError?.message || brewedError?.message || mutationError
 
-  if (!profileLoaded || loading) {
-    return <LoadingState message="Loading inventory..." />
+  if (isLoading) {
+    return <InventorySkeleton />
   }
 
   return (

@@ -10,6 +10,8 @@ One-page cheat sheet for the herbalism-tool codebase.
 |------|---------|
 | `src/app/*/page.tsx` | All pages (routes) |
 | `src/components/` | Reusable React components |
+| `src/components/ui/` | Generic UI (Layout, Loading, Skeleton, PrefetchLink) |
+| `src/lib/hooks/` | **React Query hooks** (data fetching + caching) |
 | `src/lib/types.ts` | All TypeScript interfaces |
 | `src/lib/constants.ts` | Shared constants (elements, DCs, etc.) |
 | `src/lib/auth.tsx` | Auth context + provider |
@@ -100,11 +102,57 @@ const {
 
 ---
 
+## 📦 React Query Hooks
+
+```typescript
+import { 
+  // Data fetching
+  useInventory,
+  useBrewedItems,
+  useBiomes,
+  useUserRecipes,
+  useRecipeStats,
+  useCharacter,
+  useCharacterSkills,
+  useCharacterArmor,
+  useArmorSlots,
+  useSkills,
+  
+  // Cache management
+  useInvalidateQueries,
+  usePrefetch,
+} from '@/lib/hooks'
+
+// Usage
+const { data: inventory, isLoading, error } = useInventory(profileId)
+
+// After mutations
+const { invalidateInventory } = useInvalidateQueries()
+await addHerbsToInventory(profileId, herbs)
+invalidateInventory(profileId)
+
+// Prefetching
+const { prefetchInventory } = usePrefetch()
+prefetchInventory(profileId) // Call on hover
+```
+
+---
+
 ## 📦 Component Imports
 
 ```typescript
 // UI components
-import { PageLayout, LoadingState, ErrorDisplay } from '@/components/ui'
+import { 
+  PageLayout, 
+  LoadingState, 
+  ErrorDisplay,
+  PrefetchLink,           // Smart link with prefetching
+  InventorySkeleton,      // Page skeletons
+  ForageSkeleton,
+  BrewSkeleton,
+  RecipesSkeleton,
+  ProfileSkeleton,
+} from '@/components/ui'
 
 // Element display
 import { ElementBadge, ElementList } from '@/components/elements'
@@ -134,21 +182,43 @@ if (error) {
 // Use data
 ```
 
-### Page Structure
+### Page Structure (with React Query)
 
 ```tsx
 'use client'
+import { useInventory } from '@/lib/hooks'
+import { InventorySkeleton } from '@/components/ui'
+
 export default function Page() {
   const { profileId, isLoaded } = useProfile()
-  const [loading, setLoading] = useState(true)
+  const { data: inventory, isLoading } = useInventory(profileId)
   
-  useEffect(() => {
-    if (profileId) loadData()
-  }, [profileId])
-  
-  if (!isLoaded || loading) return <LoadingState />
+  if (!isLoaded || isLoading) return <InventorySkeleton />
   
   return <PageLayout>{/* content */}</PageLayout>
+}
+```
+
+### PrefetchLink Usage
+
+```tsx
+<PrefetchLink 
+  href="/inventory" 
+  prefetch="inventory"  // Type: 'inventory' | 'forage' | 'brew' | 'recipes' | 'profile'
+  profileId={profileId}
+>
+  View Inventory
+</PrefetchLink>
+```
+
+### Invalidate After Mutation
+
+```tsx
+const { invalidateInventory } = useInvalidateQueries()
+
+async function handleAdd() {
+  await addHerbsToInventory(profileId, herbs)
+  invalidateInventory(profileId)  // Refresh cache
 }
 ```
 
@@ -187,6 +257,15 @@ npm run lint     # Check for errors
 1. Create `src/app/{route}/page.tsx`
 2. Add `'use client'`
 3. Use `<PageLayout>`
+4. Use React Query hooks for data
+5. Add skeleton loading state
+
+**New Data Hook:**
+1. Add fetcher to `fetchers` object in `queries.ts`
+2. Add query key to `queryKeys`
+3. Create `useXxx` hook
+4. (Optional) Add prefetch function
+5. (Optional) Add skeleton in `Skeleton.tsx`
 
 **New Constant:**
 1. Add to `src/lib/constants.ts`
@@ -196,4 +275,6 @@ npm run lint     # Check for errors
 ---
 
 *Print this and pin it next to your monitor!*
+
+*Last updated: December 2024*
 

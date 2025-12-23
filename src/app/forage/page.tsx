@@ -11,11 +11,12 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useProfile } from '@/lib/profile'
+import { useBiomes, useInvalidateQueries } from '@/lib/hooks'
 import { rollD20, rollHerbQuantity, weightedRandomSelect } from '@/lib/dice'
 import { Biome, Herb, BiomeHerb, SessionResult, ForageState } from '@/lib/types'
 import { addHerbsToInventory, removeHerbsFromInventory } from '@/lib/inventory'
 import { FORAGING_DC, getElementSymbol } from '@/lib/constants'
-import { PageLayout, LoadingState, ErrorDisplay } from '@/components/ui'
+import { PageLayout, LoadingState, ErrorDisplay, ForageSkeleton } from '@/components/ui'
 
 // ============ Types ============
 
@@ -36,11 +37,13 @@ export default function ForagePage() {
     spendForagingSessions, 
     longRest 
   } = useProfile()
+  const { invalidateInventory } = useInvalidateQueries()
   
-  // Data state
-  const [biomes, setBiomes] = useState<Biome[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // React Query handles biome data fetching and caching
+  const { data: biomes = [], isLoading: biomesLoading, error: biomesError } = useBiomes()
+  
+  // Local error state for mutations
+  const [mutationError, setMutationError] = useState<string | null>(null)
   
   // Foraging state
   const [biomeAllocations, setBiomeAllocations] = useState<Record<number, number>>({})
@@ -56,26 +59,7 @@ export default function ForagePage() {
   const foragingMod = profile.foragingModifier
   const totalAllocated = Object.values(biomeAllocations).reduce((sum, n) => sum + n, 0)
   const canAllocateMore = totalAllocated < sessionsRemaining
-
-  // Load biomes
-  useEffect(() => {
-    async function fetchBiomes() {
-      const { data, error: fetchError } = await supabase
-        .from('biomes')
-        .select('*')
-        .order('name')
-      
-      if (fetchError) {
-        setError(`Failed to load biomes: ${fetchError.message}`)
-        setLoading(false)
-        return
-      }
-      
-      setBiomes(data || [])
-      setLoading(false)
-    }
-    fetchBiomes()
-  }, [])
+  const error = biomesError?.message || mutationError
 
   // Reset allocations if sessions remaining decreases
   useEffect(() => {
@@ -114,7 +98,7 @@ export default function ForagePage() {
   async function startForaging() {
     if (totalAllocated < 1 || totalAllocated > sessionsRemaining) return
 
-    setError(null)
+    setMutationError(null)
     setState({ phase: 'rolling', totalSessions: totalAllocated, currentSession: 1 })
 
     const results: SessionResult[] = []
@@ -133,7 +117,7 @@ export default function ForagePage() {
         .eq('biome_id', biomeId)
 
       if (herbError) {
-        setError(`Failed to load herbs for ${biome.name}: ${herbError.message}`)
+        setMutationError(`Failed to load herbs for ${biome.name}: ${herbError.message}`)
         setState({ phase: 'setup' })
         return
       }
@@ -200,7 +184,10 @@ export default function ForagePage() {
     if (herbInstances.length > 0 && profileId) {
       const { error: addError } = await addHerbsToInventory(profileId, allHerbs)
       if (addError) {
-        setError(`Herbs found but failed to add to inventory: ${addError}`)
+        setMutationError(`Herbs found but failed to add to inventory: ${addError}`)
+      } else {
+        // Invalidate inventory cache so it's fresh when user visits inventory page
+        invalidateInventory(profileId)
       }
     }
 
@@ -209,7 +196,7 @@ export default function ForagePage() {
 
   function reset() {
     setBiomeAllocations({})
-    setError(null)
+    setMutationError(null)
     setForagedHerbs([])
     setState({ phase: 'setup' })
   }
@@ -229,11 +216,12 @@ export default function ForagePage() {
     setRemovingHerb(null)
 
     if (removeError) {
-      setError(removeError)
+      setMutationError(removeError)
     } else {
       setForagedHerbs(prev => 
         prev.map(h => h.instanceId === instanceId ? { ...h, removed: true } : h)
       )
+      invalidateInventory(profileId)
     }
   }
 
@@ -259,9 +247,10 @@ export default function ForagePage() {
     setRemovingAll(false)
 
     if (removeError) {
-      setError(removeError)
+      setMutationError(removeError)
     } else {
       setForagedHerbs(prev => prev.map(h => ({ ...h, removed: true })))
+      invalidateInventory(profileId)
     }
   }
 
@@ -269,8 +258,8 @@ export default function ForagePage() {
   const remainingHerbs = foragedHerbs.filter(h => !h.removed)
   const removedCount = foragedHerbs.filter(h => h.removed).length
 
-  if (loading || !profileLoaded) {
-    return <LoadingState />
+  if (biomesLoading || !profileLoaded) {
+    return <ForageSkeleton />
   }
 
   return (
@@ -282,7 +271,7 @@ export default function ForagePage() {
         </p>
       )}
 
-      {error && <ErrorDisplay message={error} onDismiss={() => setError(null)} className="mb-6" />}
+      {error && <ErrorDisplay message={error} onDismiss={() => setMutationError(null)} className="mb-6" />}
 
       {/* Setup Phase */}
       {state.phase === 'setup' && (

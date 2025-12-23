@@ -2,15 +2,16 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { useProfile } from '@/lib/profile'
 import { useAuth } from '@/lib/auth'
-import { LoadingState } from '@/components/ui'
+import { usePrefetch } from '@/lib/hooks'
+import { LoadingState, PrefetchLink } from '@/components/ui'
 
 export default function Home() {
-  const { profile, isLoaded } = useProfile()
+  const { profile, profileId, isLoaded } = useProfile()
   const { user, isLoading: authLoading, signOut } = useAuth()
   const router = useRouter()
+  const { prefetchForage, prefetchInventory, prefetchRecipes } = usePrefetch()
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -18,6 +19,23 @@ export default function Home() {
       router.push('/login')
     }
   }, [authLoading, user, router])
+
+  // Prefetch common data once profile is loaded
+  // This makes subsequent navigation instant
+  useEffect(() => {
+    if (isLoaded && profileId) {
+      // Prefetch static data (biomes) immediately
+      prefetchForage()
+      
+      // Prefetch user data after a short delay (lower priority)
+      const timer = setTimeout(() => {
+        prefetchInventory(profileId)
+        prefetchRecipes(profileId)
+      }, 1000)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [isLoaded, profileId, prefetchForage, prefetchInventory, prefetchRecipes])
 
   // Show loading while checking auth
   if (authLoading || !user) {
@@ -34,8 +52,10 @@ export default function Home() {
           </div>
           
           <div className="flex gap-2 items-center">
-            <Link
+            <PrefetchLink
               href="/profile"
+              prefetch="profile"
+              userId={user.id}
               className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg px-4 py-2 text-sm transition-colors"
             >
               {isLoaded && profile.name ? (
@@ -43,7 +63,7 @@ export default function Home() {
               ) : (
                 <span>👤 Profile</span>
               )}
-            </Link>
+            </PrefetchLink>
             
             <button
               onClick={signOut}
@@ -85,50 +105,64 @@ export default function Home() {
         )}
 
         <div className="grid gap-4">
-          <Link
+          <PrefetchLink
             href="/forage"
+            prefetch="forage"
             className="block bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 hover:border-green-600 rounded-lg p-6 transition-colors"
           >
             <h2 className="text-xl font-semibold text-green-400 mb-2">🔍 Forage</h2>
             <p className="text-zinc-400">
               Search a biome for herbs. Roll your foraging check and discover what you find.
             </p>
-          </Link>
+          </PrefetchLink>
 
-          <Link
+          <PrefetchLink
             href="/inventory"
+            prefetch="inventory"
+            profileId={profileId}
             className="block bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 hover:border-blue-600 rounded-lg p-6 transition-colors"
           >
             <h2 className="text-xl font-semibold text-blue-400 mb-2">🎒 Inventory</h2>
             <p className="text-zinc-400">
               View your collected herbs and crafted items.
             </p>
-          </Link>
+          </PrefetchLink>
 
-          <Link
-            href="/brew"
-            className={`block bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 hover:border-purple-600 rounded-lg p-6 transition-colors ${
-              !profile.isHerbalist ? 'opacity-50 pointer-events-none' : ''
-            }`}
-          >
-            <h2 className="text-xl font-semibold text-purple-400 mb-2">⚗️ Brew</h2>
-            <p className="text-zinc-400">
-              Combine herbs to create elixirs and bombs.
-            </p>
-            {!profile.isHerbalist && isLoaded && (
-              <span className="text-xs text-zinc-500 mt-2 inline-block">Herbalists only</span>
-            )}
-          </Link>
+          {profile.isHerbalist ? (
+            <PrefetchLink
+              href="/brew"
+              prefetch="brew"
+              profileId={profileId}
+              className="block bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 hover:border-purple-600 rounded-lg p-6 transition-colors"
+            >
+              <h2 className="text-xl font-semibold text-purple-400 mb-2">⚗️ Brew</h2>
+              <p className="text-zinc-400">
+                Combine herbs to create elixirs and bombs.
+              </p>
+            </PrefetchLink>
+          ) : (
+            <div className="block bg-zinc-800 border border-zinc-700 rounded-lg p-6 opacity-50 cursor-not-allowed">
+              <h2 className="text-xl font-semibold text-purple-400 mb-2">⚗️ Brew</h2>
+              <p className="text-zinc-400">
+                Combine herbs to create elixirs and bombs.
+              </p>
+              {isLoaded && (
+                <span className="text-xs text-zinc-500 mt-2 inline-block">Herbalists only</span>
+              )}
+            </div>
+          )}
 
-          <Link
+          <PrefetchLink
             href="/recipes"
+            prefetch="recipes"
+            profileId={profileId}
             className="block bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 hover:border-amber-600 rounded-lg p-6 transition-colors"
           >
             <h2 className="text-xl font-semibold text-amber-400 mb-2">📖 Recipes</h2>
             <p className="text-zinc-400">
               View known recipes and unlock new ones.
             </p>
-          </Link>
+          </PrefetchLink>
         </div>
       </div>
     </div>

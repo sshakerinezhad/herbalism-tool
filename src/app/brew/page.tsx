@@ -12,9 +12,9 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useProfile } from '@/lib/profile'
-import { getInventory, InventoryItem, removeHerbsFromInventory } from '@/lib/inventory'
+import { useInventory, useUserRecipesForBrewing, useInvalidateQueries, InventoryItem } from '@/lib/hooks'
+import { removeHerbsFromInventory } from '@/lib/inventory'
 import { 
-  fetchUserRecipes,
   findRecipeForPair,
   canCombineEffects,
   parseTemplateVariables,
@@ -25,7 +25,7 @@ import {
 import { Recipe } from '@/lib/types'
 import { rollD20 } from '@/lib/dice'
 import { BREWING_DC, MAX_HERBS_PER_BREW, getElementSymbol } from '@/lib/constants'
-import { PageLayout, LoadingState, ErrorDisplay } from '@/components/ui'
+import { PageLayout, LoadingState, ErrorDisplay, BrewSkeleton } from '@/components/ui'
 import { 
   HerbSelector, 
   SelectedHerbsSummary,
@@ -65,12 +65,23 @@ type BrewPhase =
 
 export default function BrewPage() {
   const { profile, profileId, isLoaded: profileLoaded } = useProfile()
+  const { invalidateInventory, invalidateBrewedItems } = useInvalidateQueries()
   
-  // Data state
-  const [inventory, setInventory] = useState<InventoryItem[]>([])
-  const [recipes, setRecipes] = useState<Recipe[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // React Query handles data fetching and caching
+  const { 
+    data: inventory = [], 
+    isLoading: inventoryLoading, 
+    error: inventoryError 
+  } = useInventory(profileId)
+  
+  const { 
+    data: recipes = [], 
+    isLoading: recipesLoading, 
+    error: recipesError 
+  } = useUserRecipesForBrewing(profileId)
+  
+  // Local error state for mutations
+  const [mutationError, setMutationError] = useState<string | null>(null)
   
   // Mode and phase
   const [brewMode, setBrewMode] = useState<BrewMode>('by-herbs')
@@ -82,27 +93,10 @@ export default function BrewPage() {
   const [choices, setChoices] = useState<Record<string, string>>({})
   const [selectedRecipes, setSelectedRecipes] = useState<SelectedRecipe[]>([])
   const [batchCount, setBatchCount] = useState(1)
-
-  // Load data
-  useEffect(() => {
-    async function loadData() {
-      if (!profileLoaded || !profileId) return
-
-      const [invResult, recResult] = await Promise.all([
-        getInventory(profileId),
-        fetchUserRecipes(profileId)
-      ])
-      
-      if (invResult.error) setError(invResult.error)
-      else setInventory(invResult.items)
-      
-      if (recResult.error) setError(recResult.error)
-      else setRecipes(recResult.recipes)
-      
-      setLoading(false)
-    }
-    loadData()
-  }, [profileLoaded, profileId])
+  
+  // Derived loading and error state
+  const loading = !profileLoaded || inventoryLoading || recipesLoading
+  const error = inventoryError?.message || recipesError?.message || mutationError
 
   // ============ Computed Values ============
 
@@ -353,7 +347,11 @@ export default function BrewPage() {
     if (success) {
       const effectNames = pairedEffects.flatMap(e => Array(e.count).fill(e.recipe.name))
       await saveBrewedItem(profileId, type, effectNames, Object.keys(choices).length > 0 ? choices : null, description)
+      // Invalidate brewed items cache so inventory page shows the new item
+      invalidateBrewedItems(profileId)
     }
+    // Invalidate inventory cache since herbs were consumed
+    invalidateInventory(profileId)
 
     setPhase({ phase: 'result', success, roll, total, type, description, selectedHerbs })
   }
@@ -364,12 +362,12 @@ export default function BrewPage() {
     setChoices({})
     setSelectedRecipes([])
     setBatchCount(1)
+    setMutationError(null)
     setPhase(brewMode === 'by-herbs' ? { phase: 'select-herbs' } : { phase: 'select-recipes' })
     
+    // Invalidate inventory cache to get fresh data after brewing used herbs
     if (profileId) {
-      getInventory(profileId).then(result => {
-        if (!result.error) setInventory(result.items)
-      })
+      invalidateInventory(profileId)
     }
   }
   
@@ -462,7 +460,9 @@ export default function BrewPage() {
       if (success) {
         const effectNames = effects.flatMap(e => Array(e.count).fill(e.recipe.name))
         await saveBrewedItem(profileId, type, effectNames, Object.keys(choicesData).length > 0 ? choicesData : null, description)
+        invalidateBrewedItems(profileId)
       }
+      invalidateInventory(profileId)
 
       setPhase({ phase: 'result', success, roll, total, type, description, selectedHerbs })
       return
@@ -485,6 +485,12 @@ export default function BrewPage() {
         await saveBrewedItem(profileId, type, effectNames, Object.keys(choicesData).length > 0 ? choicesData : null, description)
       }
     }
+
+    // Invalidate caches after batch brewing
+    if (successCount > 0) {
+      invalidateBrewedItems(profileId)
+    }
+    invalidateInventory(profileId)
 
     setPhase({ phase: 'batch-result', results, type, description, successCount })
   }
@@ -511,7 +517,7 @@ export default function BrewPage() {
   }
 
   if (!profileLoaded || loading) {
-    return <LoadingState />
+    return <BrewSkeleton />
   }
 
   return (

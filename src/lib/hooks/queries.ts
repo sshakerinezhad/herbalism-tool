@@ -1,0 +1,418 @@
+/**
+ * React Query Hooks
+ * 
+ * Centralized data fetching with automatic caching, deduplication,
+ * and smart refetching. These hooks replace manual useEffect + useState
+ * patterns throughout the app.
+ * 
+ * Usage:
+ *   const { data, isLoading, error } = useInventory(profileId)
+ * 
+ * Benefits:
+ *   - No refetch on tab switch (configurable)
+ *   - Automatic caching across components
+ *   - Request deduplication
+ *   - Built-in loading/error states
+ */
+
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { supabase } from '../supabase'
+import { getInventory, InventoryItem } from '../inventory'
+import { getBrewedItems, fetchUserRecipes } from '../brewing'
+import { getUserRecipes, getRecipeStats, UserRecipe } from '../recipes'
+import { 
+  fetchCharacter, 
+  fetchCharacterSkills, 
+  fetchCharacterArmor, 
+  fetchArmorSlots,
+  fetchSkills,
+} from '../db/characters'
+import type { Biome, Skill, ArmorSlot, ArmorType } from '../types'
+
+// ============ Query Keys ============
+// Centralized query keys for consistency and easy invalidation
+
+export const queryKeys = {
+  // Herbalism
+  inventory: (profileId: string) => ['inventory', profileId] as const,
+  brewedItems: (profileId: string) => ['brewedItems', profileId] as const,
+  userRecipes: (profileId: string) => ['userRecipes', profileId] as const,
+  recipeStats: (profileId: string) => ['recipeStats', profileId] as const,
+  biomes: ['biomes'] as const,
+  
+  // Character
+  character: (userId: string) => ['character', userId] as const,
+  characterSkills: (characterId: string) => ['characterSkills', characterId] as const,
+  characterArmor: (characterId: string) => ['characterArmor', characterId] as const,
+  
+  // Reference data (static, rarely changes)
+  armorSlots: ['armorSlots'] as const,
+  skills: ['skills'] as const,
+}
+
+// ============ Query Fetchers ============
+// Shared fetcher functions used by both hooks and prefetch
+// This avoids duplication and ensures consistency
+
+const fetchers = {
+  inventory: async (profileId: string) => {
+    const result = await getInventory(profileId)
+    if (result.error) throw new Error(result.error)
+    return result.items
+  },
+  
+  brewedItems: async (profileId: string) => {
+    const result = await getBrewedItems(profileId)
+    if (result.error) throw new Error(result.error)
+    return result.items
+  },
+  
+  userRecipesForBrewing: async (profileId: string) => {
+    const result = await fetchUserRecipes(profileId)
+    if (result.error) throw new Error(result.error)
+    return result.recipes
+  },
+  
+  userRecipesFull: async (profileId: string) => {
+    const result = await getUserRecipes(profileId)
+    if (result.error) throw new Error(result.error)
+    return result.recipes
+  },
+  
+  recipeStats: async (profileId: string) => {
+    const result = await getRecipeStats(profileId)
+    if (result.error) throw new Error(result.error)
+    return {
+      known: result.known,
+      totalBase: result.totalBase,
+      secretsUnlocked: result.secretsUnlocked,
+    }
+  },
+  
+  biomes: async () => {
+    const { data, error } = await supabase
+      .from('biomes')
+      .select('*')
+      .order('name')
+    if (error) throw new Error(`Failed to load biomes: ${error.message}`)
+    return (data || []) as Biome[]
+  },
+  
+  character: async (userId: string) => {
+    const result = await fetchCharacter(userId)
+    if (result.error) throw new Error(result.error)
+    return result.data
+  },
+  
+  characterSkills: async (characterId: string) => {
+    const result = await fetchCharacterSkills(characterId)
+    if (result.error) throw new Error(result.error)
+    return result.data || []
+  },
+  
+  characterArmor: async (characterId: string) => {
+    const result = await fetchCharacterArmor(characterId)
+    if (result.error) throw new Error(result.error)
+    return result.data || []
+  },
+  
+  armorSlots: async () => {
+    const result = await fetchArmorSlots()
+    if (result.error) throw new Error(result.error)
+    return result.data || []
+  },
+  
+  skills: async () => {
+    const result = await fetchSkills()
+    if (result.error) throw new Error(result.error)
+    return result.data || []
+  },
+}
+
+// ============ Inventory Hooks ============
+
+/**
+ * Fetch user's herb inventory
+ */
+export function useInventory(profileId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.inventory(profileId ?? ''),
+    queryFn: () => fetchers.inventory(profileId!),
+    enabled: !!profileId,
+  })
+}
+
+/**
+ * Fetch user's brewed items (elixirs, bombs, oils)
+ */
+export function useBrewedItems(profileId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.brewedItems(profileId ?? ''),
+    queryFn: () => fetchers.brewedItems(profileId!),
+    enabled: !!profileId,
+  })
+}
+
+// ============ Recipe Hooks ============
+
+/**
+ * Fetch recipes known by the user (for brewing)
+ */
+export function useUserRecipesForBrewing(profileId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.userRecipes(profileId ?? ''),
+    queryFn: () => fetchers.userRecipesForBrewing(profileId!),
+    enabled: !!profileId,
+  })
+}
+
+/**
+ * Fetch recipes for the recipe book page (includes userRecipeId)
+ */
+export function useUserRecipes(profileId: string | null) {
+  return useQuery({
+    queryKey: [...queryKeys.userRecipes(profileId ?? ''), 'full'] as const,
+    queryFn: () => fetchers.userRecipesFull(profileId!),
+    enabled: !!profileId,
+  })
+}
+
+/**
+ * Fetch recipe statistics (known count, secrets unlocked)
+ */
+export function useRecipeStats(profileId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.recipeStats(profileId ?? ''),
+    queryFn: () => fetchers.recipeStats(profileId!),
+    enabled: !!profileId,
+  })
+}
+
+// ============ Biome Hooks ============
+
+/**
+ * Fetch all biomes (static reference data)
+ */
+export function useBiomes() {
+  return useQuery({
+    queryKey: queryKeys.biomes,
+    queryFn: fetchers.biomes,
+    // Biomes are static reference data - cache for longer
+    staleTime: 30 * 60 * 1000, // 30 minutes
+  })
+}
+
+// ============ Character Hooks ============
+
+/**
+ * Fetch the user's character
+ */
+export function useCharacter(userId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.character(userId ?? ''),
+    queryFn: () => fetchers.character(userId!),
+    enabled: !!userId,
+  })
+}
+
+/**
+ * Fetch character's skill proficiencies
+ */
+export function useCharacterSkills(characterId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.characterSkills(characterId ?? ''),
+    queryFn: () => fetchers.characterSkills(characterId!),
+    enabled: !!characterId,
+  })
+}
+
+/**
+ * Fetch character's equipped armor
+ */
+export function useCharacterArmor(characterId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.characterArmor(characterId ?? ''),
+    queryFn: () => fetchers.characterArmor(characterId!),
+    enabled: !!characterId,
+  })
+}
+
+// ============ Reference Data Hooks ============
+
+/**
+ * Fetch all armor slots (static reference data)
+ */
+export function useArmorSlots() {
+  return useQuery({
+    queryKey: queryKeys.armorSlots,
+    queryFn: fetchers.armorSlots,
+    // Static reference data - cache indefinitely
+    staleTime: Infinity,
+  })
+}
+
+/**
+ * Fetch all skills (static reference data)
+ */
+export function useSkills() {
+  return useQuery({
+    queryKey: queryKeys.skills,
+    queryFn: fetchers.skills,
+    // Static reference data - cache indefinitely
+    staleTime: Infinity,
+  })
+}
+
+// ============ Cache Invalidation Helpers ============
+
+/**
+ * Hook to get cache invalidation functions
+ * Use after mutations to refresh relevant data
+ */
+export function useInvalidateQueries() {
+  const queryClient = useQueryClient()
+  
+  return {
+    /** Invalidate inventory after adding/removing herbs */
+    invalidateInventory: (profileId: string) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory(profileId) })
+    },
+    
+    /** Invalidate brewed items after brewing */
+    invalidateBrewedItems: (profileId: string) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.brewedItems(profileId) })
+    },
+    
+    /** Invalidate recipes after unlocking a new recipe */
+    invalidateRecipes: (profileId: string) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.userRecipes(profileId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.recipeStats(profileId) })
+    },
+    
+    /** Invalidate character data after updates */
+    invalidateCharacter: (userId: string) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.character(userId) })
+    },
+    
+    /** Invalidate character armor after equipping/removing */
+    invalidateCharacterArmor: (characterId: string) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.characterArmor(characterId) })
+    },
+    
+    /** Invalidate all user-specific data (e.g., on logout) */
+    invalidateAllUserData: () => {
+      queryClient.invalidateQueries({ queryKey: ['inventory'] })
+      queryClient.invalidateQueries({ queryKey: ['brewedItems'] })
+      queryClient.invalidateQueries({ queryKey: ['userRecipes'] })
+      queryClient.invalidateQueries({ queryKey: ['recipeStats'] })
+      queryClient.invalidateQueries({ queryKey: ['character'] })
+      queryClient.invalidateQueries({ queryKey: ['characterSkills'] })
+      queryClient.invalidateQueries({ queryKey: ['characterArmor'] })
+    },
+  }
+}
+
+// ============ Prefetching ============
+
+/**
+ * Hook to get prefetch functions for each page
+ * Call these on link hover to preload data before navigation
+ */
+export function usePrefetch() {
+  const queryClient = useQueryClient()
+  
+  return {
+    /** Prefetch inventory page data */
+    prefetchInventory: (profileId: string | null) => {
+      if (!profileId) return
+      
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.inventory(profileId),
+        queryFn: () => fetchers.inventory(profileId),
+      })
+      
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.brewedItems(profileId),
+        queryFn: () => fetchers.brewedItems(profileId),
+      })
+    },
+    
+    /** Prefetch forage page data */
+    prefetchForage: () => {
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.biomes,
+        queryFn: fetchers.biomes,
+      })
+    },
+    
+    /** Prefetch brew page data */
+    prefetchBrew: (profileId: string | null) => {
+      if (!profileId) return
+      
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.inventory(profileId),
+        queryFn: () => fetchers.inventory(profileId),
+      })
+      
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.userRecipes(profileId),
+        queryFn: () => fetchers.userRecipesForBrewing(profileId),
+      })
+    },
+    
+    /** Prefetch recipes page data */
+    prefetchRecipes: (profileId: string | null) => {
+      if (!profileId) return
+      
+      queryClient.prefetchQuery({
+        queryKey: [...queryKeys.userRecipes(profileId), 'full'],
+        queryFn: () => fetchers.userRecipesFull(profileId),
+      })
+      
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.recipeStats(profileId),
+        queryFn: () => fetchers.recipeStats(profileId),
+      })
+    },
+    
+    /** Prefetch profile page data */
+    prefetchProfile: (userId: string | null) => {
+      if (!userId) return
+      
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.character(userId),
+        queryFn: () => fetchers.character(userId),
+      })
+      
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.armorSlots,
+        queryFn: fetchers.armorSlots,
+      })
+    },
+  }
+}
+
+// ============ Type Exports ============
+
+export type { InventoryItem } from '../inventory'
+export type { UserRecipe } from '../recipes'
+
+// Re-export for convenience
+export type CharacterSkillData = {
+  skill: Skill
+  is_proficient: boolean
+  is_expertise: boolean
+}
+
+export type CharacterArmorData = {
+  id: string
+  slot_id: number
+  armor_type: ArmorType
+  custom_name: string | null
+  material: string | null
+  is_magical: boolean
+  properties: Record<string, unknown> | null
+  notes: string | null
+  slot: ArmorSlot
+}
+

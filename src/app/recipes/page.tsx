@@ -7,14 +7,13 @@
  * Allows unlocking secret recipes with codes.
  */
 
-import { useEffect, useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useProfile } from '@/lib/profile'
-import { getUserRecipes, unlockRecipeWithCode, getRecipeStats, UserRecipe } from '@/lib/recipes'
+import { useUserRecipes, useRecipeStats, useInvalidateQueries } from '@/lib/hooks'
+import { unlockRecipeWithCode } from '@/lib/recipes'
 import { Recipe } from '@/lib/types'
 import { getElementSymbol } from '@/lib/constants'
-import { PageLayout } from '@/components/ui'
-import { LoadingState } from '@/components/ui'
-import { ErrorDisplay } from '@/components/ui'
+import { PageLayout, ErrorDisplay, RecipesSkeleton } from '@/components/ui'
 import { RecipeCard } from '@/components/recipes'
 
 type ViewTab = 'elixir' | 'bomb' | 'oil'
@@ -47,9 +46,21 @@ const TYPE_DESCRIPTIONS: Record<ViewTab, { icon: string; text: string; className
 
 export default function RecipesPage() {
   const { profileId, isLoaded: profileLoaded } = useProfile()
-  const [recipes, setRecipes] = useState<UserRecipe[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { invalidateRecipes } = useInvalidateQueries()
+  
+  // React Query handles data fetching and caching
+  const { 
+    data: recipes = [], 
+    isLoading: recipesLoading, 
+    error: recipesError 
+  } = useUserRecipes(profileId)
+  
+  const { 
+    data: stats, 
+    isLoading: statsLoading, 
+    error: statsError 
+  } = useRecipeStats(profileId)
+  
   const [viewTab, setViewTab] = useState<ViewTab>('elixir')
   
   // Unlock modal state
@@ -62,42 +73,9 @@ export default function RecipesPage() {
     recipe?: Recipe
   } | null>(null)
   
-  // Recipe stats
-  const [stats, setStats] = useState<{
-    known: number
-    totalBase: number
-    secretsUnlocked: number
-  } | null>(null)
-
-  // Load recipes and stats
-  useEffect(() => {
-    async function loadData() {
-      if (!profileLoaded || !profileId) return
-
-      const [recipesResult, statsResult] = await Promise.all([
-        getUserRecipes(profileId),
-        getRecipeStats(profileId)
-      ])
-
-      if (recipesResult.error) {
-        setError(recipesResult.error)
-      } else {
-        setRecipes(recipesResult.recipes)
-      }
-
-      if (!statsResult.error) {
-        setStats({
-          known: statsResult.known,
-          totalBase: statsResult.totalBase,
-          secretsUnlocked: statsResult.secretsUnlocked,
-        })
-      }
-
-      setLoading(false)
-    }
-
-    loadData()
-  }, [profileLoaded, profileId])
+  // Derived loading and error state
+  const loading = !profileLoaded || recipesLoading || statsLoading
+  const error = recipesError?.message || statsError?.message
 
   // Group recipes by type
   const recipesByType = useMemo(() => ({
@@ -124,20 +102,8 @@ export default function RecipesPage() {
         recipe: result.recipe,
       })
       
-      // Reload recipes and stats
-      const [recipesResult, statsResult] = await Promise.all([
-        getUserRecipes(profileId),
-        getRecipeStats(profileId)
-      ])
-      
-      if (!recipesResult.error) setRecipes(recipesResult.recipes)
-      if (!statsResult.error) {
-        setStats({
-          known: statsResult.known,
-          totalBase: statsResult.totalBase,
-          secretsUnlocked: statsResult.secretsUnlocked,
-        })
-      }
+      // Invalidate recipes cache to show the new recipe
+      invalidateRecipes(profileId)
     } else {
       setUnlockResult({
         success: false,
@@ -155,7 +121,7 @@ export default function RecipesPage() {
   }
 
   if (!profileLoaded || loading) {
-    return <LoadingState message="Loading recipes..." />
+    return <RecipesSkeleton />
   }
 
   return (

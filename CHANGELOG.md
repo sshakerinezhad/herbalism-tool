@@ -20,6 +20,12 @@ All notable changes to the herbalism-tool project.
   - Lock/unlock editing mode
   - AC and armor level display
   - Strength requirement validation
+- **CoinPurse component** (`src/components/character/CoinPurse.tsx`):
+  - Coin management with ±1/±10/±100 increment controls
+  - Lock/unlock editing mode (matches ArmorDiagram pattern)
+  - Optimistic updates with error rollback
+  - Metallic gradient styling per coin type (platinum, gold, silver, copper)
+  - Config-driven for easy extension
 - Comprehensive documentation suite:
   - `README.md` - Complete project overview and quick start
   - `docs/ARCHITECTURE.md` - Technical deep-dive
@@ -179,8 +185,8 @@ Complete codebase cleanup for scalability and maintainability.
 
 | Version | Date | Summary |
 |---------|------|---------|
-| 1.1.0 | 2024-12-22 | Major refactor, documentation |
-| 1.0.0 | 2024-12 | Initial release |
+| 1.1.0 | 2025-12-22 | Major refactor, documentation |
+| 1.0.0 | 2025-12 | Initial release |
 
 ---
 

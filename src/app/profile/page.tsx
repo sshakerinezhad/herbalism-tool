@@ -30,6 +30,7 @@ import {
   setCharacterArmor,
   removeCharacterArmor,
 } from '@/lib/db/characters'
+import { CoinPurse } from '@/components/character'
 import { 
   RACES, 
   HUMAN_CULTURES, 
@@ -108,7 +109,7 @@ export default function ProfilePage() {
   const { profile, updateProfile, isLoaded, loadError, sessionsUsedToday, longRest } = useProfile()
   const { user, isLoading: authLoading, signOut } = useAuth()
   const router = useRouter()
-  const { invalidateCharacterArmor } = useInvalidateQueries()
+  const { invalidateCharacterArmor, invalidateCharacter } = useInvalidateQueries()
 
   // React Query handles character data fetching and caching
   const { 
@@ -173,6 +174,7 @@ export default function ProfilePage() {
         characterArmor={characterArmor}
         allArmorSlots={allArmorSlots}
         onArmorChanged={() => character && invalidateCharacterArmor(character.id)}
+        onMoneyChanged={() => user && invalidateCharacter(user.id)}
         user={user}
         onSignOut={signOut}
         // Herbalism props (only relevant if character is an herbalist)
@@ -266,6 +268,7 @@ function CharacterView({
   characterArmor,
   allArmorSlots,
   onArmorChanged,
+  onMoneyChanged,
   user,
   onSignOut,
   profile,
@@ -280,6 +283,7 @@ function CharacterView({
   characterArmor: CharacterArmorData[]
   allArmorSlots: ArmorSlot[]
   onArmorChanged: () => void
+  onMoneyChanged: () => void
   user: { email?: string }
   onSignOut: () => void
   profile: { 
@@ -429,24 +433,16 @@ function CharacterView({
         {/* Money Card */}
         <div className="bg-zinc-800 rounded-lg p-5 border border-zinc-700">
           <h2 className="text-sm font-medium text-zinc-400 mb-4 uppercase tracking-wide">Coin Purse</h2>
-          <div className="flex gap-4 text-center">
-            <div className="flex-1">
-              <div className="text-2xl font-bold text-amber-300">{character.platinum}</div>
-              <div className="text-xs text-zinc-500">Platinum</div>
-            </div>
-            <div className="flex-1">
-              <div className="text-2xl font-bold text-yellow-400">{character.gold}</div>
-              <div className="text-xs text-zinc-500">Gold</div>
-            </div>
-            <div className="flex-1">
-              <div className="text-2xl font-bold text-zinc-300">{character.silver}</div>
-              <div className="text-xs text-zinc-500">Silver</div>
-            </div>
-            <div className="flex-1">
-              <div className="text-2xl font-bold text-amber-600">{character.copper}</div>
-              <div className="text-xs text-zinc-500">Copper</div>
-            </div>
-          </div>
+          <CoinPurse
+            characterId={character.id}
+            coins={{
+              platinum: character.platinum,
+              gold: character.gold,
+              silver: character.silver,
+              copper: character.copper,
+            }}
+            onUpdate={onMoneyChanged}
+          />
         </div>
       </div>
 

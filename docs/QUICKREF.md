@@ -168,6 +168,7 @@ import { RecipeCard } from '@/components/recipes'
 
 // Character
 import { ArmorDiagram } from '@/components/ArmorDiagram'
+import { CoinPurse } from '@/components/character'
 ```
 
 ---
@@ -279,5 +280,5 @@ npm run lint     # Check for errors
 
 *Print this and pin it next to your monitor!*
 
-*Last updated: December 2024*
+*Last updated: December 2025*
 

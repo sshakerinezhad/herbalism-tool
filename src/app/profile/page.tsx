@@ -21,6 +21,11 @@ import {
   useCharacterSkills, 
   useCharacterArmor, 
   useArmorSlots,
+  useCharacterWeaponSlots,
+  useCharacterQuickSlots,
+  useCharacterWeapons,
+  useCharacterItems,
+  useBrewedItems,
   useInvalidateQueries,
   CharacterSkillData,
   CharacterArmorData,
@@ -30,7 +35,7 @@ import {
   setCharacterArmor,
   removeCharacterArmor,
 } from '@/lib/db/characters'
-import { CoinPurse } from '@/components/character'
+import { CoinPurse, WeaponSlots, QuickSlots } from '@/components/character'
 import { 
   RACES, 
   HUMAN_CULTURES, 
@@ -42,7 +47,7 @@ import {
   getAbilityModifier,
   calculateMaxHP,
 } from '@/lib/constants'
-import type { Character, ArmorSlot, ArmorType } from '@/lib/types'
+import type { Character, ArmorSlot, ArmorType, BrewedItem } from '@/lib/types'
 import { ArmorDiagram } from '@/components/ArmorDiagram'
 
 // Types imported from @/lib/hooks:
@@ -109,7 +114,7 @@ export default function ProfilePage() {
   const { profile, updateProfile, isLoaded, loadError, sessionsUsedToday, longRest } = useProfile()
   const { user, isLoading: authLoading, signOut } = useAuth()
   const router = useRouter()
-  const { invalidateCharacterArmor, invalidateCharacter } = useInvalidateQueries()
+  const { invalidateCharacterArmor, invalidateCharacter, invalidateWeaponSlots, invalidateQuickSlots } = useInvalidateQueries()
 
   // React Query handles character data fetching and caching
   const { 
@@ -132,6 +137,32 @@ export default function ProfilePage() {
     data: allArmorSlots = [], 
     isLoading: slotsLoading 
   } = useArmorSlots()
+  
+  const { 
+    data: weaponSlots = [], 
+    isLoading: weaponSlotsLoading 
+  } = useCharacterWeaponSlots(character?.id ?? null)
+  
+  const { 
+    data: quickSlots = [], 
+    isLoading: quickSlotsLoading 
+  } = useCharacterQuickSlots(character?.id ?? null)
+  
+  const { 
+    data: weapons = [], 
+    isLoading: weaponsLoading 
+  } = useCharacterWeapons(character?.id ?? null)
+  
+  const { 
+    data: items = [], 
+    isLoading: itemsLoading 
+  } = useCharacterItems(character?.id ?? null)
+  
+  // Brewed items (elixirs, bombs) - for quick slots
+  const { 
+    data: brewedItems = [], 
+    isLoading: brewedLoading 
+  } = useBrewedItems(user?.id ?? null)
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -141,7 +172,10 @@ export default function ProfilePage() {
   }, [authLoading, user, router])
   
   // Derived loading state
-  const loadingCharacter = characterLoading || (character && (skillsLoading || armorLoading || slotsLoading))
+  const loadingCharacter = characterLoading || (character && (
+    skillsLoading || armorLoading || slotsLoading || 
+    weaponSlotsLoading || quickSlotsLoading || weaponsLoading || itemsLoading || brewedLoading
+  ))
 
   // Show loading while checking auth
   if (authLoading || !user) {
@@ -173,8 +207,15 @@ export default function ProfilePage() {
         characterSkills={characterSkills}
         characterArmor={characterArmor}
         allArmorSlots={allArmorSlots}
+        weaponSlots={weaponSlots}
+        quickSlots={quickSlots}
+        weapons={weapons}
+        items={items}
+        brewedItems={brewedItems}
         onArmorChanged={() => character && invalidateCharacterArmor(character.id)}
         onMoneyChanged={() => user && invalidateCharacter(user.id)}
+        onWeaponSlotsChanged={() => character && invalidateWeaponSlots(character.id)}
+        onQuickSlotsChanged={() => character && invalidateQuickSlots(character.id)}
         user={user}
         onSignOut={signOut}
         // Herbalism props (only relevant if character is an herbalist)
@@ -267,8 +308,15 @@ function CharacterView({
   characterSkills,
   characterArmor,
   allArmorSlots,
+  weaponSlots,
+  quickSlots,
+  weapons,
+  items,
+  brewedItems,
   onArmorChanged,
   onMoneyChanged,
+  onWeaponSlotsChanged,
+  onQuickSlotsChanged,
   user,
   onSignOut,
   profile,
@@ -282,8 +330,15 @@ function CharacterView({
   characterSkills: CharacterSkillData[]
   characterArmor: CharacterArmorData[]
   allArmorSlots: ArmorSlot[]
+  weaponSlots: import('@/lib/types').CharacterWeaponSlot[]
+  quickSlots: import('@/lib/types').CharacterQuickSlot[]
+  weapons: import('@/lib/types').CharacterWeapon[]
+  items: import('@/lib/types').CharacterItem[]
+  brewedItems: BrewedItem[]
   onArmorChanged: () => void
   onMoneyChanged: () => void
+  onWeaponSlotsChanged: () => void
+  onQuickSlotsChanged: () => void
   user: { email?: string }
   onSignOut: () => void
   profile: { 
@@ -457,6 +512,27 @@ function CharacterView({
           totalAC={totalAC}
           armorLevel={armorLevel}
           strengthScore={character.str}
+        />
+      </div>
+
+      {/* Weapon Slots */}
+      <div className="mt-6">
+        <WeaponSlots
+          characterId={character.id}
+          weaponSlots={weaponSlots}
+          weapons={weapons}
+          onUpdate={onWeaponSlotsChanged}
+        />
+      </div>
+
+      {/* Quick Slots */}
+      <div className="mt-6">
+        <QuickSlots
+          characterId={character.id}
+          quickSlots={quickSlots}
+          items={items}
+          brewedItems={brewedItems}
+          onUpdate={onQuickSlotsChanged}
         />
       </div>
 

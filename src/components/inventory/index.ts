@@ -3,6 +3,6 @@
  */
 
 export { HerbRow } from './HerbRow'
-export { BrewedItemCard } from './BrewedItemCard'
+export { BrewedItemCard, formatBrewedEffects } from './BrewedItemCard'
 export { ElementSummary } from './ElementSummary'
 

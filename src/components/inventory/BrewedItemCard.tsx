@@ -3,15 +3,7 @@
  */
 
 import { fillTemplate } from '@/lib/brewing'
-
-type BrewedItem = {
-  id: number
-  type: string
-  effects: string[] | string
-  quantity: number
-  computedDescription?: string
-  choices?: Record<string, string>
-}
+import type { BrewedItem } from '@/lib/types'
 
 type BrewedItemCardProps = {
   item: BrewedItem
@@ -66,7 +58,7 @@ function getBrewedPotency(effects: string[] | string): number {
 /**
  * Format brewed effects nicely: "Healing Elixir x3 + Fire Bomb x2"
  */
-function formatBrewedEffects(effects: string[] | string): string {
+export function formatBrewedEffects(effects: string[] | string): string {
   let effectsArray: string[]
   
   if (Array.isArray(effects)) {

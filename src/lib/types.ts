@@ -198,7 +198,35 @@ export type CharacterWeapon = {
   attachments: Record<string, unknown> | null
   is_magical: boolean
   is_equipped: boolean
+  is_two_handed: boolean
   notes: string | null
+}
+
+/** Hand type for weapon slots */
+export type WeaponHand = 'right' | 'left'
+
+/** A weapon slot (3 per hand, Elden Ring style) */
+export type CharacterWeaponSlot = {
+  id: string
+  character_id: string
+  hand: WeaponHand
+  slot_number: WeaponSlotNumber
+  weapon_id: string | null
+  is_active: boolean
+  selected_ammo_id: string | null
+  // Joined data
+  weapon?: CharacterWeapon | null
+  selected_ammo?: CharacterItem | null
+}
+
+/** A quick slot for combat items */
+export type CharacterQuickSlot = {
+  id: string
+  character_id: string
+  slot_number: QuickSlotNumber
+  item_id: string | null
+  // Joined data
+  item?: CharacterItem | null
 }
 
 /** A general inventory item */
@@ -210,8 +238,31 @@ export type CharacterItem = {
   quantity: number
   properties: Record<string, unknown> | null
   is_quick_access: boolean
+  ammo_type: string | null  // For ammo items: 'arrow', 'bolt', etc.
   notes: string | null
 }
+
+// ============ Slot Number Types ============
+
+/** Valid weapon slot numbers (3 per hand) */
+export type WeaponSlotNumber = 1 | 2 | 3
+
+/** Valid quick slot numbers (6 total) */
+export type QuickSlotNumber = 1 | 2 | 3 | 4 | 5 | 6
+
+// ============ Brewed Items ============
+
+/** A brewed item (elixir, bomb, oil) from the herbalism system */
+export type BrewedItem = {
+  id: number
+  type: string
+  effects: string[] | string  // Can be array or JSON string from DB
+  quantity: number
+  computedDescription?: string
+  choices?: Record<string, string>
+}
+
+// ============ Character ============
 
 /** Full character data from database */
 export type Character = {
@@ -270,6 +321,8 @@ export type CharacterWithRelations = Character & {
   armor: Array<CharacterArmorPiece & { slot: ArmorSlot }>
   weapons: CharacterWeapon[]
   items: CharacterItem[]
+  weapon_slots: CharacterWeaponSlot[]
+  quick_slots: CharacterQuickSlot[]
 }
 
 /** Data needed for character creation (subset of Character) */

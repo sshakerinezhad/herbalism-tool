@@ -18,7 +18,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { updateCharacterMoney } from '@/lib/db/characters'
 
 // ============ Types ============
@@ -95,13 +95,18 @@ const INCREMENTS = [1, 10, 100] as const
 
 export function CoinPurse({ 
   characterId, 
-  coins: initialCoins, 
+  coins: propCoins, 
   onUpdate,
   disabled = false,
 }: CoinPurseProps) {
-  const [coins, setCoins] = useState<Coins>(initialCoins)
+  const [coins, setCoins] = useState<Coins>(propCoins)
   const [error, setError] = useState<string | null>(null)
   const [locked, setLocked] = useState(true)
+
+  // Sync local state with prop changes (e.g., after cache invalidation refetch)
+  useEffect(() => {
+    setCoins(propCoins)
+  }, [propCoins.platinum, propCoins.gold, propCoins.silver, propCoins.copper])
 
   /**
    * Handle increment/decrement with optimistic update pattern:

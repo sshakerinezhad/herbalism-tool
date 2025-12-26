@@ -13,6 +13,13 @@ import type {
   ArmorSlot,
   CharacterStats,
   ArmorType,
+  CharacterWeapon,
+  CharacterWeaponSlot,
+  CharacterQuickSlot,
+  CharacterItem,
+  WeaponHand,
+  WeaponSlotNumber,
+  QuickSlotNumber,
 } from '../types'
 import { calculateMaxHP, calculateMaxHitDice } from '../constants'
 
@@ -508,5 +515,229 @@ export async function fetchCharacterSkills(characterId: string): Promise<{
   }))
 
   return { data: transformed, error: null }
+}
+
+// ============ Weapon Slot Operations ============
+
+/**
+ * Fetch all weapon slots for a character (with joined weapon data)
+ */
+export async function fetchCharacterWeaponSlots(characterId: string): Promise<{
+  data: CharacterWeaponSlot[] | null
+  error: string | null
+}> {
+  const { data, error } = await supabase
+    .from('character_weapon_slots')
+    .select(`
+      id,
+      character_id,
+      hand,
+      slot_number,
+      weapon_id,
+      is_active,
+      selected_ammo_id,
+      character_weapons (*),
+      character_items (*)
+    `)
+    .eq('character_id', characterId)
+    .order('hand')
+    .order('slot_number')
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  const transformed = (data || []).map(row => ({
+    id: row.id,
+    character_id: row.character_id,
+    hand: row.hand as WeaponHand,
+    slot_number: row.slot_number as 1 | 2 | 3,
+    weapon_id: row.weapon_id,
+    is_active: row.is_active,
+    selected_ammo_id: row.selected_ammo_id,
+    weapon: row.character_weapons as CharacterWeapon | null,
+    selected_ammo: row.character_items as CharacterItem | null,
+  }))
+
+  return { data: transformed, error: null }
+}
+
+/**
+ * Equip a weapon to a slot
+ */
+export async function equipWeaponToSlot(
+  characterId: string,
+  hand: WeaponHand,
+  slotNumber: WeaponSlotNumber,
+  weaponId: string | null
+): Promise<{ error: string | null }> {
+  const { error } = await supabase
+    .from('character_weapon_slots')
+    .update({ weapon_id: weaponId })
+    .eq('character_id', characterId)
+    .eq('hand', hand)
+    .eq('slot_number', slotNumber)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  return { error: null }
+}
+
+/**
+ * Set the active weapon slot for a hand
+ */
+export async function setActiveWeaponSlot(
+  characterId: string,
+  hand: WeaponHand,
+  slotNumber: WeaponSlotNumber
+): Promise<{ error: string | null }> {
+  // First, deactivate all slots for this hand
+  const { error: deactivateError } = await supabase
+    .from('character_weapon_slots')
+    .update({ is_active: false })
+    .eq('character_id', characterId)
+    .eq('hand', hand)
+
+  if (deactivateError) {
+    return { error: deactivateError.message }
+  }
+
+  // Then activate the selected slot
+  const { error: activateError } = await supabase
+    .from('character_weapon_slots')
+    .update({ is_active: true })
+    .eq('character_id', characterId)
+    .eq('hand', hand)
+    .eq('slot_number', slotNumber)
+
+  if (activateError) {
+    return { error: activateError.message }
+  }
+
+  return { error: null }
+}
+
+/**
+ * Set selected ammo for a weapon slot (for ranged weapons)
+ */
+export async function setWeaponSlotAmmo(
+  characterId: string,
+  hand: WeaponHand,
+  slotNumber: WeaponSlotNumber,
+  ammoItemId: string | null
+): Promise<{ error: string | null }> {
+  const { error } = await supabase
+    .from('character_weapon_slots')
+    .update({ selected_ammo_id: ammoItemId })
+    .eq('character_id', characterId)
+    .eq('hand', hand)
+    .eq('slot_number', slotNumber)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  return { error: null }
+}
+
+// ============ Quick Slot Operations ============
+
+/**
+ * Fetch all quick slots for a character (with joined item data)
+ */
+export async function fetchCharacterQuickSlots(characterId: string): Promise<{
+  data: CharacterQuickSlot[] | null
+  error: string | null
+}> {
+  const { data, error } = await supabase
+    .from('character_quick_slots')
+    .select(`
+      id,
+      character_id,
+      slot_number,
+      item_id,
+      character_items (*)
+    `)
+    .eq('character_id', characterId)
+    .order('slot_number')
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  const transformed = (data || []).map(row => ({
+    id: row.id,
+    character_id: row.character_id,
+    slot_number: row.slot_number as 1 | 2 | 3 | 4 | 5 | 6,
+    item_id: row.item_id,
+    item: row.character_items as CharacterItem | null,
+  }))
+
+  return { data: transformed, error: null }
+}
+
+/**
+ * Assign an item to a quick slot
+ */
+export async function setQuickSlotItem(
+  characterId: string,
+  slotNumber: QuickSlotNumber,
+  itemId: string | null
+): Promise<{ error: string | null }> {
+  const { error } = await supabase
+    .from('character_quick_slots')
+    .update({ item_id: itemId })
+    .eq('character_id', characterId)
+    .eq('slot_number', slotNumber)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  return { error: null }
+}
+
+// ============ Weapon Inventory Operations ============
+
+/**
+ * Fetch all weapons owned by a character
+ */
+export async function fetchCharacterWeapons(characterId: string): Promise<{
+  data: CharacterWeapon[] | null
+  error: string | null
+}> {
+  const { data, error } = await supabase
+    .from('character_weapons')
+    .select('*')
+    .eq('character_id', characterId)
+    .order('name')
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  return { data: data as CharacterWeapon[], error: null }
+}
+
+/**
+ * Fetch all items owned by a character
+ */
+export async function fetchCharacterItems(characterId: string): Promise<{
+  data: CharacterItem[] | null
+  error: string | null
+}> {
+  const { data, error } = await supabase
+    .from('character_items')
+    .select('*')
+    .eq('character_id', characterId)
+    .order('name')
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  return { data: data as CharacterItem[], error: null }
 }
 

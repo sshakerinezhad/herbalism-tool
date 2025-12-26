@@ -124,7 +124,7 @@ export default function Home() {
           >
             <h2 className="text-xl font-semibold text-blue-400 mb-2">🎒 Inventory</h2>
             <p className="text-zinc-400">
-              View your collected herbs and crafted items.
+              All your possessions: weapons, items, herbs, and brewed goods.
             </p>
           </PrefetchLink>
 
@@ -163,6 +163,7 @@ export default function Home() {
               View known recipes and unlock new ones.
             </p>
           </PrefetchLink>
+
         </div>
       </div>
     </div>

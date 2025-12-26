@@ -4,11 +4,11 @@
  * Shows herb name, elements, quantity, and delete controls.
  */
 
-import { InventoryItem } from '@/lib/inventory'
+import type { CharacterHerb } from '@/lib/types'
 import { getElementSymbol } from '@/lib/constants'
 
 type HerbRowProps = {
-  item: InventoryItem
+  item: CharacterHerb
   index: number
   colors: {
     row1: string
@@ -35,6 +35,10 @@ export function HerbRow({
   onCancelConfirm,
   onShowDeleteAll,
 }: HerbRowProps) {
+  if (!item.herb) return null
+  
+  const elements = item.herb.elements || []
+  
   return (
     <div
       className={`flex items-center justify-between py-2 px-3 group ${
@@ -47,7 +51,7 @@ export function HerbRow({
         
         {/* Element symbols after name */}
         <span className="text-lg flex-shrink-0">
-          {item.herb.elements.map((el, i) => (
+          {elements.map((el, i) => (
             <span key={i} title={el}>{getElementSymbol(el)}</span>
           ))}
         </span>
@@ -120,4 +124,3 @@ export function HerbRow({
     </div>
   )
 }
-

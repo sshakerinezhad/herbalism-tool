@@ -112,6 +112,64 @@ export type Vocation = 'alchemist' | 'blacksmith' | 'herbalist' | 'priest' | 'ru
 /** Armor weight categories */
 export type ArmorType = 'light' | 'medium' | 'heavy'
 
+/** Weapon categories */
+export type WeaponCategory = 'simple_melee' | 'simple_ranged' | 'martial_melee' | 'martial_ranged'
+
+/** Damage types */
+export type DamageType = 
+  | 'slashing' | 'piercing' | 'bludgeoning'
+  | 'fire' | 'cold' | 'lightning' | 'acid' | 'poison'
+  | 'necrotic' | 'radiant' | 'force' | 'psychic' | 'thunder'
+
+/** Weapon properties */
+export type WeaponProperty = 
+  | 'light' | 'finesse' | 'heavy' | 'reach' | 'thrown' 
+  | 'two-handed' | 'versatile' | 'ammunition' | 'loading' | 'special'
+
+// ============ Reference Tables (Shared, Read-Only) ============
+
+/** Material definition from materials reference table */
+export type Material = {
+  id: number
+  name: string
+  tier: number
+  damage_bonus: number
+  attack_bonus: number
+  ac_bonus: number
+  properties: Record<string, unknown>
+  description: string | null
+  cost_multiplier: number
+}
+
+/** Weapon template from weapon_templates reference table */
+export type WeaponTemplate = {
+  id: number
+  name: string
+  category: WeaponCategory
+  damage_dice: string
+  damage_type: DamageType
+  versatile_dice: string | null
+  properties: WeaponProperty[]
+  range_normal: number | null
+  range_long: number | null
+  weight_lb: number | null
+  base_cost_gp: number | null
+  description: string | null
+}
+
+/** Item template from item_templates reference table */
+export type ItemTemplate = {
+  id: number
+  name: string
+  category: string
+  uses: number | null
+  ammo_type: string | null
+  base_cost_gp: number | null
+  weight_lb: number | null
+  effects: Record<string, unknown>
+  description: string | null
+}
+
 /** Race options */
 export type Race = 
   | 'human'
@@ -200,6 +258,12 @@ export type CharacterWeapon = {
   is_equipped: boolean
   is_two_handed: boolean
   notes: string | null
+  // Template references (new architecture)
+  template_id: number | null
+  material_id: number | null
+  // Joined data
+  template?: WeaponTemplate | null
+  material_ref?: Material | null
 }
 
 /** Hand type for weapon slots */
@@ -225,8 +289,10 @@ export type CharacterQuickSlot = {
   character_id: string
   slot_number: QuickSlotNumber
   item_id: string | null
+  brewed_item_id: number | null  // References character_brewed.id (mapped from character_brewed_id)
   // Joined data
   item?: CharacterItem | null
+  brewed_item?: CharacterBrewedItem | null
 }
 
 /** A general inventory item */
@@ -240,6 +306,10 @@ export type CharacterItem = {
   is_quick_access: boolean
   ammo_type: string | null  // For ammo items: 'arrow', 'bolt', etc.
   notes: string | null
+  // Template reference (new architecture)
+  template_id: number | null
+  // Joined data
+  template?: ItemTemplate | null
 }
 
 // ============ Slot Number Types ============
@@ -253,7 +323,8 @@ export type QuickSlotNumber = 1 | 2 | 3 | 4 | 5 | 6
 // ============ Brewed Items ============
 
 /** A brewed item (elixir, bomb, oil) from the herbalism system */
-export type BrewedItem = {
+/** Legacy brewed item (from user_brewed) - DEPRECATED */
+export type LegacyBrewedItem = {
   id: number
   type: string
   effects: string[] | string  // Can be array or JSON string from DB
@@ -261,6 +332,39 @@ export type BrewedItem = {
   computedDescription?: string
   choices?: Record<string, string>
 }
+
+/** Character's brewed item (from character_brewed) */
+export type CharacterBrewedItem = {
+  id: number
+  character_id: string
+  type: 'elixir' | 'bomb' | 'oil'
+  effects: string[]  // Always array in new table (JSONB)
+  choices: Record<string, string>
+  computed_description: string | null
+  quantity: number
+  created_at: string
+  updated_at: string
+}
+
+/** Character's herb inventory item (from character_herbs) */
+export type CharacterHerb = {
+  id: number
+  character_id: string
+  herb_id: number
+  quantity: number
+  herb?: Herb  // Joined from herbs table
+}
+
+/** Character's known recipe (from character_recipes) */
+export type CharacterRecipe = {
+  id: number
+  character_id: string
+  recipe_id: number
+  unlocked_at: string
+}
+
+// Re-export for backward compatibility during migration
+export type BrewedItem = LegacyBrewedItem
 
 // ============ Character ============
 

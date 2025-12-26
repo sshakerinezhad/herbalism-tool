@@ -141,8 +141,8 @@ export function getElementColors(element: string) {
  * @param elements - Array of element names
  * @returns The primary element, or the first element if tied, or null if empty
  */
-export function getPrimaryElement(elements: string[]): string | null {
-  if (elements.length === 0) return null
+export function getPrimaryElement(elements: string[] | undefined | null): string | null {
+  if (!elements || elements.length === 0) return null
   
   const counts = new Map<string, number>()
   for (const el of elements) {

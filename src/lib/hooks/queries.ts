@@ -30,7 +30,16 @@ import {
   fetchCharacterQuickSlots,
   fetchCharacterWeapons,
   fetchCharacterItems,
+  fetchWeaponTemplates,
+  fetchMaterials,
+  fetchItemTemplates,
 } from '../db/characters'
+
+import {
+  fetchCharacterHerbs,
+  fetchCharacterBrewedItems,
+  fetchCharacterRecipes,
+} from '../db/characterInventory'
 import type { Biome, Skill, ArmorSlot, ArmorType, CharacterWeaponSlot, CharacterQuickSlot, CharacterWeapon, CharacterItem } from '../types'
 
 // ============ Query Keys ============
@@ -56,6 +65,14 @@ export const queryKeys = {
   // Reference data (static, rarely changes)
   armorSlots: ['armorSlots'] as const,
   skills: ['skills'] as const,
+  weaponTemplates: ['weaponTemplates'] as const,
+  materials: ['materials'] as const,
+  itemTemplates: ['itemTemplates'] as const,
+  
+  // Character-based inventory (new clean system)
+  characterHerbs: (characterId: string) => ['characterHerbs', characterId] as const,
+  characterBrewedItems: (characterId: string) => ['characterBrewedItems', characterId] as const,
+  characterRecipesNew: (characterId: string) => ['characterRecipesNew', characterId] as const,
 }
 
 // ============ Query Fetchers ============
@@ -132,6 +149,43 @@ const fetchers = {
   
   skills: async () => {
     const result = await fetchSkills()
+    if (result.error) throw new Error(result.error)
+    return result.data || []
+  },
+  
+  weaponTemplates: async () => {
+    const result = await fetchWeaponTemplates()
+    if (result.error) throw new Error(result.error)
+    return result.data || []
+  },
+  
+  materials: async () => {
+    const result = await fetchMaterials()
+    if (result.error) throw new Error(result.error)
+    return result.data || []
+  },
+  
+  itemTemplates: async () => {
+    const result = await fetchItemTemplates()
+    if (result.error) throw new Error(result.error)
+    return result.data || []
+  },
+  
+  // Character-based inventory (new clean system)
+  characterHerbs: async (characterId: string) => {
+    const result = await fetchCharacterHerbs(characterId)
+    if (result.error) throw new Error(result.error)
+    return result.data || []
+  },
+  
+  characterBrewedItems: async (characterId: string) => {
+    const result = await fetchCharacterBrewedItems(characterId)
+    if (result.error) throw new Error(result.error)
+    return result.data || []
+  },
+  
+  characterRecipesNew: async (characterId: string) => {
+    const result = await fetchCharacterRecipes(characterId)
     if (result.error) throw new Error(result.error)
     return result.data || []
   },
@@ -295,6 +349,74 @@ export function useSkills() {
   })
 }
 
+/**
+ * Fetch all weapon templates (static reference data)
+ */
+export function useWeaponTemplates() {
+  return useQuery({
+    queryKey: queryKeys.weaponTemplates,
+    queryFn: fetchers.weaponTemplates,
+    staleTime: Infinity,
+  })
+}
+
+/**
+ * Fetch all materials (static reference data)
+ */
+export function useMaterials() {
+  return useQuery({
+    queryKey: queryKeys.materials,
+    queryFn: fetchers.materials,
+    staleTime: Infinity,
+  })
+}
+
+/**
+ * Fetch all item templates (static reference data)
+ */
+export function useItemTemplates() {
+  return useQuery({
+    queryKey: queryKeys.itemTemplates,
+    queryFn: fetchers.itemTemplates,
+    staleTime: Infinity,
+  })
+}
+
+// ============ Character-Based Inventory (New Clean System) ============
+
+/**
+ * Fetch character's herb inventory
+ */
+export function useCharacterHerbs(characterId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.characterHerbs(characterId ?? ''),
+    queryFn: () => fetchers.characterHerbs(characterId!),
+    enabled: !!characterId,
+  })
+}
+
+/**
+ * Fetch character's brewed items
+ */
+export function useCharacterBrewedItems(characterId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.characterBrewedItems(characterId ?? ''),
+    queryFn: () => fetchers.characterBrewedItems(characterId!),
+    enabled: !!characterId,
+  })
+}
+
+/**
+ * Fetch character's known recipes
+ */
+export function useCharacterRecipesNew(characterId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.characterRecipesNew(characterId ?? ''),
+    queryFn: () => fetchers.characterRecipesNew(characterId!),
+    enabled: !!characterId,
+  })
+}
+
 // ============ Equipment Hooks ============
 
 /**
@@ -395,6 +517,21 @@ export function useInvalidateQueries() {
     /** Invalidate character items after adding/removing */
     invalidateCharacterItems: (characterId: string) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.characterItems(characterId) })
+    },
+    
+    /** Invalidate character herbs (new system) */
+    invalidateCharacterHerbs: (characterId: string) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.characterHerbs(characterId) })
+    },
+    
+    /** Invalidate character brewed items (new system) */
+    invalidateCharacterBrewedItems: (characterId: string) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.characterBrewedItems(characterId) })
+    },
+    
+    /** Invalidate character recipes (new system) */
+    invalidateCharacterRecipesNew: (characterId: string) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.characterRecipesNew(characterId) })
     },
     
     /** Invalidate all user-specific data (e.g., on logout) */
@@ -500,12 +637,22 @@ export type { InventoryItem } from '../inventory'
 export type { UserRecipe } from '../recipes'
 export type { 
   BrewedItem,
+  LegacyBrewedItem,
+  CharacterBrewedItem,
+  CharacterHerb,
+  CharacterRecipe,
   WeaponSlotNumber,
   QuickSlotNumber,
   CharacterWeaponSlot,
   CharacterQuickSlot,
   CharacterWeapon,
   CharacterItem,
+  WeaponTemplate,
+  Material,
+  ItemTemplate,
+  WeaponCategory,
+  DamageType,
+  WeaponProperty,
 } from '../types'
 
 // Re-export for convenience

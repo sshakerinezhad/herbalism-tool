@@ -856,6 +856,44 @@ npm run lint     # Run ESLint
 
 ---
 
+## Supabase CLI
+
+This project includes the Supabase CLI for database management. See `docs/SUPABASE-CLI.md` for full documentation.
+
+### Quick Setup
+
+1. Generate an access token at https://supabase.com/dashboard/account/tokens
+2. Add to `.env.local`: `SUPABASE_ACCESS_TOKEN=sbp_your_token_here`
+3. Link the project: `npx supabase link --project-ref cliiijgqzwkiknukfgqc`
+
+### Database Commands
+
+```bash
+npm run db:status   # Show database info
+npm run db:pull     # Pull remote schema to migrations
+npm run db:push     # Push migrations to remote
+npm run db:diff     # Generate migration from changes
+npm run db:types    # Generate TypeScript types
+npm run supabase    # Run any supabase command
+```
+
+### Generated Types
+
+Run `npm run db:types` to generate `src/lib/database.types.ts` with full TypeScript types for all tables.
+
+### For AI Agents
+
+Agents can query the database directly:
+
+```bash
+npx supabase db execute --sql "SELECT * FROM profiles LIMIT 5"
+npx supabase inspect db table-stats
+```
+
+See `docs/SUPABASE-CLI.md` for complete documentation including troubleshooting.
+
+---
+
 ## Contact & History
 
 **Original Development:** Built as a D&D homebrew companion tool.

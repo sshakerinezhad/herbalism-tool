@@ -25,7 +25,7 @@ import {
   useCharacterQuickSlots,
   useCharacterWeapons,
   useCharacterItems,
-  useBrewedItems,
+  useCharacterBrewedItems,
   useInvalidateQueries,
   CharacterSkillData,
   CharacterArmorData,
@@ -162,7 +162,7 @@ export default function ProfilePage() {
   const { 
     data: brewedItems = [], 
     isLoading: brewedLoading 
-  } = useBrewedItems(user?.id ?? null)
+  } = useCharacterBrewedItems(character?.id ?? null)
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -334,7 +334,7 @@ function CharacterView({
   quickSlots: import('@/lib/types').CharacterQuickSlot[]
   weapons: import('@/lib/types').CharacterWeapon[]
   items: import('@/lib/types').CharacterItem[]
-  brewedItems: BrewedItem[]
+  brewedItems: import('@/lib/types').CharacterBrewedItem[]
   onArmorChanged: () => void
   onMoneyChanged: () => void
   onWeaponSlotsChanged: () => void

@@ -19,4 +19,6 @@ export {
   ProfileSkeleton,
 } from './Skeleton'
 export { PrefetchLink } from '../PrefetchLink'
+export { ItemTooltip } from './ItemTooltip'
+export type { ItemDetails, ItemTooltipProps } from './ItemTooltip'
 

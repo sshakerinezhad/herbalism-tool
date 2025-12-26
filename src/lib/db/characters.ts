@@ -20,6 +20,9 @@ import type {
   WeaponHand,
   WeaponSlotNumber,
   QuickSlotNumber,
+  WeaponTemplate,
+  Material,
+  ItemTemplate,
 } from '../types'
 import { calculateMaxHP, calculateMaxHitDice } from '../constants'
 
@@ -456,6 +459,7 @@ export async function addCharacterWeapon(
     damageType?: string
     properties?: Record<string, unknown>
     isMagical?: boolean
+    isTwoHanded?: boolean
     isEquipped?: boolean
     notes?: string
   }
@@ -471,6 +475,7 @@ export async function addCharacterWeapon(
       damage_type: weapon.damageType || null,
       properties: weapon.properties || null,
       is_magical: weapon.isMagical || false,
+      is_two_handed: weapon.isTwoHanded || false,
       is_equipped: weapon.isEquipped || false,
       notes: weapon.notes || null,
     })
@@ -645,7 +650,7 @@ export async function setWeaponSlotAmmo(
 // ============ Quick Slot Operations ============
 
 /**
- * Fetch all quick slots for a character (with joined item data)
+ * Fetch all quick slots for a character (with joined item and brewed item data)
  */
 export async function fetchCharacterQuickSlots(characterId: string): Promise<{
   data: CharacterQuickSlot[] | null
@@ -658,7 +663,9 @@ export async function fetchCharacterQuickSlots(characterId: string): Promise<{
       character_id,
       slot_number,
       item_id,
-      character_items (*)
+      character_brewed_id,
+      character_items (*),
+      character_brewed (*)
     `)
     .eq('character_id', characterId)
     .order('slot_number')
@@ -670,25 +677,38 @@ export async function fetchCharacterQuickSlots(characterId: string): Promise<{
   const transformed = (data || []).map(row => ({
     id: row.id,
     character_id: row.character_id,
-    slot_number: row.slot_number as 1 | 2 | 3 | 4 | 5 | 6,
+    slot_number: row.slot_number as QuickSlotNumber,
     item_id: row.item_id,
+    brewed_item_id: row.character_brewed_id, // Use new column but keep same field name for now
     item: row.character_items as CharacterItem | null,
+    brewed_item: row.character_brewed as unknown as import('../types').CharacterBrewedItem | null,
   }))
 
   return { data: transformed, error: null }
 }
 
 /**
- * Assign an item to a quick slot
+ * Assign an item to a quick slot (regular item or brewed item)
+ * Clears the other type when setting one (they're mutually exclusive)
  */
 export async function setQuickSlotItem(
   characterId: string,
   slotNumber: QuickSlotNumber,
-  itemId: string | null
+  itemId: string | null,
+  characterBrewedId: number | null = null
 ): Promise<{ error: string | null }> {
+  // If setting a regular item, clear character_brewed_id
+  // If setting a brewed item, clear item_id
+  // If clearing (both null), clear both
+  const updateData = {
+    item_id: characterBrewedId ? null : itemId,
+    brewed_item_id: null, // Legacy column, no longer used
+    character_brewed_id: itemId ? null : characterBrewedId,
+  }
+
   const { error } = await supabase
     .from('character_quick_slots')
-    .update({ item_id: itemId })
+    .update(updateData)
     .eq('character_id', characterId)
     .eq('slot_number', slotNumber)
 
@@ -699,15 +719,175 @@ export async function setQuickSlotItem(
   return { error: null }
 }
 
+/**
+ * Assign a brewed item to a quick slot
+ * Convenience wrapper around setQuickSlotItem
+ */
+export async function setQuickSlotBrewedItem(
+  characterId: string,
+  slotNumber: QuickSlotNumber,
+  brewedItemId: number | null
+): Promise<{ error: string | null }> {
+  return setQuickSlotItem(characterId, slotNumber, null, brewedItemId)
+}
+
+// ============ Custom Weapon/Item Creation (No Template) ============
+
+/**
+ * Add a fully custom weapon to a character (no template)
+ * For homebrew, magical, or unique weapons
+ */
+export async function addCustomWeapon(
+  characterId: string,
+  weaponData: {
+    name: string
+    damage_dice: string
+    damage_type: string
+    weapon_type: string
+    properties?: string[]
+    range_normal?: number
+    range_long?: number
+    is_two_handed?: boolean
+    is_magical?: boolean
+    notes?: string
+  }
+): Promise<{ data: CharacterWeapon | null; error: string | null }> {
+  const { data, error } = await supabase
+    .from('character_weapons')
+    .insert({
+      character_id: characterId,
+      template_id: null,  // No template - fully custom
+      material_id: null,
+      name: weaponData.name,
+      damage_dice: weaponData.damage_dice,
+      damage_type: weaponData.damage_type,
+      weapon_type: weaponData.weapon_type,
+      properties: weaponData.properties || [],
+      range_normal: weaponData.range_normal || null,
+      range_long: weaponData.range_long || null,
+      is_two_handed: weaponData.is_two_handed || false,
+      is_magical: weaponData.is_magical || false,
+      notes: weaponData.notes || null,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  return { data: data as CharacterWeapon, error: null }
+}
+
+/**
+ * Add a fully custom item to a character (no template)
+ * For homebrew, magical, or unique items
+ */
+export async function addCustomItem(
+  characterId: string,
+  itemData: {
+    name: string
+    category: string
+    quantity?: number
+    description?: string
+    ammo_type?: string
+  }
+): Promise<{ data: CharacterItem | null; error: string | null }> {
+  const { data, error } = await supabase
+    .from('character_items')
+    .insert({
+      character_id: characterId,
+      template_id: null,  // No template - fully custom
+      name: itemData.name,
+      category: itemData.category,
+      quantity: itemData.quantity || 1,
+      notes: itemData.description || null,
+      ammo_type: itemData.ammo_type || null,
+      is_quick_access: false,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  return { data: data as CharacterItem, error: null }
+}
+
+// ============ Reference Data ============
+
+/**
+ * Fetch all weapon templates (reference data)
+ */
+export async function fetchWeaponTemplates(): Promise<{
+  data: WeaponTemplate[] | null
+  error: string | null
+}> {
+  const { data, error } = await supabase
+    .from('weapon_templates')
+    .select('*')
+    .order('category')
+    .order('name')
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  return { data: data as WeaponTemplate[], error: null }
+}
+
+/**
+ * Fetch all materials (reference data)
+ */
+export async function fetchMaterials(): Promise<{
+  data: Material[] | null
+  error: string | null
+}> {
+  const { data, error } = await supabase
+    .from('materials')
+    .select('*')
+    .order('tier')
+    .order('name')
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  return { data: data as Material[], error: null }
+}
+
+/**
+ * Fetch all item templates (reference data)
+ */
+export async function fetchItemTemplates(): Promise<{
+  data: ItemTemplate[] | null
+  error: string | null
+}> {
+  const { data, error } = await supabase
+    .from('item_templates')
+    .select('*')
+    .order('category')
+    .order('name')
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  return { data: data as ItemTemplate[], error: null }
+}
+
 // ============ Weapon Inventory Operations ============
 
 /**
- * Fetch all weapons owned by a character
+ * Fetch all weapons owned by a character (with template and material data)
+ * Uses LEFT JOIN so weapons without templates still appear
  */
 export async function fetchCharacterWeapons(characterId: string): Promise<{
   data: CharacterWeapon[] | null
   error: string | null
 }> {
+  // Use separate queries to avoid join issues with nullable foreign keys
   const { data, error } = await supabase
     .from('character_weapons')
     .select('*')
@@ -718,11 +898,50 @@ export async function fetchCharacterWeapons(characterId: string): Promise<{
     return { data: null, error: error.message }
   }
 
-  return { data: data as CharacterWeapon[], error: null }
+  if (!data || data.length === 0) {
+    return { data: [], error: null }
+  }
+
+  // Fetch templates and materials for any weapons that have them
+  const templateIds = data.map(w => w.template_id).filter(Boolean)
+  const materialIds = data.map(w => w.material_id).filter(Boolean)
+
+  let templates: Record<number, WeaponTemplate> = {}
+  let mats: Record<number, Material> = {}
+
+  if (templateIds.length > 0) {
+    const { data: templatesData } = await supabase
+      .from('weapon_templates')
+      .select('*')
+      .in('id', templateIds)
+    if (templatesData) {
+      templates = Object.fromEntries(templatesData.map(t => [t.id, t]))
+    }
+  }
+
+  if (materialIds.length > 0) {
+    const { data: matsData } = await supabase
+      .from('materials')
+      .select('*')
+      .in('id', materialIds)
+    if (matsData) {
+      mats = Object.fromEntries(matsData.map(m => [m.id, m]))
+    }
+  }
+
+  // Transform with joined data
+  const transformed = data.map(row => ({
+    ...row,
+    template: row.template_id ? (templates[row.template_id] as WeaponTemplate || null) : null,
+    material_ref: row.material_id ? (mats[row.material_id] as Material || null) : null,
+  })) as CharacterWeapon[]
+
+  return { data: transformed, error: null }
 }
 
 /**
- * Fetch all items owned by a character
+ * Fetch all items owned by a character (with template data)
+ * Uses separate query to avoid join issues with nullable foreign keys
  */
 export async function fetchCharacterItems(characterId: string): Promise<{
   data: CharacterItem[] | null
@@ -738,6 +957,126 @@ export async function fetchCharacterItems(characterId: string): Promise<{
     return { data: null, error: error.message }
   }
 
-  return { data: data as CharacterItem[], error: null }
+  if (!data || data.length === 0) {
+    return { data: [], error: null }
+  }
+
+  // Fetch templates for any items that have them
+  const templateIds = data.map(i => i.template_id).filter(Boolean)
+
+  let templates: Record<number, ItemTemplate> = {}
+
+  if (templateIds.length > 0) {
+    const { data: templatesData } = await supabase
+      .from('item_templates')
+      .select('*')
+      .in('id', templateIds)
+    if (templatesData) {
+      templates = Object.fromEntries(templatesData.map(t => [t.id, t]))
+    }
+  }
+
+  // Transform with joined data
+  const transformed = data.map(row => ({
+    ...row,
+    template: row.template_id ? (templates[row.template_id] as ItemTemplate || null) : null,
+  })) as CharacterItem[]
+
+  return { data: transformed, error: null }
+}
+
+// ============ Add Weapons/Items from Templates ============
+
+/**
+ * Add a weapon to a character from a template
+ */
+export async function addWeaponFromTemplate(
+  characterId: string,
+  templateId: number,
+  materialId: number,
+  options?: {
+    customName?: string
+    isMagical?: boolean
+    notes?: string
+  }
+): Promise<{ data: CharacterWeapon | null; error: string | null }> {
+  // Get template for default values
+  const { data: template } = await supabase
+    .from('weapon_templates')
+    .select('*')
+    .eq('id', templateId)
+    .single()
+
+  if (!template) {
+    return { data: null, error: 'Template not found' }
+  }
+
+  const { data, error } = await supabase
+    .from('character_weapons')
+    .insert({
+      character_id: characterId,
+      template_id: templateId,
+      material_id: materialId,
+      name: options?.customName || template.name,
+      weapon_type: template.category,
+      damage_dice: template.damage_dice,
+      damage_type: template.damage_type,
+      is_magical: options?.isMagical || false,
+      is_two_handed: template.properties?.includes('two-handed') || false,
+      notes: options?.notes || template.description,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  return { data: data as CharacterWeapon, error: null }
+}
+
+/**
+ * Add an item to a character from a template
+ */
+export async function addItemFromTemplate(
+  characterId: string,
+  templateId: number,
+  quantity: number = 1,
+  options?: {
+    customName?: string
+    notes?: string
+  }
+): Promise<{ data: CharacterItem | null; error: string | null }> {
+  // Get template for default values
+  const { data: template } = await supabase
+    .from('item_templates')
+    .select('*')
+    .eq('id', templateId)
+    .single()
+
+  if (!template) {
+    return { data: null, error: 'Template not found' }
+  }
+
+  const { data, error } = await supabase
+    .from('character_items')
+    .insert({
+      character_id: characterId,
+      template_id: templateId,
+      name: options?.customName || template.name,
+      category: template.category,
+      quantity: quantity,
+      ammo_type: template.ammo_type,
+      notes: options?.notes || template.description,
+      is_quick_access: false,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  return { data: data as CharacterItem, error: null }
 }
 

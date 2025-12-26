@@ -25,6 +25,7 @@
 import { useState } from 'react'
 import type { CharacterWeaponSlot, CharacterWeapon, WeaponHand, WeaponSlotNumber } from '@/lib/types'
 import { equipWeaponToSlot, setActiveWeaponSlot } from '@/lib/db/characters'
+import { ItemTooltip } from '@/components/ui'
 
 // ============ Types ============
 
@@ -215,7 +216,7 @@ function WeaponSlotButton({ slot, slotNumber, locked, disabled, onClick }: Weapo
   const isActive = slot?.is_active ?? false
   const isEmpty = !weapon
 
-  return (
+  const buttonContent = (
     <button
       type="button"
       onClick={onClick}
@@ -266,6 +267,30 @@ function WeaponSlotButton({ slot, slotNumber, locked, disabled, onClick }: Weapo
       </div>
     </button>
   )
+
+  // Wrap with tooltip if weapon is equipped
+  if (weapon) {
+    return (
+      <ItemTooltip
+        name={weapon.name}
+        icon="⚔️"
+        details={{
+          category: 'weapon',
+          damage: weapon.damage_dice ?? undefined,
+          damageType: weapon.damage_type ?? undefined,
+          material: weapon.material,
+          isMagical: weapon.is_magical,
+          isTwoHanded: weapon.is_two_handed,
+          notes: weapon.notes ?? undefined,
+        }}
+        clickOnly={!locked} // Show tooltip when locked (viewing)
+      >
+        {buttonContent}
+      </ItemTooltip>
+    )
+  }
+
+  return buttonContent
 }
 
 // ============ Weapon Selector Modal ============

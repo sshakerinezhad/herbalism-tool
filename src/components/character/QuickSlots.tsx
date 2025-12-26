@@ -22,9 +22,10 @@
 'use client'
 
 import { useState } from 'react'
-import type { CharacterQuickSlot, CharacterItem, BrewedItem, QuickSlotNumber } from '@/lib/types'
-import { setQuickSlotItem } from '@/lib/db/characters'
+import type { CharacterQuickSlot, CharacterItem, CharacterBrewedItem, QuickSlotNumber } from '@/lib/types'
+import { setQuickSlotItem, setQuickSlotBrewedItem } from '@/lib/db/characters'
 import { formatBrewedEffects } from '@/components/inventory'
+import { ItemTooltip } from '@/components/ui'
 
 // ============ Types ============
 
@@ -32,7 +33,7 @@ interface QuickSlotsProps {
   characterId: string
   quickSlots: CharacterQuickSlot[]
   items: CharacterItem[]
-  brewedItems?: BrewedItem[]
+  brewedItems?: CharacterBrewedItem[]
   onUpdate?: () => void
 }
 
@@ -72,7 +73,8 @@ export function QuickSlots({
   // Sort slots by number
   const sortedSlots = [...quickSlots].sort((a, b) => a.slot_number - b.slot_number)
   
-  // Convert brewed items to CharacterItem format for unified display
+  // Convert brewed items to unified format for the selector
+  // We prefix IDs with 'brewed:' to distinguish them from regular items
   const brewedAsItems: CharacterItem[] = brewedItems.map(b => ({
     id: `brewed:${b.id}`,
     character_id: characterId,
@@ -82,11 +84,20 @@ export function QuickSlots({
     properties: null,
     is_quick_access: false,
     ammo_type: null,
-    notes: b.computedDescription || null,
+    notes: b.computed_description || null,
   }))
   
-  // Combine regular items with brewed items
+  // Combine regular items with brewed items for unified selection
   const allItems = [...items, ...brewedAsItems]
+  
+  // Track which items are already assigned (both regular and brewed)
+  const assignedItemIds = quickSlots
+    .filter(s => s.item_id)
+    .map(s => s.item_id!)
+  const assignedBrewedIds = quickSlots
+    .filter(s => s.brewed_item_id)
+    .map(s => `brewed:${s.brewed_item_id}`)
+  const allAssignedIds = [...assignedItemIds, ...assignedBrewedIds]
 
   async function handleSlotClick(slotNumber: QuickSlotNumber) {
     if (locked) return
@@ -96,14 +107,22 @@ export function QuickSlots({
   async function handleAssignItem(itemId: string | null) {
     if (selectingSlot === null) return
     
-    // Check if trying to assign a brewed item (starts with 'brewed:')
-    if (itemId && itemId.startsWith('brewed:')) {
-      setError('Brewed items cannot be assigned to quick slots yet. This feature is coming soon!')
-      setSelectingSlot(null)
-      return
+    let err: string | null = null
+    
+    if (itemId === null) {
+      // Clear the slot
+      const result = await setQuickSlotItem(characterId, selectingSlot, null)
+      err = result.error
+    } else if (itemId.startsWith('brewed:')) {
+      // Assign a brewed item
+      const brewedId = parseInt(itemId.replace('brewed:', ''), 10)
+      const result = await setQuickSlotBrewedItem(characterId, selectingSlot, brewedId)
+      err = result.error
+    } else {
+      // Assign a regular item
+      const result = await setQuickSlotItem(characterId, selectingSlot, itemId)
+      err = result.error
     }
-
-    const { error: err } = await setQuickSlotItem(characterId, selectingSlot, itemId)
 
     if (err) {
       setError(err)
@@ -112,6 +131,14 @@ export function QuickSlots({
       onUpdate?.()
     }
     setSelectingSlot(null)
+  }
+  
+  // Get current selection for the slot being edited
+  function getCurrentSelection(slotNumber: QuickSlotNumber): string | null {
+    const slot = quickSlots.find(s => s.slot_number === slotNumber)
+    if (!slot) return null
+    if (slot.brewed_item_id) return `brewed:${slot.brewed_item_id}`
+    return slot.item_id
   }
 
   return (
@@ -163,10 +190,8 @@ export function QuickSlots({
       {selectingSlot !== null && (
         <ItemSelectorModal
           items={allItems}
-          assignedItemIds={quickSlots.filter(s => s.item_id).map(s => s.item_id!)}
-          currentItemId={
-            quickSlots.find(s => s.slot_number === selectingSlot)?.item_id ?? null
-          }
+          assignedItemIds={allAssignedIds}
+          currentItemId={getCurrentSelection(selectingSlot)}
           onSelect={handleAssignItem}
           onClose={() => setSelectingSlot(null)}
         />
@@ -185,32 +210,43 @@ interface QuickSlotButtonProps {
 }
 
 function QuickSlotButton({ slot, slotNumber, locked, onClick }: QuickSlotButtonProps) {
+  // Get display data from either regular item or brewed item
   const item = slot?.item
-  const isEmpty = !item
+  const brewedItem = slot?.brewed_item
+  const hasContent = item || brewedItem
+  
+  // Unified display values
+  const displayName = item?.name ?? (brewedItem ? formatBrewedEffects(brewedItem.effects) : null)
+  const displayCategory = item?.category ?? brewedItem?.type ?? null
+  const displayQuantity = item?.quantity ?? brewedItem?.quantity ?? 1
+  const isBrewed = !!brewedItem
+  const displayNotes = item?.notes ?? brewedItem?.computedDescription ?? null
 
-  return (
+  const buttonContent = (
     <button
       type="button"
       onClick={onClick}
       disabled={locked}
       className={`
         aspect-square rounded-lg border-2 flex flex-col items-center justify-center
-        transition-all p-1
-        ${isEmpty 
+        transition-all p-1 w-full
+        ${!hasContent 
           ? 'border-zinc-700 border-dashed bg-zinc-900' 
-          : 'border-zinc-600 bg-zinc-900'
+          : isBrewed 
+            ? 'border-green-700/50 bg-green-900/20' 
+            : 'border-zinc-600 bg-zinc-900'
         }
         ${!locked ? 'hover:border-amber-400 hover:bg-zinc-800 cursor-pointer' : 'cursor-default'}
       `}
     >
-      {item ? (
+      {hasContent && displayName ? (
         <>
-          <span className="text-lg">{getCategoryIcon(item.category)}</span>
+          <span className="text-lg">{getCategoryIcon(displayCategory)}</span>
           <span className="text-[10px] text-zinc-300 truncate w-full text-center mt-0.5">
-            {item.name.length > 8 ? item.name.slice(0, 7) + '…' : item.name}
+            {displayName.length > 8 ? displayName.slice(0, 7) + '…' : displayName}
           </span>
-          {item.quantity > 1 && (
-            <span className="text-[9px] text-zinc-500">×{item.quantity}</span>
+          {displayQuantity > 1 && (
+            <span className="text-[9px] text-zinc-500">×{displayQuantity}</span>
           )}
         </>
       ) : (
@@ -218,6 +254,26 @@ function QuickSlotButton({ slot, slotNumber, locked, onClick }: QuickSlotButtonP
       )}
     </button>
   )
+
+  // Wrap with tooltip if slot has content
+  if (hasContent && displayName) {
+    return (
+      <ItemTooltip
+        name={displayName}
+        icon={getCategoryIcon(displayCategory)}
+        details={{
+          category: displayCategory ?? undefined,
+          quantity: displayQuantity,
+          notes: displayNotes ?? undefined,
+        }}
+        clickOnly={!locked} // Only show tooltip when locked (viewing), not when editing
+      >
+        {buttonContent}
+      </ItemTooltip>
+    )
+  }
+
+  return buttonContent
 }
 
 // ============ Item Selector Modal ============

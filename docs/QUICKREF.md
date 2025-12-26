@@ -75,8 +75,10 @@ import {
 | `armor_slots` | Reference: 12 body slots |
 | `character_skills` | Skill proficiencies |
 | `character_armor` | Equipped armor |
-| `character_weapons` | Weapons |
+| `character_weapons` | Owned weapons |
 | `character_items` | General inventory |
+| `character_weapon_slots` | 6 weapon slots (3 per hand) |
+| `character_quick_slots` | 6 quick access combat slots |
 
 ---
 
@@ -106,15 +108,23 @@ const {
 
 ```typescript
 import { 
-  // Data fetching
+  // Herbalism data
   useInventory,
   useBrewedItems,
   useBiomes,
   useUserRecipes,
   useRecipeStats,
+  
+  // Character data
   useCharacter,
   useCharacterSkills,
   useCharacterArmor,
+  useCharacterWeapons,
+  useCharacterItems,
+  useCharacterWeaponSlots,
+  useCharacterQuickSlots,
+  
+  // Reference data
   useArmorSlots,
   useSkills,
   
@@ -168,7 +178,10 @@ import { RecipeCard } from '@/components/recipes'
 
 // Character
 import { ArmorDiagram } from '@/components/ArmorDiagram'
-import { CoinPurse } from '@/components/character'
+import { CoinPurse, WeaponSlots, QuickSlots } from '@/components/character'
+
+// Item details
+import { ItemTooltip } from '@/components/ui'
 ```
 
 ---

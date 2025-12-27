@@ -923,3 +923,4 @@ See `docs/SUPABASE-CLI.md` for complete documentation including troubleshooting.
 - **Centralized Hooks:** All data hooks in `@/lib/hooks/queries.ts`
 - **Shared Fetchers:** DRY pattern prevents code duplication between hooks and prefetch
 - **Barrel Exports:** Clean imports via `@/lib/hooks` and `@/components/ui`
+

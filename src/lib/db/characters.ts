@@ -560,8 +560,8 @@ export async function fetchCharacterWeaponSlots(characterId: string): Promise<{
     weapon_id: row.weapon_id,
     is_active: row.is_active,
     selected_ammo_id: row.selected_ammo_id,
-    weapon: row.character_weapons as CharacterWeapon | null,
-    selected_ammo: row.character_items as CharacterItem | null,
+    weapon: row.character_weapons as unknown as CharacterWeapon | null,
+    selected_ammo: row.character_items as unknown as CharacterItem | null,
   }))
 
   return { data: transformed, error: null }
@@ -680,7 +680,7 @@ export async function fetchCharacterQuickSlots(characterId: string): Promise<{
     slot_number: row.slot_number as QuickSlotNumber,
     item_id: row.item_id,
     brewed_item_id: row.character_brewed_id, // Use new column but keep same field name for now
-    item: row.character_items as CharacterItem | null,
+    item: row.character_items as unknown as CharacterItem | null,
     brewed_item: row.character_brewed as unknown as import('../types').CharacterBrewedItem | null,
   }))
 

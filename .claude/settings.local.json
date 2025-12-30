@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(clear-scratchpad)",
+      "Bash(npm run build:*)"
+    ]
+  }
+}

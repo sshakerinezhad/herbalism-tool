@@ -1,31 +1,21 @@
 /**
  * WeaponSlots Component
- * 
- * Elden Ring-style weapon equipment with 3 slots per hand.
- * Players can cycle through equipped weapons during combat.
- * 
+ *
+ * Diablo-style inline weapon equipment panel with 3 slots per hand.
+ * Click a slot to expand the weapon selection list below.
+ *
  * Features:
  * - 3 slots per hand (right/left)
- * - Active slot indicator
+ * - Inline weapon selection (no modal)
  * - Two-handed weapon support (locks off-hand)
- * - Lock toggle for editing
- * - Click slot to equip/change weapon
- * 
- * @example
- * <WeaponSlots
- *   characterId={character.id}
- *   weaponSlots={slots}
- *   weapons={allWeapons}
- *   onUpdate={() => invalidateWeaponSlots(characterId)}
- * />
+ * - Diablo-style visual cards
  */
 
 'use client'
 
 import { useState } from 'react'
 import type { CharacterWeaponSlot, CharacterWeapon, WeaponHand, WeaponSlotNumber } from '@/lib/types'
-import { equipWeaponToSlot, setActiveWeaponSlot } from '@/lib/db/characters'
-import { ItemTooltip } from '@/components/ui'
+import { equipWeaponToSlot } from '@/lib/db/characters'
 
 // ============ Types ============
 
@@ -36,6 +26,8 @@ interface WeaponSlotsProps {
   onUpdate?: () => void
 }
 
+type SelectedSlot = { hand: WeaponHand; slot: WeaponSlotNumber } | null
+
 // ============ Component ============
 
 export function WeaponSlots({
@@ -44,8 +36,7 @@ export function WeaponSlots({
   weapons,
   onUpdate,
 }: WeaponSlotsProps) {
-  const [locked, setLocked] = useState(true)
-  const [selectingSlot, setSelectingSlot] = useState<{ hand: WeaponHand; slot: WeaponSlotNumber } | null>(null)
+  const [selectedSlot, setSelectedSlot] = useState<SelectedSlot>(null)
   const [error, setError] = useState<string | null>(null)
 
   // Organize slots by hand
@@ -56,33 +47,26 @@ export function WeaponSlots({
     .filter(s => s.hand === 'left')
     .sort((a, b) => a.slot_number - b.slot_number)
 
-  // Check if off-hand is locked by a two-handed weapon
-  const activeRightSlot = rightSlots.find(s => s.is_active)
-  const offHandLocked = activeRightSlot?.weapon?.is_two_handed ?? false
+  // Check if any right-hand slot has a two-handed weapon equipped
+  const hasTwoHandedEquipped = rightSlots.some(s => s.weapon?.is_two_handed)
 
-  async function handleSlotClick(hand: WeaponHand, slotNumber: WeaponSlotNumber) {
-    if (locked) {
-      // When locked, clicking cycles the active slot
-      const { error: err } = await setActiveWeaponSlot(characterId, hand, slotNumber)
-      if (err) {
-        setError(err)
-      } else {
-        setError(null)
-        onUpdate?.()
-      }
+  function handleSlotClick(hand: WeaponHand, slotNumber: WeaponSlotNumber) {
+    // Toggle selection: click same slot closes, click different slot opens
+    if (selectedSlot?.hand === hand && selectedSlot?.slot === slotNumber) {
+      setSelectedSlot(null)
     } else {
-      // When unlocked, open weapon selector
-      setSelectingSlot({ hand, slot: slotNumber })
+      setSelectedSlot({ hand, slot: slotNumber })
     }
+    setError(null)
   }
 
   async function handleEquipWeapon(weaponId: string | null) {
-    if (!selectingSlot) return
+    if (!selectedSlot) return
 
     const { error: err } = await equipWeaponToSlot(
       characterId,
-      selectingSlot.hand,
-      selectingSlot.slot,
+      selectedSlot.hand,
+      selectedSlot.slot,
       weaponId
     )
 
@@ -90,28 +74,32 @@ export function WeaponSlots({
       setError(err)
     } else {
       setError(null)
+      setSelectedSlot(null)
       onUpdate?.()
     }
-    setSelectingSlot(null)
   }
+
+  // Get weapons available for selection (not equipped elsewhere)
+  const equippedWeaponIds = weaponSlots
+    .filter(s => s.weapon_id)
+    .map(s => s.weapon_id!)
+
+  const currentSlotWeaponId = selectedSlot
+    ? weaponSlots.find(
+        s => s.hand === selectedSlot.hand && s.slot_number === selectedSlot.slot
+      )?.weapon_id ?? null
+    : null
+
+  const availableWeapons = weapons.filter(
+    w => w.id === currentSlotWeaponId || !equippedWeaponIds.includes(w.id)
+  )
 
   return (
     <div className="bg-zinc-800 rounded-lg p-5 border border-zinc-700">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wide">Weapons</h2>
-        <button
-          onClick={() => setLocked(!locked)}
-          aria-label={locked ? 'Unlock weapon editing' : 'Lock weapon editing'}
-          className={`text-xs px-2 py-0.5 rounded transition-colors ${
-            locked 
-              ? 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600' 
-              : 'bg-amber-600 text-white hover:bg-amber-500'
-          }`}
-        >
-          {locked ? '🔒' : '🔓'}
-        </button>
-      </div>
+      <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wide mb-4">
+        Weapons
+      </h2>
 
       {error && (
         <div className="text-red-400 text-xs bg-red-900/20 border border-red-800 rounded px-2 py-1 mb-4">
@@ -124,8 +112,9 @@ export function WeaponSlots({
         {/* Right Hand */}
         <HandColumn
           label="Right Hand"
+          hand="right"
           slots={rightSlots}
-          locked={locked}
+          selectedSlot={selectedSlot}
           disabled={false}
           onSlotClick={(slot) => handleSlotClick('right', slot)}
         />
@@ -133,35 +122,31 @@ export function WeaponSlots({
         {/* Left Hand */}
         <HandColumn
           label="Left Hand"
+          hand="left"
           slots={leftSlots}
-          locked={locked}
-          disabled={offHandLocked}
-          disabledReason={offHandLocked ? 'Two-handed weapon equipped' : undefined}
+          selectedSlot={selectedSlot}
+          disabled={hasTwoHandedEquipped}
+          disabledReason={hasTwoHandedEquipped ? 'Two-handed weapon equipped' : undefined}
           onSlotClick={(slot) => handleSlotClick('left', slot)}
         />
       </div>
 
-      {/* Hint */}
-      <p className="text-xs text-zinc-500 mt-4 text-center">
-        {locked 
-          ? 'Click a slot to set it as active • Unlock to change weapons'
-          : 'Click a slot to equip a weapon'}
-      </p>
-
-      {/* Weapon Selector Modal */}
-      {selectingSlot && (
-        <WeaponSelectorModal
-          weapons={weapons}
-          equippedWeaponIds={weaponSlots.filter(s => s.weapon_id).map(s => s.weapon_id!)}
-          currentWeaponId={
-            weaponSlots.find(
-              s => s.hand === selectingSlot.hand && s.slot_number === selectingSlot.slot
-            )?.weapon_id ?? null
-          }
+      {/* Inline Weapon Selection Panel */}
+      {selectedSlot && (
+        <WeaponSelectionPanel
+          hand={selectedSlot.hand}
+          slotNumber={selectedSlot.slot}
+          weapons={availableWeapons}
+          currentWeaponId={currentSlotWeaponId}
           onSelect={handleEquipWeapon}
-          onClose={() => setSelectingSlot(null)}
+          onClose={() => setSelectedSlot(null)}
         />
       )}
+
+      {/* Hint */}
+      <p className="text-xs text-zinc-500 mt-4 text-center">
+        Click a slot to change weapon
+      </p>
     </div>
   )
 }
@@ -170,16 +155,25 @@ export function WeaponSlots({
 
 interface HandColumnProps {
   label: string
+  hand: WeaponHand
   slots: CharacterWeaponSlot[]
-  locked: boolean
+  selectedSlot: SelectedSlot
   disabled: boolean
   disabledReason?: string
   onSlotClick: (slotNumber: WeaponSlotNumber) => void
 }
 
-function HandColumn({ label, slots, locked, disabled, disabledReason, onSlotClick }: HandColumnProps) {
+function HandColumn({
+  label,
+  hand,
+  slots,
+  selectedSlot,
+  disabled,
+  disabledReason,
+  onSlotClick
+}: HandColumnProps) {
   return (
-    <div className={disabled ? 'opacity-50' : ''}>
+    <div className={disabled ? 'opacity-40' : ''}>
       <div className="text-xs text-zinc-500 mb-2 text-center font-medium">{label}</div>
       {disabledReason && (
         <div className="text-[10px] text-amber-500 mb-2 text-center">{disabledReason}</div>
@@ -187,12 +181,13 @@ function HandColumn({ label, slots, locked, disabled, disabledReason, onSlotClic
       <div className="space-y-2">
         {([1, 2, 3] as const).map(slotNum => {
           const slot = slots.find(s => s.slot_number === slotNum)
+          const isSelected = selectedSlot?.hand === hand && selectedSlot?.slot === slotNum
           return (
-            <WeaponSlotButton
+            <WeaponSlotCard
               key={slotNum}
               slot={slot}
               slotNumber={slotNum}
-              locked={locked}
+              isSelected={isSelected}
               disabled={disabled}
               onClick={() => !disabled && onSlotClick(slotNum)}
             />
@@ -203,194 +198,206 @@ function HandColumn({ label, slots, locked, disabled, disabledReason, onSlotClic
   )
 }
 
-interface WeaponSlotButtonProps {
+interface WeaponSlotCardProps {
   slot: CharacterWeaponSlot | undefined
   slotNumber: WeaponSlotNumber
-  locked: boolean
+  isSelected: boolean
   disabled: boolean
   onClick: () => void
 }
 
-function WeaponSlotButton({ slot, slotNumber, locked, disabled, onClick }: WeaponSlotButtonProps) {
+function WeaponSlotCard({ slot, slotNumber, isSelected, disabled, onClick }: WeaponSlotCardProps) {
   const weapon = slot?.weapon
-  const isActive = slot?.is_active ?? false
   const isEmpty = !weapon
 
-  const buttonContent = (
+  // Determine visual state styling
+  let borderClass = 'border-zinc-700'
+  let bgClass = 'bg-zinc-900'
+
+  if (isSelected) {
+    borderClass = 'border-cyan-500 ring-1 ring-cyan-500/50'
+    bgClass = 'bg-cyan-900/20'
+  } else if (!isEmpty) {
+    borderClass = 'border-zinc-600'
+    bgClass = 'bg-zinc-900'
+  }
+
+  return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
       className={`
-        w-full p-3 rounded-lg border-2 text-left transition-all
-        ${isActive 
-          ? 'border-amber-500 bg-amber-900/20' 
-          : 'border-zinc-700 bg-zinc-900'
-        }
+        w-full p-3 rounded-lg text-left transition-all
+        border-2 ${borderClass} ${bgClass}
         ${isEmpty ? 'border-dashed' : ''}
-        ${!disabled && !locked ? 'hover:border-amber-400 hover:bg-zinc-800' : ''}
-        ${!disabled && locked ? 'hover:bg-zinc-800 cursor-pointer' : ''}
-        ${disabled ? 'cursor-not-allowed' : ''}
+        ${!disabled ? 'hover:border-zinc-500 hover:bg-zinc-800 cursor-pointer' : 'cursor-not-allowed'}
       `}
     >
-      <div className="flex items-center gap-2">
-        {/* Slot number indicator */}
+      <div className="flex items-center gap-3">
+        {/* Slot number badge */}
         <span className={`
-          text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center
-          ${isActive ? 'bg-amber-500 text-black' : 'bg-zinc-700 text-zinc-400'}
+          text-xs font-bold w-6 h-6 rounded flex items-center justify-center shrink-0
+          ${isSelected ? 'bg-cyan-500 text-black' : 'bg-zinc-700 text-zinc-400'}
         `}>
           {slotNumber}
         </span>
 
         {/* Weapon info */}
-        <div className="flex-1 min-w-0">
-          {weapon ? (
-            <>
-              <div className="text-sm font-medium truncate">
-                {weapon.is_magical && <span className="text-purple-400">✨ </span>}
-                {weapon.name}
-              </div>
-              <div className="text-xs text-zinc-500">
-                {weapon.damage_dice} {weapon.damage_type}
-                {weapon.is_two_handed && ' • Two-handed'}
-              </div>
-            </>
-          ) : (
+        {weapon ? (
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium truncate flex items-center gap-1">
+              <span className="text-zinc-400">⚔️</span>
+              {weapon.is_magical && <span className="text-purple-400">✨</span>}
+              <span>{weapon.name}</span>
+            </div>
+            <div className="text-xs text-zinc-500 mt-0.5">
+              {weapon.damage_dice} {weapon.damage_type}
+              {weapon.is_two_handed && (
+                <span className="text-amber-500 ml-1">• 2H</span>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 min-w-0">
             <div className="text-sm text-zinc-500 italic">Empty</div>
-          )}
-        </div>
-
-        {/* Active indicator */}
-        {isActive && (
-          <span className="text-amber-400 text-xs font-bold">●</span>
+          </div>
         )}
       </div>
     </button>
   )
-
-  // Wrap with tooltip if weapon is equipped
-  if (weapon) {
-    return (
-      <ItemTooltip
-        name={weapon.name}
-        icon="⚔️"
-        details={{
-          category: 'weapon',
-          damage: weapon.damage_dice ?? undefined,
-          damageType: weapon.damage_type ?? undefined,
-          material: weapon.material,
-          isMagical: weapon.is_magical,
-          isTwoHanded: weapon.is_two_handed,
-          notes: weapon.notes ?? undefined,
-        }}
-        clickOnly={!locked} // Show tooltip when locked (viewing)
-      >
-        {buttonContent}
-      </ItemTooltip>
-    )
-  }
-
-  return buttonContent
 }
 
-// ============ Weapon Selector Modal ============
+// ============ Weapon Selection Panel ============
 
-interface WeaponSelectorModalProps {
+interface WeaponSelectionPanelProps {
+  hand: WeaponHand
+  slotNumber: WeaponSlotNumber
   weapons: CharacterWeapon[]
-  equippedWeaponIds: string[]
   currentWeaponId: string | null
   onSelect: (weaponId: string | null) => void
   onClose: () => void
 }
 
-function WeaponSelectorModal({
+function WeaponSelectionPanel({
+  hand,
+  slotNumber,
   weapons,
-  equippedWeaponIds,
   currentWeaponId,
   onSelect,
   onClose,
-}: WeaponSelectorModalProps) {
-  // Filter out weapons already equipped in other slots
-  const availableWeapons = weapons.filter(
-    w => w.id === currentWeaponId || !equippedWeaponIds.includes(w.id)
-  )
+}: WeaponSelectionPanelProps) {
+  const handLabel = hand === 'right' ? 'Right' : 'Left'
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-zinc-800 rounded-lg border border-zinc-700 max-w-md w-full max-h-[80vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-zinc-700">
-          <h3 className="font-medium">Select Weapon</h3>
-          <button
-            onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-200"
-          >
-            ✕
-          </button>
-        </div>
+    <div
+      className="mt-4 border border-zinc-600 rounded-lg overflow-hidden bg-zinc-900
+                 animate-in slide-in-from-top-2 duration-200"
+    >
+      {/* Panel Header */}
+      <div className="flex items-center justify-between px-4 py-2 bg-zinc-800 border-b border-zinc-700">
+        <span className="text-xs text-zinc-400 uppercase tracking-wide">
+          {handLabel} Hand Slot {slotNumber}
+        </span>
+        <button
+          onClick={onClose}
+          className="text-zinc-500 hover:text-zinc-300 text-sm"
+        >
+          ✕
+        </button>
+      </div>
 
-        {/* Weapon List */}
-        <div className="flex-1 overflow-y-auto p-2">
-          {/* Empty option */}
-          <button
-            onClick={() => onSelect(null)}
-            className={`
-              w-full p-3 rounded-lg text-left mb-2 transition-colors
-              ${currentWeaponId === null 
-                ? 'bg-zinc-700 border border-zinc-600' 
-                : 'bg-zinc-900 hover:bg-zinc-700 border border-transparent'
-              }
-            `}
-          >
-            <div className="text-sm text-zinc-400 italic">None (empty slot)</div>
-          </button>
+      {/* Weapon List */}
+      <div className="max-h-48 overflow-y-auto p-2 space-y-1">
+        {/* Clear slot option */}
+        <WeaponOption
+          label="None"
+          sublabel="Clear this slot"
+          isSelected={currentWeaponId === null}
+          onClick={() => onSelect(null)}
+        />
 
-          {availableWeapons.length === 0 ? (
-            <div className="text-center text-zinc-500 py-8">
-              No weapons available
-            </div>
-          ) : (
-            availableWeapons.map(weapon => (
-              <button
-                key={weapon.id}
-                onClick={() => onSelect(weapon.id)}
-                className={`
-                  w-full p-3 rounded-lg text-left mb-2 transition-colors
-                  ${currentWeaponId === weapon.id 
-                    ? 'bg-amber-900/30 border border-amber-600' 
-                    : 'bg-zinc-900 hover:bg-zinc-700 border border-transparent'
-                  }
-                `}
-              >
-                <div className="text-sm font-medium">
-                  {weapon.is_magical && <span className="text-purple-400">✨ </span>}
-                  {weapon.name}
-                </div>
-                <div className="text-xs text-zinc-500 mt-1">
-                  {weapon.damage_dice} {weapon.damage_type}
-                  {weapon.is_two_handed && ' • Two-handed'}
-                  {weapon.material !== 'Steel' && ` • ${weapon.material}`}
-                </div>
-              </button>
-            ))
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-zinc-700">
-          <button
-            onClick={onClose}
-            className="w-full py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-sm font-medium transition-colors"
-          >
-            Cancel
-          </button>
-        </div>
+        {weapons.length === 0 ? (
+          <div className="text-center text-zinc-500 py-4 text-sm">
+            No weapons available
+          </div>
+        ) : (
+          weapons.map(weapon => (
+            <WeaponOption
+              key={weapon.id}
+              label={weapon.name}
+              sublabel={`${weapon.damage_dice} ${weapon.damage_type}${weapon.is_two_handed ? ' • Two-handed' : ''}`}
+              isMagical={weapon.is_magical}
+              isTwoHanded={weapon.is_two_handed}
+              isSelected={currentWeaponId === weapon.id}
+              onClick={() => onSelect(weapon.id)}
+            />
+          ))
+        )}
       </div>
     </div>
+  )
+}
+
+interface WeaponOptionProps {
+  label: string
+  sublabel?: string
+  isMagical?: boolean
+  isTwoHanded?: boolean
+  isSelected: boolean
+  onClick: () => void
+}
+
+function WeaponOption({
+  label,
+  sublabel,
+  isMagical,
+  isTwoHanded,
+  isSelected,
+  onClick
+}: WeaponOptionProps) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        w-full px-3 py-2 rounded text-left transition-colors flex items-center gap-3
+        ${isSelected
+          ? 'bg-cyan-900/30 border border-cyan-600'
+          : 'bg-zinc-800 border border-transparent hover:bg-zinc-700'
+        }
+      `}
+    >
+      {/* Radio indicator */}
+      <span className={`
+        w-3 h-3 rounded-full border-2 shrink-0
+        ${isSelected
+          ? 'border-cyan-500 bg-cyan-500'
+          : 'border-zinc-500'
+        }
+      `} />
+
+      {/* Weapon info */}
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium truncate flex items-center gap-1">
+          {label !== 'None' && <span className="text-zinc-400">⚔️</span>}
+          {isMagical && <span className="text-purple-400">✨</span>}
+          <span className={label === 'None' ? 'text-zinc-400 italic' : ''}>{label}</span>
+        </div>
+        {sublabel && (
+          <div className="text-xs text-zinc-500 truncate">{sublabel}</div>
+        )}
+      </div>
+
+      {/* Currently equipped badge */}
+      {isSelected && label !== 'None' && (
+        <span className="text-[10px] text-cyan-400 bg-cyan-900/50 px-1.5 py-0.5 rounded shrink-0">
+          Equipped
+        </span>
+      )}
+    </button>
   )
 }
 
 // ============ Exports ============
 
 export type { WeaponSlotsProps }
-

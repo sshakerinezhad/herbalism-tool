@@ -16,13 +16,13 @@ type PageLayoutProps = {
   maxWidth?: 'max-w-xl' | 'max-w-2xl' | 'max-w-3xl' | 'max-w-4xl'
 }
 
-export function PageLayout({ 
-  children, 
+export function PageLayout({
+  children,
   showHomeLink = true,
-  maxWidth = 'max-w-2xl' 
+  maxWidth = 'max-w-2xl'
 }: PageLayoutProps) {
   return (
-    <div className="min-h-screen bg-zinc-900 text-zinc-100 p-8">
+    <div className="min-h-screen bg-background text-vellum-50 p-8">
       <div className={`${maxWidth} mx-auto`}>
         {showHomeLink && <HomeLink />}
         {children}
@@ -36,9 +36,9 @@ export function PageLayout({
  */
 export function HomeLink() {
   return (
-    <Link 
-      href="/" 
-      className="text-zinc-400 hover:text-zinc-200 mb-4 inline-block"
+    <Link
+      href="/"
+      className="text-vellum-300 hover:text-vellum-50 mb-4 inline-block"
     >
       ← Home
     </Link>

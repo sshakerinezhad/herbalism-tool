@@ -10,9 +10,34 @@
 @import "tailwindcss";
 
 :root {
-  /* Dark theme (used throughout the app) */
+  /* Dark theme base */
   --background: #0a0a0a;
-  --foreground: #ededed;
+  --foreground: #f5f0e6;
+
+  /* Grimoire - warm dark card backgrounds */
+  --grimoire-950: #0d0c0a;
+  --grimoire-900: #151311;
+  --grimoire-850: #1a1815;
+  --grimoire-800: #211e1a;
+  --grimoire-700: #2d2923;
+
+  /* Vellum - aged paper text colors */
+  --vellum-50: #f5f0e6;
+  --vellum-100: #e8e0d0;
+  --vellum-200: #d4c9b5;
+  --vellum-300: #b8a890;
+  --vellum-400: #9a8a70;
+
+  /* Sepia - borders and subtle accents */
+  --sepia-600: #4a3f32;
+  --sepia-700: #3d342a;
+  --sepia-800: #2f2821;
+  --sepia-900: #231e19;
+
+  /* Bronze - metallic accents */
+  --bronze-muted: #8b7355;
+  --bronze-bright: #c9a66b;
+  --bronze-glow: #a68952;
 }
 
 @theme inline {
@@ -20,6 +45,31 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Grimoire palette */
+  --color-grimoire-950: var(--grimoire-950);
+  --color-grimoire-900: var(--grimoire-900);
+  --color-grimoire-850: var(--grimoire-850);
+  --color-grimoire-800: var(--grimoire-800);
+  --color-grimoire-700: var(--grimoire-700);
+
+  /* Vellum palette */
+  --color-vellum-50: var(--vellum-50);
+  --color-vellum-100: var(--vellum-100);
+  --color-vellum-200: var(--vellum-200);
+  --color-vellum-300: var(--vellum-300);
+  --color-vellum-400: var(--vellum-400);
+
+  /* Sepia palette */
+  --color-sepia-600: var(--sepia-600);
+  --color-sepia-700: var(--sepia-700);
+  --color-sepia-800: var(--sepia-800);
+  --color-sepia-900: var(--sepia-900);
+
+  /* Bronze accents */
+  --color-bronze-muted: var(--bronze-muted);
+  --color-bronze-bright: var(--bronze-bright);
+  --color-bronze-glow: var(--bronze-glow);
 }
 
 body {
@@ -39,14 +89,98 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: #27272a; /* zinc-800 */
+  background: #151311; /* grimoire-900 */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #52525b; /* zinc-600 */
+  background: #3d342a; /* sepia-700 */
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #71717a; /* zinc-500 */
+  background: #4a3f32; /* sepia-600 */
+}
+
+/* ============================================
+   ORNATE DECORATIVE UTILITIES
+   ============================================ */
+
+/* Embossed text effect for headers */
+.text-embossed {
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.4),
+    0 -1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Bronze metallic text gradient */
+.text-bronze-gradient {
+  background: linear-gradient(
+    180deg,
+    var(--bronze-bright) 0%,
+    var(--bronze-muted) 50%,
+    var(--bronze-glow) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Subtle inner glow for panels */
+.glow-inner-bronze {
+  box-shadow: inset 0 1px 0 0 rgba(201, 166, 107, 0.1);
+}
+
+/* Outer glow for highlighted elements */
+.glow-outer-bronze {
+  box-shadow: 0 0 12px rgba(139, 115, 85, 0.25);
+}
+
+/* Combined inner/outer glow */
+.glow-bronze {
+  box-shadow:
+    inset 0 1px 0 0 rgba(201, 166, 107, 0.12),
+    0 0 8px rgba(139, 115, 85, 0.2);
+}
+
+/* Aged paper texture overlay (subtle noise) */
+.texture-paper {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-blend-mode: overlay;
+  opacity: 0.03;
+}
+
+/* Ornate double border effect */
+.border-ornate {
+  border: 1px solid var(--sepia-700);
+  box-shadow:
+    inset 0 0 0 1px rgba(61, 52, 42, 0.3),
+    0 0 0 1px rgba(61, 52, 42, 0.2);
+}
+
+/* Medallion-style circular container */
+.medallion {
+  border-radius: 50%;
+  background: linear-gradient(
+    145deg,
+    var(--grimoire-800) 0%,
+    var(--grimoire-900) 100%
+  );
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 -1px 0 rgba(201, 166, 107, 0.1),
+    0 2px 8px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--sepia-700);
+}
+
+/* Stat modifier positive/negative styling */
+.modifier-positive {
+  color: #34d399; /* emerald-400 */
+}
+
+.modifier-negative {
+  color: #f87171; /* red-400 */
+}
+
+.modifier-neutral {
+  color: var(--vellum-300);
 }

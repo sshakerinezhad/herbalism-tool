@@ -18,11 +18,11 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
 import { LoadingState, ErrorDisplay } from '@/components/ui'
-import { 
+import {
   fetchCharacter,
   fetchCharacterArmor,
   fetchArmorSlots,
-  setCharacterArmor,
+  setCharacterArmor as saveCharacterArmor,
   removeCharacterArmor,
 } from '@/lib/db/characters'
 import { supabase } from '@/lib/supabase'
@@ -187,7 +187,7 @@ export default function EditCharacterPage() {
       }
     } else {
       // Set armor
-      const { error } = await setCharacterArmor(character.id, slotId, armorType)
+      const { error } = await saveCharacterArmor(character.id, slotId, armorType)
       if (!error) {
         // Refetch armor to get updated data with slot info
         const { data } = await fetchCharacterArmor(character.id)

@@ -37,11 +37,11 @@ import {
 } from '@/lib/db/characters'
 import {
   CoinPurse,
-  WeaponSlots,
   QuickSlots,
   CharacterBanner,
   AbilityScorePanel,
   VitalsPanel,
+  EquipmentWeaponsPanel,
 } from '@/components/character'
 import {
   VOCATIONS,
@@ -49,7 +49,6 @@ import {
   calculateMaxHP,
 } from '@/lib/constants'
 import type { Character, ArmorSlot, ArmorType, BrewedItem } from '@/lib/types'
-import { ArmorDiagram } from '@/components/ArmorDiagram'
 
 // Types imported from @/lib/hooks:
 // CharacterSkillData, CharacterArmorData
@@ -191,10 +190,10 @@ export default function ProfilePage() {
   if (!character) {
     return (
       <PageLayout maxWidth="max-w-2xl">
-        <NoCharacterView 
-          user={user} 
-          onSignOut={signOut} 
-          error={characterError}
+        <NoCharacterView
+          user={user}
+          onSignOut={signOut}
+          error={characterError?.message ?? null}
         />
       </PageLayout>
     )
@@ -355,8 +354,6 @@ function CharacterView({
   sessionsUsedToday: number
   longRest: () => void
 }) {
-  const [armorLocked, setArmorLocked] = useState(true)
-
   const maxHP = calculateMaxHP(character.con)
   const isHerbalist = character.vocation === 'herbalist'
 
@@ -448,24 +445,18 @@ function CharacterView({
         </GrimoireCard>
       </div>
 
-      {/* Armor Diagram */}
-      <ArmorDiagram
-        armor={characterArmor}
+      {/* Equipment Panel (Armor + Weapons) */}
+      <EquipmentWeaponsPanel
+        characterArmor={characterArmor}
         armorSlots={allArmorSlots}
-        locked={armorLocked}
-        onToggleLock={() => setArmorLocked(!armorLocked)}
-        onSetArmor={handleSetArmor}
         totalAC={totalAC}
         armorLevel={armorLevel}
         strengthScore={character.str}
-      />
-
-      {/* Weapon Slots */}
-      <WeaponSlots
+        onSetArmor={handleSetArmor}
         characterId={character.id}
         weaponSlots={weaponSlots}
         weapons={weapons}
-        onUpdate={onWeaponSlotsChanged}
+        onWeaponSlotsChanged={onWeaponSlotsChanged}
       />
 
       {/* Quick Slots */}

@@ -25,6 +25,8 @@ export type ArmorDiagramProps = {
   totalAC: number
   armorLevel: 'none' | 'light' | 'medium' | 'heavy'
   strengthScore: number
+  /** Compact mode for embedded usage */
+  compact?: boolean
 }
 
 // ============ Constants ============
@@ -33,10 +35,10 @@ const LEFT_KEYS = ['head', 'left_shoulder', 'chest', 'left_hand', 'left_knee', '
 const RIGHT_KEYS = ['neck', 'right_shoulder', 'groin', 'right_hand', 'right_knee', 'right_foot'] as const
 
 const ARMOR_LEVEL_STYLES = {
-  heavy: 'bg-zinc-600 text-zinc-100',
-  medium: 'bg-blue-800 text-blue-200',
-  light: 'bg-emerald-800 text-emerald-200',
-  none: 'bg-zinc-700 text-zinc-400',
+  heavy: 'bg-zinc-600/80 text-zinc-100 border border-zinc-500',
+  medium: 'bg-blue-900/60 text-blue-200 border border-blue-700',
+  light: 'bg-emerald-900/60 text-emerald-200 border border-emerald-700',
+  none: 'bg-grimoire-800 text-vellum-400 border border-sepia-700',
 } as const
 
 const STRENGTH_REQUIREMENTS = {
@@ -56,6 +58,7 @@ export function ArmorDiagram({
   totalAC,
   armorLevel,
   strengthScore,
+  compact = false,
 }: ArmorDiagramProps) {
   const [openSlot, setOpenSlot] = useState<number | null>(null)
   const [saving, setSaving] = useState<number | null>(null)
@@ -105,33 +108,37 @@ export function ArmorDiagram({
     })
 
   return (
-    <div className="bg-zinc-800 w-fit rounded-lg border border-zinc-700">
-      {/* Header */}
-      <div className="flex justify-between items-center px-4 py-2 border-b border-zinc-700">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-zinc-300 uppercase tracking-wide">
-            Armor
-          </span>
-          <button
-            onClick={onToggleLock}
-            aria-label={locked ? 'Unlock armor editing' : 'Lock armor editing'}
-            className={`text-xs px-2 py-0.5 rounded transition-colors ${
-              locked ? 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600' : 'bg-amber-600 text-white hover:bg-amber-500'
-            }`}
-          >
-            {locked ? '🔒' : '🔓'}
-          </button>
+    <div className="bg-grimoire-850 w-fit rounded-lg border border-sepia-700">
+      {/* Header - only show in non-compact mode */}
+      {!compact && (
+        <div className="flex justify-between items-center px-4 py-2 border-b border-sepia-700">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-vellum-200 uppercase tracking-wide">
+              Armor
+            </span>
+            <button
+              onClick={onToggleLock}
+              aria-label={locked ? 'Unlock armor editing' : 'Lock armor editing'}
+              className={`text-xs px-2 py-0.5 rounded transition-colors ${
+                locked
+                  ? 'bg-grimoire-800 text-vellum-400 hover:bg-grimoire-700 border border-sepia-700'
+                  : 'bg-bronze-muted text-grimoire-950 hover:bg-bronze-bright'
+              }`}
+            >
+              {locked ? '🔒' : '🔓'}
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`text-xs px-2 py-0.5 rounded ${ARMOR_LEVEL_STYLES[armorLevel]}`}>
+              {armorLevel === 'none' ? 'None' : armorLevel.charAt(0).toUpperCase() + armorLevel.slice(1)}
+            </span>
+            <span className="text-sm font-bold text-bronze-bright">AC {totalAC}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className={`text-xs px-2 py-0.5 rounded ${ARMOR_LEVEL_STYLES[armorLevel]}`}>
-            {armorLevel === 'none' ? 'None' : armorLevel.charAt(0).toUpperCase() + armorLevel.slice(1)}
-          </span>
-          <span className="text-sm font-bold text-sky-300">AC {totalAC}</span>
-        </div>
-      </div>
+      )}
 
       {/* Body */}
-      <div className="flex justify-center items-stretch gap-3 p-2">
+      <div className={`flex justify-center items-stretch gap-3 ${compact ? 'p-2' : 'p-3'}`}>
         <div className="flex flex-col gap-1">{renderSlotColumn(LEFT_KEYS)}</div>
 
         <div className="relative w-28 flex-shrink-0">
@@ -139,7 +146,7 @@ export function ArmorDiagram({
             src="/silhouette.png"
             alt="Character silhouette"
             fill
-            className="object-contain opacity-50"
+            className="object-contain opacity-40"
             priority
           />
         </div>
@@ -149,8 +156,8 @@ export function ArmorDiagram({
 
       {/* Click-away backdrop */}
       {openSlot !== null && (
-        <div 
-          className="fixed inset-0 z-40" 
+        <div
+          className="fixed inset-0 z-40"
           onClick={closeDropdown}
           aria-hidden="true"
         />
@@ -186,13 +193,14 @@ function SlotButton({
     ? piece.custom_name || getDefaultPieceName(slot, piece.armor_type)
     : null
 
+  // Armor type styling with grimoire base
   const bgStyles = piece
     ? piece.armor_type === 'heavy'
-      ? 'bg-zinc-700 border-zinc-500'
+      ? 'bg-zinc-700/80 border-zinc-500'
       : piece.armor_type === 'medium'
-        ? 'bg-blue-900/70 border-blue-600'
-        : 'bg-emerald-900/70 border-emerald-600'
-    : 'bg-zinc-900 border-zinc-700 border-dashed'
+        ? 'bg-blue-900/50 border-blue-600'
+        : 'bg-emerald-900/50 border-emerald-600'
+    : 'bg-grimoire-900 border-sepia-700 border-dashed'
 
   const isInteractive = !locked && !saving
 
@@ -207,16 +215,16 @@ function SlotButton({
           isInteractive ? 'hover:brightness-110 cursor-pointer' : 'cursor-default'
         } ${saving ? 'opacity-50' : ''}`}
       >
-        <div className="text-[10px] uppercase text-zinc-400 font-medium truncate">
+        <div className="text-[10px] uppercase text-vellum-400 font-medium truncate">
           {slot.display_name}
         </div>
-        <div className="text-xs text-zinc-100 font-semibold truncate">
-          {saving ? '...' : displayName || <span className="text-zinc-600">—</span>}
+        <div className="text-xs text-vellum-100 font-semibold truncate">
+          {saving ? '...' : displayName || <span className="text-sepia-600">—</span>}
         </div>
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 top-full mt-1 left-0 w-40 bg-zinc-800 border border-zinc-600 rounded shadow-xl">
+        <div className="absolute z-50 top-full mt-1 left-0 w-40 bg-grimoire-850 border border-sepia-600 rounded shadow-xl">
           <div className="p-1 space-y-0.5">
             <Option label="None" selected={!piece} onClick={() => onSelect(null)} />
             {slot.light_available && (
@@ -272,11 +280,13 @@ function Option({ label, bonus, selected, disabled, requirement, onClick }: Opti
       onClick={onClick}
       disabled={disabled}
       className={`w-full text-left px-2 py-1 rounded text-sm transition-colors ${
-        selected ? 'bg-zinc-600 text-white' : 'text-zinc-300 hover:bg-zinc-700'
+        selected
+          ? 'bg-bronze-muted/30 text-vellum-100 border border-bronze-bright'
+          : 'text-vellum-200 hover:bg-grimoire-800 border border-transparent'
       } ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`}
     >
       <span>{label}</span>
-      {bonus != null && <span className="text-zinc-500 ml-1">+{bonus}</span>}
+      {bonus != null && <span className="text-vellum-400 ml-1">+{bonus}</span>}
       {requirement && <span className="text-red-400 text-xs ml-1">({requirement})</span>}
     </button>
   )

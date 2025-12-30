@@ -149,21 +149,21 @@ function TooltipContent({ name, icon, details, position, showClickHint = true }:
         transform: 'translate(-50%, -100%)',
       }}
     >
-      <div className="bg-zinc-900 border border-zinc-600 rounded-lg shadow-xl px-3 py-2 max-w-xs">
+      <div className="bg-grimoire-900 border border-sepia-600 rounded-lg shadow-xl px-3 py-2 max-w-xs">
         {/* Header */}
         <div className="flex items-center gap-2 mb-1">
           {icon && <span>{icon}</span>}
-          <span className="font-medium text-sm">
+          <span className="font-medium text-sm text-vellum-100">
             {details.isMagical && <span className="text-purple-400">✨ </span>}
             {name}
           </span>
         </div>
 
         {/* Quick stats */}
-        <div className="text-xs text-zinc-400 space-y-0.5">
+        <div className="text-xs text-vellum-300 space-y-0.5">
           {details.damage && (
             <div>
-              <span className="text-red-400 font-mono">{details.damage}</span>
+              <span className="text-amber-400 font-mono">{details.damage}</span>
               {details.damageType && <span className="ml-1">{details.damageType}</span>}
             </div>
           )}
@@ -176,20 +176,20 @@ function TooltipContent({ name, icon, details, position, showClickHint = true }:
 
         {/* Notes preview */}
         {details.notes && (
-          <div className="text-xs text-zinc-500 mt-1 line-clamp-2">
+          <div className="text-xs text-vellum-400 mt-1 line-clamp-2">
             {details.notes}
           </div>
         )}
 
         {/* Click hint - only shown in view mode */}
         {showClickHint && (
-          <div className="text-[10px] text-zinc-600 mt-2 text-center">
+          <div className="text-[10px] text-sepia-600 mt-2 text-center">
             Click for details
           </div>
         )}
 
         {/* Arrow */}
-        <div className="absolute left-1/2 -bottom-1 -translate-x-1/2 w-2 h-2 bg-zinc-900 border-r border-b border-zinc-600 rotate-45" />
+        <div className="absolute left-1/2 -bottom-1 -translate-x-1/2 w-2 h-2 bg-grimoire-900 border-r border-b border-sepia-600 rotate-45" />
       </div>
     </div>
   )
@@ -215,31 +215,31 @@ function DetailModal({ name, icon, details, onClose }: DetailModalProps) {
   }, [onClose])
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
-      <div 
-        className="bg-zinc-800 rounded-lg border border-zinc-700 max-w-md w-full"
+      <div
+        className="bg-grimoire-850 rounded-lg border border-sepia-700 max-w-md w-full"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-zinc-700">
+        <div className="flex items-center justify-between p-4 border-b border-sepia-700">
           <div className="flex items-center gap-3">
             {icon && <span className="text-2xl">{icon}</span>}
             <div>
-              <h3 className="font-semibold text-lg">
+              <h3 className="font-semibold text-lg text-vellum-100">
                 {details.isMagical && <span className="text-purple-400">✨ </span>}
                 {name}
               </h3>
               {details.category && (
-                <p className="text-xs text-zinc-500 capitalize">{details.category}</p>
+                <p className="text-xs text-vellum-400 capitalize">{details.category}</p>
               )}
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-200 text-xl"
+            className="text-vellum-400 hover:text-vellum-100 text-xl"
           >
             ✕
           </button>
@@ -283,10 +283,10 @@ function DetailModal({ name, icon, details, onClose }: DetailModalProps) {
           {/* Description/Notes */}
           {(details.notes || details.description) && (
             <div>
-              <h4 className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-2">
+              <h4 className="text-xs font-medium text-vellum-400 uppercase tracking-wide mb-2">
                 Description
               </h4>
-              <p className="text-sm text-zinc-300 leading-relaxed">
+              <p className="text-sm text-vellum-200 leading-relaxed">
                 {details.description || details.notes}
               </p>
             </div>
@@ -295,14 +295,14 @@ function DetailModal({ name, icon, details, onClose }: DetailModalProps) {
           {/* Properties */}
           {details.properties && Object.keys(details.properties).length > 0 && (
             <div>
-              <h4 className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-2">
+              <h4 className="text-xs font-medium text-vellum-400 uppercase tracking-wide mb-2">
                 Properties
               </h4>
-              <div className="bg-zinc-900 rounded-lg p-3 text-sm">
+              <div className="bg-grimoire-900 rounded-lg p-3 text-sm border border-sepia-800">
                 {Object.entries(details.properties).map(([key, value]) => (
                   <div key={key} className="flex justify-between py-1">
-                    <span className="text-zinc-400 capitalize">{key.replace(/_/g, ' ')}</span>
-                    <span>{String(value)}</span>
+                    <span className="text-vellum-400 capitalize">{key.replace(/_/g, ' ')}</span>
+                    <span className="text-vellum-200">{String(value)}</span>
                   </div>
                 ))}
               </div>
@@ -311,10 +311,10 @@ function DetailModal({ name, icon, details, onClose }: DetailModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-zinc-700">
+        <div className="p-4 border-t border-sepia-700">
           <button
             onClick={onClose}
-            className="w-full py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-sm font-medium transition-colors"
+            className="w-full py-2 bg-sepia-700 hover:bg-sepia-600 text-vellum-100 rounded-lg text-sm font-medium transition-colors"
           >
             Close
           </button>
@@ -326,19 +326,19 @@ function DetailModal({ name, icon, details, onClose }: DetailModalProps) {
 
 // ============ Stat Block ============
 
-function StatBlock({ 
-  label, 
-  value, 
-  highlight = false 
-}: { 
+function StatBlock({
+  label,
+  value,
+  highlight = false
+}: {
   label: string
   value: string
-  highlight?: boolean 
+  highlight?: boolean
 }) {
   return (
-    <div className="bg-zinc-900 rounded-lg p-3">
-      <div className="text-xs text-zinc-500 uppercase tracking-wide mb-1">{label}</div>
-      <div className={`font-medium ${highlight ? 'text-red-400 font-mono' : ''}`}>
+    <div className="bg-grimoire-900 rounded-lg p-3 border border-sepia-800">
+      <div className="text-xs text-vellum-400 uppercase tracking-wide mb-1">{label}</div>
+      <div className={`font-medium ${highlight ? 'text-amber-400 font-mono' : 'text-vellum-100'}`}>
         {value}
       </div>
     </div>

@@ -1,15 +1,16 @@
 /**
  * QuickSlots Component
- * 
+ *
  * Combat inventory with 6 slots for quick-access items.
  * Used for potions, bombs, scrolls, and other frequently used items.
- * 
+ *
  * Features:
- * - 6 slots in a horizontal bar
+ * - 6 slots in a 2x3 grid layout
  * - Shows item name, quantity, and category icon
  * - Lock toggle for editing
  * - Click slot to assign/change item
- * 
+ * - Grimoire/sepia/bronze palette
+ *
  * @example
  * <QuickSlots
  *   characterId={character.id}
@@ -25,7 +26,7 @@ import { useState } from 'react'
 import type { CharacterQuickSlot, CharacterItem, CharacterBrewedItem, QuickSlotNumber } from '@/lib/types'
 import { setQuickSlotItem, setQuickSlotBrewedItem } from '@/lib/db/characters'
 import { formatBrewedEffects } from '@/components/inventory'
-import { ItemTooltip } from '@/components/ui'
+import { QuickSlotCell, getCategoryIcon } from './QuickSlotCell'
 
 // ============ Types ============
 
@@ -35,26 +36,8 @@ interface QuickSlotsProps {
   items: CharacterItem[]
   brewedItems?: CharacterBrewedItem[]
   onUpdate?: () => void
-}
-
-// ============ Category Icons ============
-
-const CATEGORY_ICONS: Record<string, string> = {
-  potion: '🧪',
-  elixir: '🧪',
-  bomb: '💣',
-  scroll: '📜',
-  gear: '⚙️',
-  tool: '🔧',
-  food: '🍖',
-  ammo: '🏹',
-  magic: '🔮',
-  default: '📦',
-}
-
-function getCategoryIcon(category: string | null): string {
-  if (!category) return CATEGORY_ICONS.default
-  return CATEGORY_ICONS[category.toLowerCase()] ?? CATEGORY_ICONS.default
+  /** Compact mode for embedded usage */
+  compact?: boolean
 }
 
 // ============ Component ============
@@ -65,6 +48,7 @@ export function QuickSlots({
   items,
   brewedItems = [],
   onUpdate,
+  compact = false,
 }: QuickSlotsProps) {
   const [locked, setLocked] = useState(true)
   const [selectingSlot, setSelectingSlot] = useState<QuickSlotNumber | null>(null)
@@ -72,7 +56,7 @@ export function QuickSlots({
 
   // Sort slots by number
   const sortedSlots = [...quickSlots].sort((a, b) => a.slot_number - b.slot_number)
-  
+
   // Convert brewed items to unified format for the selector
   // We prefix IDs with 'brewed:' to distinguish them from regular items
   const brewedAsItems: CharacterItem[] = brewedItems.map(b => ({
@@ -85,11 +69,12 @@ export function QuickSlots({
     is_quick_access: false,
     ammo_type: null,
     notes: b.computed_description || null,
+    template_id: null,
   }))
-  
+
   // Combine regular items with brewed items for unified selection
   const allItems = [...items, ...brewedAsItems]
-  
+
   // Track which items are already assigned (both regular and brewed)
   const assignedItemIds = quickSlots
     .filter(s => s.item_id)
@@ -106,9 +91,9 @@ export function QuickSlots({
 
   async function handleAssignItem(itemId: string | null) {
     if (selectingSlot === null) return
-    
+
     let err: string | null = null
-    
+
     if (itemId === null) {
       // Clear the slot
       const result = await setQuickSlotItem(characterId, selectingSlot, null)
@@ -132,7 +117,7 @@ export function QuickSlots({
     }
     setSelectingSlot(null)
   }
-  
+
   // Get current selection for the slot being edited
   function getCurrentSelection(slotNumber: QuickSlotNumber): string | null {
     const slot = quickSlots.find(s => s.slot_number === slotNumber)
@@ -142,17 +127,17 @@ export function QuickSlots({
   }
 
   return (
-    <div className="bg-zinc-800 rounded-lg p-5 border border-zinc-700">
+    <div className={`bg-grimoire-850 rounded-lg border border-sepia-700 ${compact ? 'p-3' : 'p-5'}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wide">Quick Slots</h2>
+        <h2 className="text-sm font-medium text-vellum-300 uppercase tracking-wide">Quick Slots</h2>
         <button
           onClick={() => setLocked(!locked)}
           aria-label={locked ? 'Unlock quick slot editing' : 'Lock quick slot editing'}
           className={`text-xs px-2 py-0.5 rounded transition-colors ${
-            locked 
-              ? 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600' 
-              : 'bg-amber-600 text-white hover:bg-amber-500'
+            locked
+              ? 'bg-grimoire-800 text-vellum-400 hover:bg-grimoire-700 border border-sepia-700'
+              : 'bg-bronze-muted text-grimoire-950 hover:bg-bronze-bright'
           }`}
         >
           {locked ? '🔒' : '🔓'}
@@ -160,19 +145,20 @@ export function QuickSlots({
       </div>
 
       {error && (
-        <div className="text-red-400 text-xs bg-red-900/20 border border-red-800 rounded px-2 py-1 mb-4">
+        <div className="text-red-400 text-xs bg-red-900/20 border border-red-800/50 rounded px-2 py-1 mb-4">
           {error}
         </div>
       )}
 
-      {/* Slots Grid */}
-      <div className="grid grid-cols-6 gap-2">
+      {/* 2x3 Slots Grid */}
+      <div className="grid grid-cols-3 gap-2">
         {([1, 2, 3, 4, 5, 6] as const).map(slotNum => {
           const slot = sortedSlots.find(s => s.slot_number === slotNum)
           return (
-            <QuickSlotButton
+            <QuickSlotCell
               key={slotNum}
-              slot={slot}
+              item={slot?.item ?? null}
+              brewedItem={slot?.brewed_item ?? null}
               slotNumber={slotNum}
               locked={locked}
               onClick={() => handleSlotClick(slotNum)}
@@ -182,9 +168,11 @@ export function QuickSlots({
       </div>
 
       {/* Hint */}
-      <p className="text-xs text-zinc-500 mt-3 text-center">
-        {locked ? 'Unlock to assign items to slots' : 'Click a slot to assign an item'}
-      </p>
+      {!compact && (
+        <p className="text-xs text-vellum-400 mt-3 text-center">
+          {locked ? 'Unlock to assign items to slots' : 'Click a slot to assign an item'}
+        </p>
+      )}
 
       {/* Item Selector Modal */}
       {selectingSlot !== null && (
@@ -198,82 +186,6 @@ export function QuickSlots({
       )}
     </div>
   )
-}
-
-// ============ Sub-components ============
-
-interface QuickSlotButtonProps {
-  slot: CharacterQuickSlot | undefined
-  slotNumber: QuickSlotNumber
-  locked: boolean
-  onClick: () => void
-}
-
-function QuickSlotButton({ slot, slotNumber, locked, onClick }: QuickSlotButtonProps) {
-  // Get display data from either regular item or brewed item
-  const item = slot?.item
-  const brewedItem = slot?.brewed_item
-  const hasContent = item || brewedItem
-  
-  // Unified display values
-  const displayName = item?.name ?? (brewedItem ? formatBrewedEffects(brewedItem.effects) : null)
-  const displayCategory = item?.category ?? brewedItem?.type ?? null
-  const displayQuantity = item?.quantity ?? brewedItem?.quantity ?? 1
-  const isBrewed = !!brewedItem
-  const displayNotes = item?.notes ?? brewedItem?.computedDescription ?? null
-
-  const buttonContent = (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={locked}
-      className={`
-        aspect-square rounded-lg border-2 flex flex-col items-center justify-center
-        transition-all p-1 w-full
-        ${!hasContent 
-          ? 'border-zinc-700 border-dashed bg-zinc-900' 
-          : isBrewed 
-            ? 'border-green-700/50 bg-green-900/20' 
-            : 'border-zinc-600 bg-zinc-900'
-        }
-        ${!locked ? 'hover:border-amber-400 hover:bg-zinc-800 cursor-pointer' : 'cursor-default'}
-      `}
-    >
-      {hasContent && displayName ? (
-        <>
-          <span className="text-lg">{getCategoryIcon(displayCategory)}</span>
-          <span className="text-[10px] text-zinc-300 truncate w-full text-center mt-0.5">
-            {displayName.length > 8 ? displayName.slice(0, 7) + '…' : displayName}
-          </span>
-          {displayQuantity > 1 && (
-            <span className="text-[9px] text-zinc-500">×{displayQuantity}</span>
-          )}
-        </>
-      ) : (
-        <span className="text-xs text-zinc-600">{slotNumber}</span>
-      )}
-    </button>
-  )
-
-  // Wrap with tooltip if slot has content
-  if (hasContent && displayName) {
-    return (
-      <ItemTooltip
-        name={displayName}
-        icon={getCategoryIcon(displayCategory)}
-        details={{
-          category: displayCategory ?? undefined,
-          quantity: displayQuantity,
-          notes: displayNotes ?? undefined,
-        }}
-        clickOnly={!locked} // Only show tooltip when locked (viewing), not when editing
-      >
-        {buttonContent}
-      </ItemTooltip>
-    )
-  }
-
-  return buttonContent
 }
 
 // ============ Item Selector Modal ============
@@ -308,13 +220,13 @@ function ItemSelectorModal({
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-zinc-800 rounded-lg border border-zinc-700 max-w-md w-full max-h-[80vh] flex flex-col">
+      <div className="bg-grimoire-850 rounded-lg border border-sepia-700 max-w-md w-full max-h-[80vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-zinc-700">
-          <h3 className="font-medium">Select Item</h3>
+        <div className="flex items-center justify-between p-4 border-b border-sepia-700">
+          <h3 className="font-medium text-vellum-100">Select Item</h3>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-200"
+            className="text-vellum-400 hover:text-vellum-100"
           >
             ✕
           </button>
@@ -327,23 +239,23 @@ function ItemSelectorModal({
             onClick={() => onSelect(null)}
             className={`
               w-full p-3 rounded-lg text-left mb-2 transition-colors
-              ${currentItemId === null 
-                ? 'bg-zinc-700 border border-zinc-600' 
-                : 'bg-zinc-900 hover:bg-zinc-700 border border-transparent'
+              ${currentItemId === null
+                ? 'bg-bronze-muted/20 border border-bronze-bright'
+                : 'bg-grimoire-900 hover:bg-grimoire-800 border border-transparent hover:border-sepia-700'
               }
             `}
           >
-            <div className="text-sm text-zinc-400 italic">None (empty slot)</div>
+            <div className="text-sm text-vellum-400 italic">None (empty slot)</div>
           </button>
 
           {Object.keys(grouped).length === 0 ? (
-            <div className="text-center text-zinc-500 py-8">
+            <div className="text-center text-vellum-400 py-8">
               No items available
             </div>
           ) : (
             Object.entries(grouped).map(([category, categoryItems]) => (
               <div key={category} className="mb-4">
-                <div className="text-xs text-zinc-500 uppercase tracking-wide mb-2 px-2">
+                <div className="text-xs text-vellum-400 uppercase tracking-wide mb-2 px-2">
                   {getCategoryIcon(category)} {category}
                 </div>
                 {categoryItems.map(item => {
@@ -354,25 +266,25 @@ function ItemSelectorModal({
                       onClick={() => onSelect(item.id)}
                       className={`
                         w-full p-3 rounded-lg text-left mb-1 transition-colors
-                        ${currentItemId === item.id 
-                          ? 'bg-amber-900/30 border border-amber-600' 
-                          : 'bg-zinc-900 hover:bg-zinc-700 border border-transparent'
+                        ${currentItemId === item.id
+                          ? 'bg-bronze-muted/20 border border-bronze-bright'
+                          : 'bg-grimoire-900 hover:bg-grimoire-800 border border-transparent hover:border-sepia-700'
                         }
                       `}
                     >
                       <div className="flex items-center gap-2">
                         <span>{getCategoryIcon(item.category)}</span>
                         <div className="flex-1">
-                          <div className="text-sm font-medium">
+                          <div className="text-sm font-medium text-vellum-100">
                             {item.name}
-                            {isBrewed && <span className="text-xs text-green-400 ml-2">(brewed)</span>}
+                            {isBrewed && <span className="text-xs text-emerald-400 ml-2">(brewed)</span>}
                           </div>
                           {item.notes && (
-                            <div className="text-xs text-zinc-500 truncate">{item.notes}</div>
+                            <div className="text-xs text-vellum-400 truncate">{item.notes}</div>
                           )}
                         </div>
                         {item.quantity > 1 && (
-                          <span className="text-xs text-zinc-400">×{item.quantity}</span>
+                          <span className="text-xs text-vellum-300">×{item.quantity}</span>
                         )}
                       </div>
                     </button>
@@ -384,10 +296,10 @@ function ItemSelectorModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-zinc-700">
+        <div className="p-4 border-t border-sepia-700">
           <button
             onClick={onClose}
-            className="w-full py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-sm font-medium transition-colors"
+            className="w-full py-2 bg-sepia-700 hover:bg-sepia-600 text-vellum-100 rounded-lg text-sm font-medium transition-colors"
           >
             Cancel
           </button>
@@ -400,4 +312,3 @@ function ItemSelectorModal({
 // ============ Exports ============
 
 export type { QuickSlotsProps }
-

@@ -39,8 +39,6 @@ import {
   CoinPurse,
   QuickSlots,
   CharacterBanner,
-  AbilityScorePanel,
-  VitalsPanel,
   EquipmentWeaponsPanel,
 } from '@/components/character'
 import {
@@ -201,8 +199,26 @@ export default function ProfilePage() {
 
   // Has character - show character sheet
   return (
-    <PageLayout maxWidth="max-w-4xl">
-      <CharacterView 
+    <PageLayout
+      maxWidth="max-w-4xl"
+      headerActions={
+        <div className="flex items-center gap-3">
+          <Link
+            href="/edit-character"
+            className="px-3 py-1.5 bg-grimoire-800 hover:bg-grimoire-700 border border-sepia-700/40 rounded text-sm font-medium text-vellum-100 transition-colors"
+          >
+            Edit Character
+          </Link>
+          <button
+            onClick={signOut}
+            className="text-sm text-vellum-400 hover:text-vellum-200 transition-colors"
+          >
+            Sign out
+          </button>
+        </div>
+      }
+    >
+      <CharacterView
         character={character}
         characterSkills={characterSkills}
         characterArmor={characterArmor}
@@ -217,7 +233,6 @@ export default function ProfilePage() {
         onWeaponSlotsChanged={() => character && invalidateWeaponSlots(character.id)}
         onQuickSlotsChanged={() => character && invalidateQuickSlots(character.id)}
         user={user}
-        onSignOut={signOut}
         // Herbalism props (only relevant if character is an herbalist)
         profile={profile}
         updateProfile={updateProfile}
@@ -318,7 +333,6 @@ function CharacterView({
   onWeaponSlotsChanged,
   onQuickSlotsChanged,
   user,
-  onSignOut,
   profile,
   updateProfile,
   isProfileLoaded,
@@ -340,7 +354,6 @@ function CharacterView({
   onWeaponSlotsChanged: () => void
   onQuickSlotsChanged: () => void
   user: { email?: string }
-  onSignOut: () => void
   profile: { 
     name: string
     isHerbalist: boolean
@@ -382,34 +395,15 @@ function CharacterView({
 
   return (
     <div className="space-y-6">
-      {/* Character Banner */}
+      {/* Character Banner (includes vitals and ability scores) */}
       <CharacterBanner
         character={character}
-        onSignOut={onSignOut}
         userEmail={user.email}
+        currentHP={character.hp_current}
+        maxHP={maxHP}
+        armorClass={totalAC}
+        armorLevel={armorLevel}
       />
-
-      {/* Vitals + Ability Scores row */}
-      <div className="grid md:grid-cols-[240px_1fr] gap-4">
-        <VitalsPanel
-          currentHP={character.hp_current}
-          maxHP={maxHP}
-          armorClass={totalAC}
-          armorLevel={armorLevel}
-          dexScore={character.dex}
-        />
-        <AbilityScorePanel
-          stats={{
-            str: character.str,
-            dex: character.dex,
-            con: character.con,
-            int: character.int,
-            wis: character.wis,
-            cha: character.cha,
-            hon: character.hon,
-          }}
-        />
-      </div>
 
       {/* Skills + Coin Purse row */}
       <div className="grid md:grid-cols-2 gap-4">

@@ -6,7 +6,7 @@ import type { AbilityStat } from '@/lib/types'
 type StatBlockProps = {
   stat: AbilityStat
   value: number
-  variant?: 'default' | 'honor' | 'compact'
+  variant?: 'default' | 'honor' | 'compact' | 'banner'
   className?: string
 }
 
@@ -39,6 +39,20 @@ export function StatBlock({
         <div className="text-[10px] uppercase tracking-wide text-vellum-400">{stat}</div>
         <div className="text-sm font-bold text-vellum-100">{value}</div>
         <div className={`text-xs ${modifierClass}`}>{modifierText}</div>
+      </div>
+    )
+  }
+
+  if (variant === 'banner') {
+    return (
+      <div className={`text-center min-w-[32px] ${className}`}>
+        <div className={`text-[11px] uppercase tracking-wide font-medium ${isHonor ? 'text-amber-400' : 'text-vellum-400'}`}>
+          {stat}
+        </div>
+        <div className={`text-base font-bold leading-tight ${isHonor ? 'text-amber-200' : 'text-vellum-100'}`}>
+          {value}
+        </div>
+        <div className={`text-xs font-medium ${modifierClass}`}>{modifierText}</div>
       </div>
     )
   }

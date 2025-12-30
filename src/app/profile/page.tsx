@@ -405,6 +405,20 @@ function CharacterView({
         armorLevel={armorLevel}
       />
 
+      {/* Equipment Panel (Armor + Weapons) */}
+      <EquipmentWeaponsPanel
+        characterArmor={characterArmor}
+        armorSlots={allArmorSlots}
+        totalAC={totalAC}
+        armorLevel={armorLevel}
+        strengthScore={character.str}
+        onSetArmor={handleSetArmor}
+        characterId={character.id}
+        weaponSlots={weaponSlots}
+        weapons={weapons}
+        onWeaponSlotsChanged={onWeaponSlotsChanged}
+      />
+
       {/* Skills + Coin Purse row */}
       <div className="grid md:grid-cols-2 gap-4">
         {/* Skills Card */}
@@ -438,20 +452,6 @@ function CharacterView({
           />
         </GrimoireCard>
       </div>
-
-      {/* Equipment Panel (Armor + Weapons) */}
-      <EquipmentWeaponsPanel
-        characterArmor={characterArmor}
-        armorSlots={allArmorSlots}
-        totalAC={totalAC}
-        armorLevel={armorLevel}
-        strengthScore={character.str}
-        onSetArmor={handleSetArmor}
-        characterId={character.id}
-        weaponSlots={weaponSlots}
-        weapons={weapons}
-        onWeaponSlotsChanged={onWeaponSlotsChanged}
-      />
 
       {/* Quick Slots */}
       <QuickSlots

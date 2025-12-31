@@ -133,6 +133,26 @@ export default function InventoryPage() {
     return <InventorySkeleton />
   }
 
+  // Gate: require character for inventory
+  if (!character) {
+    return (
+      <PageLayout>
+        <h1 className="text-3xl font-bold mb-4">Inventory</h1>
+        <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-6">
+          <p className="text-amber-200 mb-4">
+            You need to create a character before you can view your inventory.
+          </p>
+          <Link
+            href="/profile"
+            className="inline-block px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors"
+          >
+            Create Character
+          </Link>
+        </div>
+      </PageLayout>
+    )
+  }
+
   const dataError = herbsError || brewedError || error
   
   // Calculate totals

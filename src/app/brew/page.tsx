@@ -11,6 +11,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useProfile } from '@/lib/profile'
 import { useAuth } from '@/lib/auth'
 import {
@@ -77,8 +78,9 @@ type BrewPhase =
 type InventoryItem = CharacterHerb & { herb: NonNullable<CharacterHerb['herb']> }
 
 export default function BrewPage() {
+  const router = useRouter()
   const { user, isLoading: authLoading } = useAuth()
-  const { profile, profileId, isLoaded: profileLoaded } = useProfile()
+  const { profile, isLoaded: profileLoaded } = useProfile()
   const { invalidateCharacterHerbs, invalidateCharacterBrewedItems } = useInvalidateQueries()
 
   // Character data - herbalism is now character-based
@@ -104,8 +106,8 @@ export default function BrewPage() {
   // Extract recipes from character_recipes join
   const recipes = useMemo(() => {
     return characterRecipes
-      .filter((cr: CharacterRecipe) => cr.recipes)
-      .map((cr: CharacterRecipe) => cr.recipes as Recipe)
+      .filter((cr: CharacterRecipe) => cr.recipe)
+      .map((cr: CharacterRecipe) => cr.recipe as Recipe)
       .sort((a, b) => a.name.localeCompare(b.name))
   }, [characterRecipes])
   
@@ -126,6 +128,13 @@ export default function BrewPage() {
   // Derived loading and error state
   const loading = !profileLoaded || inventoryLoading || recipesLoading
   const error = inventoryError?.message || recipesError?.message || mutationError
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login')
+    }
+  }, [authLoading, user, router])
 
   // ============ Computed Values ============
 
@@ -545,25 +554,6 @@ export default function BrewPage() {
 
   // ============ Render ============
 
-  if (profileLoaded && !profile.isHerbalist) {
-    return (
-      <PageLayout>
-        <h1 className="text-3xl font-bold mb-4">⚗️ Brew</h1>
-        <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-6">
-          <p className="text-amber-200">
-            Only characters with the Herbalist vocation can brew elixirs and bombs.
-          </p>
-          <Link 
-            href="/profile" 
-            className="inline-block mt-4 px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors"
-          >
-            Update Profile
-          </Link>
-        </div>
-      </PageLayout>
-    )
-  }
-
   if (!profileLoaded || loading || authLoading || characterLoading) {
     return <BrewSkeleton />
   }
@@ -582,6 +572,26 @@ export default function BrewPage() {
             className="inline-block px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors"
           >
             Create Character
+          </Link>
+        </div>
+      </PageLayout>
+    )
+  }
+
+  // Gate: require herbalist vocation for brewing
+  if (character.vocation !== 'herbalist') {
+    return (
+      <PageLayout>
+        <h1 className="text-3xl font-bold mb-4">Brew</h1>
+        <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-6">
+          <p className="text-amber-200">
+            Only characters with the Herbalist vocation can brew elixirs and bombs.
+          </p>
+          <Link
+            href="/profile"
+            className="inline-block mt-4 px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors"
+          >
+            View Profile
           </Link>
         </div>
       </PageLayout>

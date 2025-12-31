@@ -9,6 +9,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useProfile } from '@/lib/profile'
 import { useAuth } from '@/lib/auth'
@@ -30,10 +31,10 @@ type ForagedHerb = {
 // ============ Main Component ============
 
 export default function ForagePage() {
+  const router = useRouter()
   const { user, isLoading: authLoading } = useAuth()
   const {
     profile,
-    profileId,
     isLoaded: profileLoaded,
     sessionsUsedToday,
     spendForagingSessions,
@@ -66,6 +67,13 @@ export default function ForagePage() {
   const totalAllocated = Object.values(biomeAllocations).reduce((sum, n) => sum + n, 0)
   const canAllocateMore = totalAllocated < sessionsRemaining
   const error = biomesError?.message || mutationError
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login')
+    }
+  }, [authLoading, user, router])
 
   // Reset allocations if sessions remaining decreases
   useEffect(() => {

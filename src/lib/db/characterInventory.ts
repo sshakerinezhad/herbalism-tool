@@ -13,13 +13,14 @@
  */
 
 import { supabase } from '../supabase'
-import type { 
-  CharacterHerb, 
-  CharacterBrewedItem, 
+import type {
+  CharacterHerb,
+  CharacterBrewedItem,
   CharacterRecipe,
   CharacterWeapon,
   CharacterItem,
   Herb,
+  Recipe,
   WeaponTemplate,
   Material,
   ItemTemplate,
@@ -235,7 +236,14 @@ export async function fetchCharacterRecipes(characterId: string): Promise<{
     return { data: null, error: error.message }
   }
 
-  return { data: data as CharacterRecipe[], error: null }
+  // Transform joined data (match pattern from fetchCharacterHerbs)
+  const transformed = (data || []).map(row => ({
+    ...row,
+    recipe: row.recipes as Recipe,
+    recipes: undefined,
+  })) as CharacterRecipe[]
+
+  return { data: transformed, error: null }
 }
 
 /**

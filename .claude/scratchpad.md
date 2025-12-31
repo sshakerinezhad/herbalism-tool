@@ -33,16 +33,48 @@ Issues identified in review that need to be addressed.
 
 ---
 
-### Fix 2: Auth Redirects for Forage/Brew
+### Fix 2: Auth Redirects for Forage/Brew ✅ COMPLETED
 
-**Goal:** Consistent auth handling - redirect to /login if not authenticated.
+**Goal:** Add consistent auth handling to forage and brew pages - redirect to `/login` if user is not authenticated.
 
-**Files to modify:**
-- `src/app/forage/page.tsx`
-- `src/app/brew/page.tsx`
+**Context:** Currently, both pages check `authLoading` for skeleton display but don't redirect unauthenticated users. The profile page (`src/app/profile/page.tsx:166-170`) has the correct pattern to follow.
 
 **Implementation:**
-Add useEffect in both pages (same pattern as profile/inventory):
+- Added `import { useRouter } from 'next/navigation'` to both pages
+- Added `const router = useRouter()` in both components
+- Added redirect useEffect that checks `!authLoading && !user` and redirects to `/login`
+- `src/app/forage/page.tsx:12-13,34,72-77` - Import, router init, and redirect effect
+- `src/app/brew/page.tsx:14-15,81,132-137` - Import, router init, and redirect effect
+- Build passes successfully ✅
+
+**Reference Pattern (from profile page):**
+```typescript
+import { useRouter } from 'next/navigation'
+// ...
+const router = useRouter()
+// ...
+useEffect(() => {
+  if (!authLoading && !user) {
+    router.push('/login')
+  }
+}, [authLoading, user, router])
+```
+
+**Changes:**
+
+#### 1. `src/app/forage/page.tsx`
+
+**Add import** (around line 11):
+```typescript
+import { useRouter } from 'next/navigation'
+```
+
+**Add router initialization** (after line 33, inside `ForagePage` component):
+```typescript
+const router = useRouter()
+```
+
+**Add redirect effect** (after the router initialization):
 ```typescript
 useEffect(() => {
   if (!authLoading && !user) {
@@ -51,72 +83,251 @@ useEffect(() => {
 }, [authLoading, user, router])
 ```
 
+#### 2. `src/app/brew/page.tsx`
+
+**Add import** (around line 13):
+```typescript
+import { useRouter } from 'next/navigation'
+```
+
+**Add router initialization** (after line 80, inside `BrewPage` component):
+```typescript
+const router = useRouter()
+```
+
+**Add redirect effect** (after the router initialization):
+```typescript
+useEffect(() => {
+  if (!authLoading && !user) {
+    router.push('/login')
+  }
+}, [authLoading, user, router])
+```
+
+**Verification:**
+- Run `npm run build` to ensure no TypeScript errors
+- Test manually: visit `/forage` or `/brew` while logged out → should redirect to `/login`
+
 ---
 
-### Fix 3: Herbalist Vocation Check
+### Fix 3: Herbalist Vocation Check ✅ COMPLETED
 
 **Goal:** Use `character.vocation === 'herbalist'` instead of `profile.isHerbalist`.
 
-**Files to modify:**
-- `src/app/brew/page.tsx`
-
 **Implementation:**
-Change from `if (!profile.isHerbalist)` to `if (character?.vocation !== 'herbalist')`.
+- Removed deprecated `profile.isHerbalist` check from `src/app/brew/page.tsx` (old lines 557-574)
+- Added new vocation check using `character.vocation !== 'herbalist'` at lines 581-599
+- Properly ordered render checks:
+  1. Loading skeleton (lines 557-559)
+  2. Character existence check (lines 561-579)
+  3. Herbalist vocation check (lines 581-599)
+- Build passes successfully ✅
 
-Reorder gating logic:
-1. Check auth (redirect if not authenticated)
-2. Check character exists (show CTA if not)
-3. Check vocation is herbalist (show message if not)
+**Changes:**
+- `src/app/brew/page.tsx:557-599` - Removed profile-based check, added character-based vocation check
 
 ---
 
-### Fix 4: Full-Page Character CTA on Inventory
+### Fix 4: Full-Page Character CTA on Inventory ✅ COMPLETED
 
-**Goal:** Show full-page CTA when no character exists, not just partial in equipment section.
-
-**Files to modify:**
-- `src/app/inventory/page.tsx`
+**Goal:** Show a full-page CTA when no character exists on the inventory page, instead of just rendering an empty/broken UI.
 
 **Implementation:**
-After auth loading check, add character existence check with full-page CTA.
+- Added character existence check to `src/app/inventory/page.tsx` at lines 136-154
+- Check occurs after loading state but before main render
+- Shows full-page CTA with "Create Character" link when no character exists
+- Build passes successfully ✅
+
+**Check Order After Fix:**
+1. Loading skeleton (lines 132-134)
+2. Character existence check (lines 136-154) ✅ NEW
+3. Main render with full inventory UI
+
+**Changes:**
+- `src/app/inventory/page.tsx:136-154` - Added character existence gate with full-page CTA
 
 ---
 
-### Fix 5: Type Safety - CharacterRecipe Join Transformation
+### Fix 5: Type Safety - CharacterRecipe Join Transformation ✅ COMPLETED
 
-**Goal:** Transform `fetchCharacterRecipes` to follow the same pattern as `fetchCharacterHerbs`.
+**Goal:** Transform `fetchCharacterRecipes` to follow the same pattern as `fetchCharacterHerbs` - transforming the Supabase join data to use a cleaner property name (`recipe` instead of `recipes`).
 
-**Files to modify:**
-- `src/lib/db/characterInventory.ts` - Transform join data
-- `src/lib/types.ts` - Update CharacterRecipe type
+**Current State:**
+
+#### 1. `src/lib/types.ts` (line 359-364)
+```typescript
+export type CharacterRecipe = {
+  id: number
+  character_id: string
+  recipe_id: number
+  unlocked_at: string
+  recipes?: Recipe  // Joined from recipes table - plural, optional
+}
+```
+
+#### 2. `src/lib/db/characterInventory.ts` (lines 222-239)
+```typescript
+export async function fetchCharacterRecipes(characterId: string): Promise<{
+  data: CharacterRecipe[] | null
+  error: string | null
+}> {
+  const { data, error } = await supabase
+    .from('character_recipes')
+    .select(`*, recipes (*)`)
+    .eq('character_id', characterId)
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  return { data: data as CharacterRecipe[], error: null }  // NO transformation!
+}
+```
+
+#### 3. `src/app/brew/page.tsx` (lines 107-111)
+```typescript
+const recipes = useMemo(() => {
+  return characterRecipes
+    .filter((cr: CharacterRecipe) => cr.recipes)  // Filter needed because optional
+    .map((cr: CharacterRecipe) => cr.recipes as Recipe)  // Cast needed
+    .sort((a, b) => a.name.localeCompare(b.name))
+}, [characterRecipes])
+```
+
+**Pattern to Follow:**
+
+**`fetchCharacterHerbs`** (lines 34-58) does it right:
+```typescript
+// Transform joined data
+const transformed = (data || []).map(row => ({
+  ...row,
+  herb: row.herbs as Herb,
+  herbs: undefined,
+})) as CharacterHerb[]
+
+return { data: transformed, error: null }
+```
 
 **Implementation:**
-1. In `types.ts`, change CharacterRecipe:
-   - Remove: `recipes?: Recipe`
-   - Add: `recipe: Recipe` (required, singular)
 
-2. In `fetchCharacterRecipes`, add transformation:
-   ```typescript
-   const transformed = (data || []).map(row => ({
-     ...row,
-     recipe: row.recipes as Recipe,
-     recipes: undefined,
-   })) as CharacterRecipe[]
-   ```
+#### Step 1: Update `src/lib/types.ts` (line 364)
 
-3. In `brew/page.tsx`, simplify recipe extraction:
-   - Remove filter for `cr.recipes`
-   - Change: `cr.recipes as Recipe` → `cr.recipe`
+Change:
+```typescript
+recipes?: Recipe  // Joined from recipes table
+```
+
+To:
+```typescript
+recipe?: Recipe  // Joined from recipes table (singular, transformed)
+```
+
+#### Step 2: Update `src/lib/db/characterInventory.ts` (lines 234-238)
+
+Change:
+```typescript
+return { data: data as CharacterRecipe[], error: null }
+```
+
+To:
+```typescript
+// Transform joined data (match pattern from fetchCharacterHerbs)
+const transformed = (data || []).map(row => ({
+  ...row,
+  recipe: row.recipes as Recipe,
+  recipes: undefined,
+})) as CharacterRecipe[]
+
+return { data: transformed, error: null }
+```
+
+#### Step 3: Update `src/app/brew/page.tsx` (lines 107-111)
+
+Change:
+```typescript
+const recipes = useMemo(() => {
+  return characterRecipes
+    .filter((cr: CharacterRecipe) => cr.recipes)
+    .map((cr: CharacterRecipe) => cr.recipes as Recipe)
+    .sort((a, b) => a.name.localeCompare(b.name))
+}, [characterRecipes])
+```
+
+To:
+```typescript
+const recipes = useMemo(() => {
+  return characterRecipes
+    .filter((cr: CharacterRecipe) => cr.recipe)
+    .map((cr: CharacterRecipe) => cr.recipe as Recipe)
+    .sort((a, b) => a.name.localeCompare(b.name))
+}, [characterRecipes])
+```
+
+**Files to Modify:**
+1. `src/lib/types.ts` - Line 364: `recipes?` → `recipe?`
+2. `src/lib/db/characterInventory.ts` - Lines 234-238: Add transformation
+3. `src/app/brew/page.tsx` - Lines 109-110: `cr.recipes` → `cr.recipe`
+
+**Implementation:**
+- Updated `src/lib/types.ts:364` - Changed `recipes?: Recipe` to `recipe?: Recipe`
+- Updated `src/lib/db/characterInventory.ts:16-27` - Added `Recipe` to imports
+- Updated `src/lib/db/characterInventory.ts:238-245` - Added transformation logic matching `fetchCharacterHerbs` pattern
+- Updated `src/app/brew/page.tsx:109-110` - Changed `cr.recipes` to `cr.recipe` in useMemo
+- Build passes successfully ✅
 
 ---
 
-### Fix 6: Cleanup - Remove Unused Variables
+### Fix 6: Cleanup - Remove Unused Variables ✅ COMPLETED
 
-**Goal:** Remove unused `profileId` destructuring.
+**Goal:** Remove unused `profileId` destructuring from `useProfile()` calls in forage and brew pages.
 
-**Files to modify:**
-- `src/app/forage/page.tsx` - Remove `profileId` from useProfile destructuring
-- `src/app/brew/page.tsx` - Remove `profileId` from useProfile destructuring
+**Files to Modify:**
+
+#### 1. `src/app/forage/page.tsx` (lines 36-43)
+
+**Current:**
+```typescript
+const {
+  profile,
+  profileId,
+  isLoaded: profileLoaded,
+  sessionsUsedToday,
+  spendForagingSessions,
+  longRest
+} = useProfile()
+```
+
+**Change to:**
+```typescript
+const {
+  profile,
+  isLoaded: profileLoaded,
+  sessionsUsedToday,
+  spendForagingSessions,
+  longRest
+} = useProfile()
+```
+
+#### 2. `src/app/brew/page.tsx` (line 83)
+
+**Current:**
+```typescript
+const { profile, profileId, isLoaded: profileLoaded } = useProfile()
+```
+
+**Change to:**
+```typescript
+const { profile, isLoaded: profileLoaded } = useProfile()
+```
+
+**Implementation:**
+- Removed `profileId` from `src/app/forage/page.tsx:36-42`
+- Removed `profileId` from `src/app/brew/page.tsx:83`
+- Build passes successfully ✅
+
+**Verification:**
+- ✅ Build passes (`npm run build`)
+- ✅ No "unused variable" warnings remain
 
 ---
 

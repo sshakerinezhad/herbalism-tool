@@ -344,10 +344,109 @@ const { profile, isLoaded: profileLoaded } = useProfile()
 
 ## Verification Checklist
 
-- [ ] Build passes (`npm run build`)
+- [x] Build passes (`npm run build`)
 - [ ] New herbalist character gets base recipes
 - [ ] New non-herbalist character has empty recipe book
-- [ ] Forage/Brew redirect to /login when not authenticated
-- [ ] Brew shows "herbalist only" message for non-herbalist characters
-- [ ] Inventory shows full-page CTA when no character
-- [ ] No TypeScript errors or unused variable warnings
+- [x] Forage/Brew redirect to /login when not authenticated
+- [x] Brew shows "herbalist only" message for non-herbalist characters
+- [x] Inventory shows full-page CTA when no character
+- [x] No TypeScript errors or unused variable warnings
+
+---
+
+## Post-Review Fixes ✅ COMPLETED
+
+**Context:** Codex identified three remaining issues after the initial migration fixes.
+
+### Fix 1: Remove Legacy Recipe Seeding ✅ COMPLETED
+
+**Problem:** `initializeBaseRecipes()` in `src/lib/profiles.ts:87-92` was still populating deprecated `user_recipes` table on profile creation.
+
+**Implementation:**
+- Removed import: `import { initializeBaseRecipes } from './recipes'` (line 10)
+- Removed function call and error handling block (lines 87-92)
+- Build passes successfully ✅
+
+### Fix 2: Add Join Guard to fetchCharacterRecipes ✅ COMPLETED
+
+**Problem:** `fetchCharacterRecipes` didn't guard against orphaned joins (deleted recipes).
+
+**Implementation:**
+- Added `.filter(row => row.recipes)` before transformation in `src/lib/db/characterInventory.ts:241`
+- Prevents null recipe data from being cast to Recipe type
+- Build passes successfully ✅
+
+### Fix 3: Brew Mutation Error Handling ✅ COMPLETED
+
+**Problem:** Both `executeBrew` and `executeBrewWithEffects` ignored mutation failures, risking data desync.
+
+**Implementation:**
+
+#### `executeBrew` (src/app/brew/page.tsx:365-407)
+- Added error checking to herb removal loop (lines 377-380)
+- Added error checking to `addCharacterBrewedItem` (lines 387-399)
+- Aborts brewing and sets `mutationError` state on failure
+- Still invalidates herb cache if item creation fails (herbs already consumed)
+
+#### `executeBrewWithEffects` (src/app/brew/page.tsx:493-575)
+- Added error checking to herb removal loop (lines 505-508)
+- Added error checking to single-batch `addCharacterBrewedItem` (lines 521-533)
+- Added error checking to batch-loop `addCharacterBrewedItem` (lines 556-566)
+- In batch mode, continues brewing remaining items but logs error
+- Build passes successfully ✅
+
+**Error UX:**
+- Herb removal fails → abort immediately, show error
+- Item creation fails → abort (single) or continue batch (batch mode), show error
+- Uses existing `mutationError` state for user feedback
+
+**Files Modified:**
+1. `src/lib/profiles.ts` - Removed legacy seeding
+2. `src/lib/db/characterInventory.ts` - Added join guard
+3. `src/app/brew/page.tsx` - Added mutation error handling
+
+**Verification:**
+- ✅ Build passes (`npm run build`)
+- ✅ All TypeScript checks pass
+
+---
+
+## Final Polish: Brew Error Recovery + Cleanup ✅ COMPLETED
+
+**Context:** Codex review identified UI getting stuck on "Brewing..." when errors occur, and unused imports.
+
+### Fix 1: Brew Error Recovery UI ✅ COMPLETED
+
+**Problem:** When herb removal or brewed item creation fails, `mutationError` is set but phase remains `'brewing'`, leaving user stuck on ⚗️ animation with no recovery action.
+
+**Solution:** Modified brewing phase render to show error state with "Start Over" button when `mutationError` is set.
+
+**Implementation:**
+- Updated `src/app/brew/page.tsx:799-822`
+- Added conditional render checking `mutationError` state
+- Error state shows 💥 icon, error message, and reset button
+- Button calls existing `reset()` function to return to initial phase
+- Build passes successfully ✅
+
+**UX Flow:**
+- Normal brewing: Shows ⚗️ with "Brewing..."
+- Brewing fails: Shows 💥 with "Brewing failed", error details, and "Start Over" button
+- Click "Start Over": Calls `reset()` → returns to `select-herbs` or `select-recipes`
+
+### Fix 2: Remove Unused LoadingState Imports ✅ COMPLETED
+
+**Problem:** `LoadingState` imported but never used in forage and brew pages (lint warnings).
+
+**Implementation:**
+- Removed from `src/app/brew/page.tsx:38`
+- Removed from `src/app/forage/page.tsx:21`
+- Loading states handled by `BrewSkeleton` and `ForageSkeleton` instead
+- Build passes successfully ✅
+
+**Files Modified:**
+1. `src/app/brew/page.tsx` - Added error recovery UI, removed unused import
+2. `src/app/forage/page.tsx` - Removed unused import
+
+**Verification:**
+- ✅ Build passes (`npm run build`)
+- ✅ No TypeScript errors or lint warnings

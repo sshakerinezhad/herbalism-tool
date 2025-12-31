@@ -237,11 +237,13 @@ export async function fetchCharacterRecipes(characterId: string): Promise<{
   }
 
   // Transform joined data (match pattern from fetchCharacterHerbs)
-  const transformed = (data || []).map(row => ({
-    ...row,
-    recipe: row.recipes as Recipe,
-    recipes: undefined,
-  })) as CharacterRecipe[]
+  const transformed = (data || [])
+    .filter(row => row.recipes)  // Guard against orphaned joins
+    .map(row => ({
+      ...row,
+      recipe: row.recipes as Recipe,
+      recipes: undefined,
+    })) as CharacterRecipe[]
 
   return { data: transformed, error: null }
 }

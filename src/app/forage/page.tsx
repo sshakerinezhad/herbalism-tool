@@ -18,7 +18,7 @@ import { rollD20, rollHerbQuantity, weightedRandomSelect } from '@/lib/dice'
 import { Biome, Herb, BiomeHerb, SessionResult, ForageState } from '@/lib/types'
 import { addCharacterHerbs, removeCharacterHerbs } from '@/lib/db/characterInventory'
 import { FORAGING_DC, getElementSymbol } from '@/lib/constants'
-import { PageLayout, LoadingState, ErrorDisplay, ForageSkeleton } from '@/components/ui'
+import { PageLayout, ErrorDisplay, ForageSkeleton } from '@/components/ui'
 
 // ============ Types ============
 

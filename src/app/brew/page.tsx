@@ -35,7 +35,7 @@ import type { CharacterHerb, CharacterRecipe } from '@/lib/types'
 import { Recipe } from '@/lib/types'
 import { rollD20 } from '@/lib/dice'
 import { BREWING_DC, MAX_HERBS_PER_BREW, getElementSymbol } from '@/lib/constants'
-import { PageLayout, LoadingState, ErrorDisplay, BrewSkeleton } from '@/components/ui'
+import { PageLayout, ErrorDisplay, BrewSkeleton } from '@/components/ui'
 import { 
   HerbSelector, 
   SelectedHerbsSummary,
@@ -374,7 +374,11 @@ export default function BrewPage() {
       if (qty > 0) {
         const item = inventory.find(i => i.id === itemId)
         if (item) {
-          await removeCharacterHerbs(characterId, item.herb.id, qty)
+          const { error } = await removeCharacterHerbs(characterId, item.herb.id, qty)
+          if (error) {
+            setMutationError(`Failed to remove herbs: ${error}`)
+            return
+          }
         }
       }
     }
@@ -384,13 +388,19 @@ export default function BrewPage() {
 
     if (success) {
       const effectNames = pairedEffects.flatMap(e => Array(e.count).fill(e.recipe.name))
-      await addCharacterBrewedItem(
+      const { error } = await addCharacterBrewedItem(
         characterId,
         type,
         effectNames,
         description,
         Object.keys(choices).length > 0 ? choices : {}
       )
+      if (error) {
+        setMutationError(`Failed to create brewed item: ${error}`)
+        // Still invalidate herbs cache since they were consumed
+        invalidateCharacterHerbs(characterId)
+        return
+      }
       // Invalidate brewed items cache so inventory page shows the new item
       invalidateCharacterBrewedItems(characterId)
     }
@@ -492,7 +502,11 @@ export default function BrewPage() {
       if (qty > 0) {
         const item = inventory.find(i => i.id === itemId)
         if (item) {
-          await removeCharacterHerbs(characterId, item.herb.id, qty)
+          const { error } = await removeCharacterHerbs(characterId, item.herb.id, qty)
+          if (error) {
+            setMutationError(`Failed to remove herbs: ${error}`)
+            return
+          }
         }
       }
     }
@@ -504,13 +518,19 @@ export default function BrewPage() {
 
       if (success) {
         const effectNames = effects.flatMap(e => Array(e.count).fill(e.recipe.name))
-        await addCharacterBrewedItem(
+        const { error } = await addCharacterBrewedItem(
           characterId,
           type,
           effectNames,
           description,
           Object.keys(choicesData).length > 0 ? choicesData : {}
         )
+        if (error) {
+          setMutationError(`Failed to create brewed item: ${error}`)
+          // Still invalidate herbs cache since they were consumed
+          invalidateCharacterHerbs(characterId)
+          return
+        }
         invalidateCharacterBrewedItems(characterId)
       }
       invalidateCharacterHerbs(characterId)
@@ -533,13 +553,17 @@ export default function BrewPage() {
       if (success) {
         successCount++
         const effectNames = effects.flatMap(e => Array(e.count).fill(e.recipe.name))
-        await addCharacterBrewedItem(
+        const { error } = await addCharacterBrewedItem(
           characterId,
           type,
           effectNames,
           description,
           Object.keys(choicesData).length > 0 ? choicesData : {}
         )
+        if (error) {
+          setMutationError(`Failed to create brewed item: ${error}`)
+          // Continue with remaining batch, invalidate caches at end
+        }
       }
     }
 
@@ -775,8 +799,24 @@ export default function BrewPage() {
       {phase.phase === 'brewing' && (
         <div className="flex items-center justify-center py-16">
           <div className="text-center">
-            <div className="text-4xl mb-4">⚗️</div>
-            <p className="text-xl">Brewing...</p>
+            {mutationError ? (
+              <>
+                <div className="text-4xl mb-4">💥</div>
+                <p className="text-xl text-red-400 mb-2">Brewing failed</p>
+                <p className="text-sm text-stone-500 mb-4">{mutationError}</p>
+                <button
+                  onClick={reset}
+                  className="px-4 py-2 bg-stone-700 hover:bg-stone-600 rounded-lg text-stone-200 transition-colors"
+                >
+                  Start Over
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="text-4xl mb-4">⚗️</div>
+                <p className="text-xl">Brewing...</p>
+              </>
+            )}
           </div>
         </div>
       )}

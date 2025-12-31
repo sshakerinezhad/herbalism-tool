@@ -324,28 +324,26 @@ function mapProfileToDatabase(profile: Partial<Profile>): object {
 
 ### Session Tracking
 
-Foraging sessions are tracked in localStorage, not the database:
+Foraging sessions are tracked in localStorage (scoped to user ID), not the database:
 
 ```typescript
 // In ProfileProvider
-const [sessionsUsedToday, setSessionsUsedToday] = useState(0)
+const SESSIONS_KEY_PREFIX = 'herbalism-sessions-used'
+const getSessionsKey = (userId: string) => `${SESSIONS_KEY_PREFIX}:${userId}`
 
-useEffect(() => {
-  const stored = localStorage.getItem('herbalism-sessions-used')
-  if (stored) {
-    const { count, date } = JSON.parse(stored)
-    // Check if it's the same day
-    if (date === new Date().toDateString()) {
-      setSessionsUsedToday(count)
-    }
-  }
-}, [])
+// Load on init
+const sessionsKey = getSessionsKey(user.id)
+const stored = localStorage.getItem(sessionsKey)
+
+// Save on change
+localStorage.setItem(sessionsKey, sessionsUsedToday.toString())
 ```
 
-**Why localStorage?** 
+**Why localStorage?**
 - Sessions reset on "long rest" (sleep), not at midnight
 - No need to persist across devices
 - Simpler than tracking in DB
+- Scoped to user ID to prevent cross-user session leakage
 
 ---
 
@@ -514,10 +512,12 @@ function applyChoices(description: string, choices: BrewChoices): string {
 
 ### Brewing Roll
 
+**Note:** Brewing is now character-based. The `characterId` is required, and all herbalism data (herbs, brewed items, recipes) is stored in `character_*` tables.
+
 ```typescript
 async function brew(
-  userId: string,
-  herbs: InventoryItem[],
+  characterId: string,  // Character ID, not user ID
+  herbs: CharacterHerb[],
   pairings: Pairing[],
   choices: BrewChoices,
   modifier: number
@@ -529,19 +529,20 @@ async function brew(
   if (success) {
     // Calculate final description with potency and choices
     const description = computeDescription(pairings, choices)
-    
-    // Save to user_brewed
-    await saveBrewedItem(userId, {
+
+    // Save to character_brewed
+    await addCharacterBrewedItem(characterId, {
       type: determineType(pairings),
       effects: pairings.map(p => p.recipe.name),
-      quantity: 1,
       choices,
       computed_description: description
     })
   }
 
-  // Always consume herbs
-  await removeHerbsFromInventory(userId, herbs)
+  // Always consume herbs from character_herbs
+  for (const herb of herbs) {
+    await removeCharacterHerbs(characterId, herb.herb_id, 1)
+  }
 
   return { success, roll, total }
 }
@@ -569,10 +570,12 @@ interface Recipe {
 
 ### Recipe Initialization
 
-New users get base (non-secret) recipes:
+**Note:** Recipe knowledge is now character-based, stored in `character_recipes`.
+
+New characters get base (non-secret) recipes:
 
 ```typescript
-async function initializeBaseRecipes(userId: string) {
+async function initializeBaseRecipes(characterId: string) {
   // Get all non-secret recipes
   const { data: recipes } = await supabase
     .from('recipes')
@@ -581,13 +584,13 @@ async function initializeBaseRecipes(userId: string) {
 
   if (!recipes) return
 
-  // Insert user_recipes entries
-  const userRecipes = recipes.map(r => ({
-    user_id: userId,
+  // Insert character_recipes entries
+  const characterRecipes = recipes.map(r => ({
+    character_id: characterId,
     recipe_id: r.id
   }))
 
-  await supabase.from('user_recipes').insert(userRecipes)
+  await supabase.from('character_recipes').insert(characterRecipes)
 }
 ```
 
@@ -595,7 +598,7 @@ async function initializeBaseRecipes(userId: string) {
 
 ```typescript
 async function unlockRecipeWithCode(
-  userId: string, 
+  characterId: string,  // Character ID, not user ID
   code: string
 ): Promise<{ recipe?: Recipe; error?: string }> {
   // Find recipe with matching code
@@ -611,9 +614,9 @@ async function unlockRecipeWithCode(
 
   // Check if already unlocked
   const { data: existing } = await supabase
-    .from('user_recipes')
+    .from('character_recipes')
     .select('id')
-    .eq('user_id', userId)
+    .eq('character_id', characterId)
     .eq('recipe_id', recipe.id)
     .single()
 
@@ -621,9 +624,9 @@ async function unlockRecipeWithCode(
     return { error: 'Recipe already unlocked' }
   }
 
-  // Unlock it
-  await supabase.from('user_recipes').insert({
-    user_id: userId,
+  // Unlock it for this character
+  await supabase.from('character_recipes').insert({
+    character_id: characterId,
     recipe_id: recipe.id
   })
 

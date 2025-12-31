@@ -53,7 +53,7 @@ import {
 
 ## 📊 Database Tables
 
-**Herbalism (Legacy):**
+**Reference Data:**
 
 | Table | Purpose | Key Fields |
 |-------|---------|------------|
@@ -62,23 +62,26 @@ import {
 | `biomes` | Locations | name |
 | `biome_herbs` | Herb spawns | biome_id, herb_id, weight |
 | `recipes` | Brewing formulas | name, elements[], type, is_secret |
-| `user_inventory` | Owned herbs | user_id, herb_id, quantity |
-| `user_brewed` | Crafted items | user_id, type, effects[], choices |
-| `user_recipes` | Known recipes | user_id, recipe_id |
+| `skills` | Reference: 26 skills | name, ability |
+| `armor_slots` | Reference: 12 body slots | name, position |
 
-**Knights of Belyar (New):**
+**Character Data (all tied to character_id):**
 
 | Table | Purpose |
 |-------|---------|
 | `characters` | Core character data (stats, class, race, etc.) |
-| `skills` | Reference: 26 skills |
-| `armor_slots` | Reference: 12 body slots |
 | `character_skills` | Skill proficiencies |
 | `character_armor` | Equipped armor |
 | `character_weapons` | Owned weapons |
 | `character_items` | General inventory |
 | `character_weapon_slots` | 6 weapon slots (3 per hand) |
 | `character_quick_slots` | 6 quick access combat slots |
+| `character_herbs` | Herb inventory (foraging) |
+| `character_brewed` | Crafted items (elixirs/bombs/oils) |
+| `character_recipes` | Known brewing recipes |
+
+**Legacy Tables (DEPRECATED - do not use):**
+- `user_inventory`, `user_brewed`, `user_recipes` - replaced by character_* equivalents
 
 ---
 
@@ -107,14 +110,7 @@ const {
 ## 📦 React Query Hooks
 
 ```typescript
-import { 
-  // Herbalism data
-  useInventory,
-  useBrewedItems,
-  useBiomes,
-  useUserRecipes,
-  useRecipeStats,
-  
+import {
   // Character data
   useCharacter,
   useCharacterSkills,
@@ -123,27 +119,30 @@ import {
   useCharacterItems,
   useCharacterWeaponSlots,
   useCharacterQuickSlots,
-  
+
+  // Character-based herbalism
+  useCharacterHerbs,       // Herb inventory
+  useCharacterBrewedItems, // Crafted items
+  useCharacterRecipesNew,  // Known recipes
+  useBiomes,               // Reference data for foraging
+
   // Reference data
   useArmorSlots,
   useSkills,
-  
+
   // Cache management
   useInvalidateQueries,
   usePrefetch,
 } from '@/lib/hooks'
 
-// Usage
-const { data: inventory, isLoading, error } = useInventory(profileId)
+// Usage - herbalism requires characterId
+const { data: character } = useCharacter(userId)
+const { data: herbs } = useCharacterHerbs(character?.id ?? null)
 
 // After mutations
-const { invalidateInventory } = useInvalidateQueries()
-await addHerbsToInventory(profileId, herbs)
-invalidateInventory(profileId)
-
-// Prefetching
-const { prefetchInventory } = usePrefetch()
-prefetchInventory(profileId) // Call on hover
+const { invalidateCharacterHerbs } = useInvalidateQueries()
+await addCharacterHerbs(characterId, herbId, quantity)
+invalidateCharacterHerbs(characterId)
 ```
 
 ---
@@ -244,12 +243,13 @@ async function handleAdd() {
 ## ⚠️ Gotchas
 
 1. **Auth Required:** No guest mode. Pages redirect to `/login` if not authenticated.
-2. **Field Mismatch:** `brewingModifier` in app = `herbalism_modifier` in DB
-3. **Type Casting:** Use `as unknown as Type` for Supabase joins
-4. **RLS Status:** ON for new character tables, OFF for legacy herbalism tables
-5. **Sessions in localStorage:** Foraging sessions don't sync across devices
-6. **Navigation in useEffect:** Always use `router.push()` inside `useEffect`, never during render
-7. **RecipeType:** Defined in `constants.ts`, re-exported from `types.ts` for convenience
+2. **Character Required for Herbalism:** Forage/Brew pages require a character to exist.
+3. **Field Mismatch:** `brewingModifier` in app = `herbalism_modifier` in DB
+4. **Type Casting:** Use `as unknown as Type` for Supabase joins
+5. **RLS Status:** ON for all character tables including herbalism
+6. **Sessions in localStorage:** Foraging sessions are scoped to user ID, don't sync across devices
+7. **Navigation in useEffect:** Always use `router.push()` inside `useEffect`, never during render
+8. **Legacy Tables:** `user_inventory`, `user_brewed`, `user_recipes` are deprecated - use character_* tables
 
 ---
 

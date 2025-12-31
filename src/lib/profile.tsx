@@ -30,7 +30,8 @@ type ProfileContextType = {
 
 const ProfileContext = createContext<ProfileContextType | null>(null)
 
-const SESSIONS_KEY = 'herbalism-sessions-used'
+const SESSIONS_KEY_PREFIX = 'herbalism-sessions-used'
+const getSessionsKey = (userId: string) => `${SESSIONS_KEY_PREFIX}:${userId}`
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const { user, isLoading: authLoading } = useAuth()
@@ -78,8 +79,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         setProfile(loadedProfile)
       }
 
-      // Load sessions from localStorage (these reset daily, no need for DB)
-      const storedSessions = localStorage.getItem(SESSIONS_KEY)
+      // Load sessions from localStorage (scoped to user, resets daily - no need for DB)
+      const sessionsKey = getSessionsKey(user!.id)
+      const storedSessions = localStorage.getItem(sessionsKey)
       if (storedSessions) {
         try {
           setSessionsUsedToday(parseInt(storedSessions) || 0)
@@ -98,12 +100,13 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   // Derive isLoaded for no-user case (avoids setState in effect)
   const effectiveIsLoaded = !user ? !authLoading : isLoaded
 
-  // Save sessions to localStorage when it changes
+  // Save sessions to localStorage when it changes (scoped to user)
   useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem(SESSIONS_KEY, sessionsUsedToday.toString())
+    if (isLoaded && user) {
+      const sessionsKey = getSessionsKey(user.id)
+      localStorage.setItem(sessionsKey, sessionsUsedToday.toString())
     }
-  }, [sessionsUsedToday, isLoaded])
+  }, [sessionsUsedToday, isLoaded, user])
 
   // Update profile in both state and database
   const updateProfileHandler = useCallback(async (updates: Partial<Profile>) => {

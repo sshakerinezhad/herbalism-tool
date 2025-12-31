@@ -17,10 +17,12 @@ D&D homebrew companion app for herbalism/alchemy - forage herbs, manage inventor
 ## Critical Gotchas
 
 1. **Field name mismatch:** `brewingModifier` in app code maps to `herbalism_modifier` in database
-2. **RLS status:** ON for new character tables, OFF for legacy herbalism tables
+2. **RLS status:** ON for all character tables including herbalism (`character_herbs`, `character_brewed`, `character_recipes`)
 3. **Type casting:** Use `as unknown as Type` for Supabase join results
 4. **Auth required:** No guest mode - pages redirect to `/login` if not authenticated
 5. **Data fetching:** Always use React Query hooks from `@/lib/hooks`, not direct Supabase calls in components
+6. **Herbalism is character-based:** All herbalism data (herbs, brewed items, recipes) is tied to `character_id`, not `user_id`. Forage/Brew pages require a character to exist.
+7. **Legacy tables deprecated:** `user_inventory`, `user_brewed`, `user_recipes` still exist but are no longer used. Use `character_herbs`, `character_brewed`, `character_recipes` instead.
 
 ## Key Patterns
 

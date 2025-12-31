@@ -288,33 +288,37 @@ import { HerbSelector, PairingPhase } from '@/components/brew'
 
 ## Database Operations
 
+**Important:** All herbalism data is character-based. Use `character_herbs`, `character_brewed`, and `character_recipes` tables (not the legacy `user_*` tables).
+
 ### Return Pattern
 
 All database operations return `{ data?, error }`:
 
 ```typescript
-export async function getInventory(userId: string): Promise<{
-  items?: InventoryItem[]
+export async function getCharacterHerbs(characterId: string): Promise<{
+  items?: CharacterHerb[]
   error: string | null
 }> {
   try {
     const { data, error } = await supabase
-      .from('user_inventory')
+      .from('character_herbs')
       .select('*, herbs(*)')
-      .eq('user_id', userId)
+      .eq('character_id', characterId)
 
     if (error) throw error
 
     const items = (data || []).map(row => ({
       id: row.id,
+      character_id: row.character_id,
+      herb_id: row.herb_id,
       herb: row.herbs as unknown as Herb,
       quantity: row.quantity
     }))
 
     return { items, error: null }
   } catch (err) {
-    console.error('getInventory failed:', err)
-    return { error: 'Failed to load inventory' }
+    console.error('getCharacterHerbs failed:', err)
+    return { error: 'Failed to load herbs' }
   }
 }
 ```
@@ -338,10 +342,10 @@ For operations that should create or update:
 
 ```typescript
 const { error } = await supabase
-  .from('user_inventory')
+  .from('character_herbs')
   .upsert(
-    { user_id: userId, herb_id: herbId, quantity: newQuantity },
-    { onConflict: 'user_id,herb_id' }
+    { character_id: characterId, herb_id: herbId, quantity: newQuantity },
+    { onConflict: 'character_id,herb_id' }
   )
 ```
 

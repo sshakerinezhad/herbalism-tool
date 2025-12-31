@@ -361,6 +361,7 @@ export type CharacterRecipe = {
   character_id: string
   recipe_id: number
   unlocked_at: string
+  recipes?: Recipe  // Joined from recipes table
 }
 
 // Re-export for backward compatibility during migration

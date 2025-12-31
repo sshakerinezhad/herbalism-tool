@@ -181,9 +181,9 @@ export async function addCharacterBrewedItem(
 }
 
 /**
- * Use (consume) brewed items, reducing quantity
+ * Consume brewed items, reducing quantity
  */
-export async function useCharacterBrewedItem(
+export async function consumeCharacterBrewedItem(
   brewedId: number,
   quantity: number = 1
 ): Promise<{ error: string | null }> {
@@ -255,6 +255,45 @@ export async function unlockCharacterRecipe(
   }
 
   return { error: error?.message || null }
+}
+
+/**
+ * Initialize all base (non-secret) recipes for a character
+ * Called during character creation for herbalist vocation
+ */
+export async function initializeBaseCharacterRecipes(
+  characterId: string
+): Promise<{ count: number; error: string | null }> {
+  // 1. Fetch all non-secret recipe IDs
+  const { data: baseRecipes, error: fetchError } = await supabase
+    .from('recipes')
+    .select('id')
+    .eq('is_secret', false)
+
+  if (fetchError) {
+    return { count: 0, error: fetchError.message }
+  }
+
+  if (!baseRecipes || baseRecipes.length === 0) {
+    return { count: 0, error: null }
+  }
+
+  // 2. Insert all base recipes for this character
+  const { error: insertError } = await supabase
+    .from('character_recipes')
+    .insert(
+      baseRecipes.map(recipe => ({
+        character_id: characterId,
+        recipe_id: recipe.id,
+      }))
+    )
+
+  // UNIQUE constraint handles duplicates - treat as success
+  if (insertError && insertError.code !== '23505') {
+    return { count: 0, error: insertError.message }
+  }
+
+  return { count: baseRecipes.length, error: null }
 }
 
 // ============ Character Weapons (Clean Pattern) ============

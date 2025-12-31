@@ -22,14 +22,15 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
 import { LoadingState } from '@/components/ui'
-import { 
-  fetchSkills, 
-  fetchArmorSlots, 
+import {
+  fetchSkills,
+  fetchArmorSlots,
   createCharacter,
   hasCharacter,
   updateCharacterMoney,
   setCharacterArmorBatch,
 } from '@/lib/db/characters'
+import { initializeBaseCharacterRecipes } from '@/lib/db/characterInventory'
 import {
   RACES,
   HUMAN_CULTURES,
@@ -310,6 +311,15 @@ export default function CreateCharacterPage() {
       if (armorError) {
         console.error('Failed to set starting armor:', armorError)
         // Non-fatal, continue
+      }
+    }
+
+    // Initialize base recipes for herbalists
+    if (data.vocation === 'herbalist') {
+      const { error: recipeError } = await initializeBaseCharacterRecipes(character.id)
+      if (recipeError) {
+        console.error('Failed to initialize recipes:', recipeError)
+        // Non-fatal, continue to redirect
       }
     }
 

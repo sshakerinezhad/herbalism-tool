@@ -12,16 +12,25 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { useProfile } from '@/lib/profile'
-import { useInventory, useUserRecipesForBrewing, useInvalidateQueries, InventoryItem } from '@/lib/hooks'
-import { removeHerbsFromInventory } from '@/lib/inventory'
-import { 
+import { useAuth } from '@/lib/auth'
+import {
+  useCharacter,
+  useCharacterHerbs,
+  useCharacterRecipesNew,
+  useInvalidateQueries,
+} from '@/lib/hooks'
+import {
+  removeCharacterHerbs,
+  addCharacterBrewedItem,
+} from '@/lib/db/characterInventory'
+import {
   findRecipeForPair,
   canCombineEffects,
   parseTemplateVariables,
   computeBrewedDescription,
-  saveBrewedItem,
   PairedEffect
 } from '@/lib/brewing'
+import type { CharacterHerb, CharacterRecipe } from '@/lib/types'
 import { Recipe } from '@/lib/types'
 import { rollD20 } from '@/lib/dice'
 import { BREWING_DC, MAX_HERBS_PER_BREW, getElementSymbol } from '@/lib/constants'
@@ -63,22 +72,42 @@ type BrewPhase =
 
 // ============ Main Component ============
 
+// Adapt CharacterHerb to InventoryItem-like interface for component compatibility
+// herb is always present when fetched with join
+type InventoryItem = CharacterHerb & { herb: NonNullable<CharacterHerb['herb']> }
+
 export default function BrewPage() {
+  const { user, isLoading: authLoading } = useAuth()
   const { profile, profileId, isLoaded: profileLoaded } = useProfile()
-  const { invalidateInventory, invalidateBrewedItems } = useInvalidateQueries()
-  
-  // React Query handles data fetching and caching
-  const { 
-    data: inventory = [], 
-    isLoading: inventoryLoading, 
-    error: inventoryError 
-  } = useInventory(profileId)
-  
-  const { 
-    data: recipes = [], 
-    isLoading: recipesLoading, 
-    error: recipesError 
-  } = useUserRecipesForBrewing(profileId)
+  const { invalidateCharacterHerbs, invalidateCharacterBrewedItems } = useInvalidateQueries()
+
+  // Character data - herbalism is now character-based
+  const { data: character, isLoading: characterLoading } = useCharacter(user?.id ?? null)
+  const characterId = character?.id ?? null
+
+  // React Query handles data fetching and caching (character-based)
+  const {
+    data: rawInventory = [],
+    isLoading: inventoryLoading,
+    error: inventoryError
+  } = useCharacterHerbs(characterId)
+
+  // Filter to only items with herb data (should always be present from join)
+  const inventory = rawInventory.filter((item): item is InventoryItem => !!item.herb)
+
+  const {
+    data: characterRecipes = [],
+    isLoading: recipesLoading,
+    error: recipesError
+  } = useCharacterRecipesNew(characterId)
+
+  // Extract recipes from character_recipes join
+  const recipes = useMemo(() => {
+    return characterRecipes
+      .filter((cr: CharacterRecipe) => cr.recipes)
+      .map((cr: CharacterRecipe) => cr.recipes as Recipe)
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [characterRecipes])
   
   // Local error state for mutations
   const [mutationError, setMutationError] = useState<string | null>(null)
@@ -325,33 +354,39 @@ export default function BrewPage() {
   }
 
   async function executeBrew() {
-    if (!profileId) return
+    if (!characterId) return
 
     const roll = rollD20()
     const total = roll + profile.brewingModifier
     const success = total >= BREWING_DC
 
-    // Remove herbs
-    const removals = Array.from(selectedHerbQuantities.entries())
-      .filter(([, qty]) => qty > 0)
-      .map(([itemId]) => {
+    // Remove herbs from character inventory
+    for (const [itemId, qty] of selectedHerbQuantities.entries()) {
+      if (qty > 0) {
         const item = inventory.find(i => i.id === itemId)
-        return { herbId: item!.herb.id, quantity: selectedHerbQuantities.get(itemId)! }
-      })
-    
-    await removeHerbsFromInventory(profileId, removals)
+        if (item) {
+          await removeCharacterHerbs(characterId, item.herb.id, qty)
+        }
+      }
+    }
 
-    const type = pairingValidation.type || 'unknown'
+    const type = (pairingValidation.type || 'unknown') as 'elixir' | 'bomb' | 'oil'
     const description = computeBrewedDescription(pairedEffects, choices)
 
     if (success) {
       const effectNames = pairedEffects.flatMap(e => Array(e.count).fill(e.recipe.name))
-      await saveBrewedItem(profileId, type, effectNames, Object.keys(choices).length > 0 ? choices : null, description)
+      await addCharacterBrewedItem(
+        characterId,
+        type,
+        effectNames,
+        description,
+        Object.keys(choices).length > 0 ? choices : {}
+      )
       // Invalidate brewed items cache so inventory page shows the new item
-      invalidateBrewedItems(profileId)
+      invalidateCharacterBrewedItems(characterId)
     }
     // Invalidate inventory cache since herbs were consumed
-    invalidateInventory(profileId)
+    invalidateCharacterHerbs(characterId)
 
     setPhase({ phase: 'result', success, roll, total, type, description, selectedHerbs })
   }
@@ -364,10 +399,10 @@ export default function BrewPage() {
     setBatchCount(1)
     setMutationError(null)
     setPhase(brewMode === 'by-herbs' ? { phase: 'select-herbs' } : { phase: 'select-recipes' })
-    
+
     // Invalidate inventory cache to get fresh data after brewing used herbs
-    if (profileId) {
-      invalidateInventory(profileId)
+    if (characterId) {
+      invalidateCharacterHerbs(characterId)
     }
   }
   
@@ -437,20 +472,21 @@ export default function BrewPage() {
   }
   
   async function executeBrewWithEffects(effects: PairedEffect[], choicesData: Record<string, string>, batch: number = 1) {
-    if (!profileId) return
+    if (!characterId) return
 
     const validation = canCombineEffects(effects)
-    const type = validation.type || 'unknown'
+    const type = (validation.type || 'unknown') as 'elixir' | 'bomb' | 'oil'
     const description = computeBrewedDescription(effects, choicesData)
 
-    // Remove herbs
-    const removals = Array.from(selectedHerbQuantities.entries())
-      .filter(([, qty]) => qty > 0)
-      .map(([itemId]) => {
+    // Remove herbs from character inventory
+    for (const [itemId, qty] of selectedHerbQuantities.entries()) {
+      if (qty > 0) {
         const item = inventory.find(i => i.id === itemId)
-        return { herbId: item!.herb.id, quantity: selectedHerbQuantities.get(itemId)! }
-      })
-    await removeHerbsFromInventory(profileId, removals)
+        if (item) {
+          await removeCharacterHerbs(characterId, item.herb.id, qty)
+        }
+      }
+    }
 
     if (batch === 1) {
       const roll = rollD20()
@@ -459,10 +495,16 @@ export default function BrewPage() {
 
       if (success) {
         const effectNames = effects.flatMap(e => Array(e.count).fill(e.recipe.name))
-        await saveBrewedItem(profileId, type, effectNames, Object.keys(choicesData).length > 0 ? choicesData : null, description)
-        invalidateBrewedItems(profileId)
+        await addCharacterBrewedItem(
+          characterId,
+          type,
+          effectNames,
+          description,
+          Object.keys(choicesData).length > 0 ? choicesData : {}
+        )
+        invalidateCharacterBrewedItems(characterId)
       }
-      invalidateInventory(profileId)
+      invalidateCharacterHerbs(characterId)
 
       setPhase({ phase: 'result', success, roll, total, type, description, selectedHerbs })
       return
@@ -476,21 +518,27 @@ export default function BrewPage() {
       const roll = rollD20()
       const total = roll + profile.brewingModifier
       const success = total >= BREWING_DC
-      
+
       results.push({ success, roll, total })
-      
+
       if (success) {
         successCount++
         const effectNames = effects.flatMap(e => Array(e.count).fill(e.recipe.name))
-        await saveBrewedItem(profileId, type, effectNames, Object.keys(choicesData).length > 0 ? choicesData : null, description)
+        await addCharacterBrewedItem(
+          characterId,
+          type,
+          effectNames,
+          description,
+          Object.keys(choicesData).length > 0 ? choicesData : {}
+        )
       }
     }
 
     // Invalidate caches after batch brewing
     if (successCount > 0) {
-      invalidateBrewedItems(profileId)
+      invalidateCharacterBrewedItems(characterId)
     }
-    invalidateInventory(profileId)
+    invalidateCharacterHerbs(characterId)
 
     setPhase({ phase: 'batch-result', results, type, description, successCount })
   }
@@ -516,8 +564,28 @@ export default function BrewPage() {
     )
   }
 
-  if (!profileLoaded || loading) {
+  if (!profileLoaded || loading || authLoading || characterLoading) {
     return <BrewSkeleton />
+  }
+
+  // Gate: require character for herbalism
+  if (!character) {
+    return (
+      <PageLayout>
+        <h1 className="text-3xl font-bold mb-4">Brew</h1>
+        <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-6">
+          <p className="text-amber-200 mb-4">
+            You need to create a character before you can brew elixirs and bombs.
+          </p>
+          <Link
+            href="/profile"
+            className="inline-block px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors"
+          >
+            Create Character
+          </Link>
+        </div>
+      </PageLayout>
+    )
   }
 
   return (

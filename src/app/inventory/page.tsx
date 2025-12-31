@@ -25,9 +25,9 @@ import {
   useCharacterBrewedItems,
 } from '@/lib/hooks'
 import { addWeaponFromTemplate, addItemFromTemplate, addCustomWeapon, addCustomItem } from '@/lib/db/characters'
-import { 
-  removeCharacterHerbs, 
-  useCharacterBrewedItem,
+import {
+  removeCharacterHerbs,
+  consumeCharacterBrewedItem,
 } from '@/lib/db/characterInventory'
 import type { CharacterHerb, CharacterBrewedItem } from '@/lib/types'
 import { supabase } from '@/lib/supabase'
@@ -882,7 +882,7 @@ function HerbalismSection({
     setDeleteBrewedConfirmId(null)
     setDeletingBrewedId(brewedId)
     
-    const { error: removeError } = await useCharacterBrewedItem(brewedId, 1)
+    const { error: removeError } = await consumeCharacterBrewedItem(brewedId, 1)
     
     setDeletingBrewedId(null)
     
@@ -900,7 +900,7 @@ function HerbalismSection({
     setDeleteBrewedConfirmId(null)
     setDeleteAllBrewedConfirmId(null)
     
-    const { error: removeError } = await useCharacterBrewedItem(brewedId, quantity)
+    const { error: removeError } = await consumeCharacterBrewedItem(brewedId, quantity)
     
     setDeletingBrewedId(null)
     

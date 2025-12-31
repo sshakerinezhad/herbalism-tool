@@ -11,10 +11,11 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useProfile } from '@/lib/profile'
-import { useBiomes, useInvalidateQueries } from '@/lib/hooks'
+import { useAuth } from '@/lib/auth'
+import { useBiomes, useInvalidateQueries, useCharacter } from '@/lib/hooks'
 import { rollD20, rollHerbQuantity, weightedRandomSelect } from '@/lib/dice'
 import { Biome, Herb, BiomeHerb, SessionResult, ForageState } from '@/lib/types'
-import { addHerbsToInventory, removeHerbsFromInventory } from '@/lib/inventory'
+import { addCharacterHerbs, removeCharacterHerbs } from '@/lib/db/characterInventory'
 import { FORAGING_DC, getElementSymbol } from '@/lib/constants'
 import { PageLayout, LoadingState, ErrorDisplay, ForageSkeleton } from '@/components/ui'
 
@@ -29,15 +30,20 @@ type ForagedHerb = {
 // ============ Main Component ============
 
 export default function ForagePage() {
-  const { 
-    profile, 
-    profileId, 
-    isLoaded: profileLoaded, 
-    sessionsUsedToday, 
-    spendForagingSessions, 
-    longRest 
+  const { user, isLoading: authLoading } = useAuth()
+  const {
+    profile,
+    profileId,
+    isLoaded: profileLoaded,
+    sessionsUsedToday,
+    spendForagingSessions,
+    longRest
   } = useProfile()
-  const { invalidateInventory } = useInvalidateQueries()
+  const { invalidateCharacterHerbs } = useInvalidateQueries()
+
+  // Character data - herbalism is now character-based
+  const { data: character, isLoading: characterLoading } = useCharacter(user?.id ?? null)
+  const characterId = character?.id ?? null
   
   // React Query handles biome data fetching and caching
   const { data: biomes = [], isLoading: biomesLoading, error: biomesError } = useBiomes()
@@ -180,14 +186,28 @@ export default function ForagePage() {
     }))
     setForagedHerbs(herbInstances)
 
-    // Auto-add to inventory
-    if (herbInstances.length > 0 && profileId) {
-      const { error: addError } = await addHerbsToInventory(profileId, allHerbs)
+    // Auto-add to inventory (character-based)
+    if (herbInstances.length > 0 && characterId) {
+      // Group herbs by ID and add to character inventory
+      const herbCounts = new Map<number, number>()
+      for (const herb of allHerbs) {
+        herbCounts.set(herb.id, (herbCounts.get(herb.id) || 0) + 1)
+      }
+
+      let addError: string | null = null
+      for (const [herbId, quantity] of herbCounts) {
+        const result = await addCharacterHerbs(characterId, herbId, quantity)
+        if (result.error) {
+          addError = result.error
+          break
+        }
+      }
+
       if (addError) {
         setMutationError(`Herbs found but failed to add to inventory: ${addError}`)
       } else {
         // Invalidate inventory cache so it's fresh when user visits inventory page
-        invalidateInventory(profileId)
+        invalidateCharacterHerbs(characterId)
       }
     }
 
@@ -204,53 +224,59 @@ export default function ForagePage() {
   // ============ Herb Removal Actions ============
 
   async function handleRemoveHerb(instanceId: string) {
-    if (!profileId) return
-    
+    if (!characterId) return
+
     const herbToRemove = foragedHerbs.find(h => h.instanceId === instanceId)
     if (!herbToRemove || herbToRemove.removed) return
 
     setRemovingHerb(instanceId)
-    const { error: removeError } = await removeHerbsFromInventory(profileId, [
-      { herbId: herbToRemove.herb.id, quantity: 1 }
-    ])
+    const { error: removeError } = await removeCharacterHerbs(
+      characterId,
+      herbToRemove.herb.id,
+      1
+    )
     setRemovingHerb(null)
 
     if (removeError) {
       setMutationError(removeError)
     } else {
-      setForagedHerbs(prev => 
+      setForagedHerbs(prev =>
         prev.map(h => h.instanceId === instanceId ? { ...h, removed: true } : h)
       )
-      invalidateInventory(profileId)
+      invalidateCharacterHerbs(characterId)
     }
   }
 
   async function handleRemoveAll() {
-    if (!profileId) return
-    
+    if (!characterId) return
+
     const herbsToRemove = foragedHerbs.filter(h => !h.removed)
     if (herbsToRemove.length === 0) return
 
     setRemovingAll(true)
 
+    // Group herbs by ID
     const herbCounts = new Map<number, number>()
     for (const { herb } of herbsToRemove) {
       herbCounts.set(herb.id, (herbCounts.get(herb.id) || 0) + 1)
     }
 
-    const removals = Array.from(herbCounts.entries()).map(([herbId, quantity]) => ({
-      herbId,
-      quantity
-    }))
-
-    const { error: removeError } = await removeHerbsFromInventory(profileId, removals)
+    // Remove each herb type from character inventory
+    let removeError: string | null = null
+    for (const [herbId, quantity] of herbCounts) {
+      const result = await removeCharacterHerbs(characterId, herbId, quantity)
+      if (result.error) {
+        removeError = result.error
+        break
+      }
+    }
     setRemovingAll(false)
 
     if (removeError) {
       setMutationError(removeError)
     } else {
       setForagedHerbs(prev => prev.map(h => ({ ...h, removed: true })))
-      invalidateInventory(profileId)
+      invalidateCharacterHerbs(characterId)
     }
   }
 
@@ -258,8 +284,28 @@ export default function ForagePage() {
   const remainingHerbs = foragedHerbs.filter(h => !h.removed)
   const removedCount = foragedHerbs.filter(h => h.removed).length
 
-  if (biomesLoading || !profileLoaded) {
+  if (biomesLoading || !profileLoaded || authLoading || characterLoading) {
     return <ForageSkeleton />
+  }
+
+  // Gate: require character for herbalism
+  if (!character) {
+    return (
+      <PageLayout maxWidth="max-w-4xl">
+        <h1 className="text-3xl font-bold mb-2">Forage for Herbs</h1>
+        <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-6">
+          <p className="text-amber-200 mb-4">
+            You need to create a character before you can forage for herbs.
+          </p>
+          <Link
+            href="/profile"
+            className="inline-block px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors"
+          >
+            Create Character
+          </Link>
+        </div>
+      </PageLayout>
+    )
   }
 
   return (

@@ -1,103 +1,142 @@
-# Scratchpad
+# Scratchpad - 2025-12-31
 
-## Current Task: Profile Page Complete Overhaul
+## Previous Session Summary
 
-**Date:** 2025-12-30
-**Branch:** knights-of-belyar
-**Status:** Phases 1-4 COMPLETE + Banner Consolidation - Tweaks Needed
+Successfully migrated herbalism functionality from legacy user-based tables to character-based tables. Build passes.
+
+**Key learnings:**
+- SQL migration `008_unified_character_inventory.sql` already handled table creation and data migration
+- Inventory page was already migrated; forage/brew pages were updated
+- `useCharacterBrewedItem` renamed to `consumeCharacterBrewedItem`
+- localStorage sessions scoped to user: `herbalism-sessions-used:${userId}`
 
 ---
 
-## Next Session: Immediate TODO
+## Current Task: Post-Migration Fixes
 
-### 1. CharacterBanner Formatting Tweaks
-**File:** `src/components/character/CharacterBanner.tsx`
+Issues identified in review that need to be addressed.
 
-Current layout works but formatting needs refinement. User feedback: "not sitting perfectly right yet"
+### Fix 1: Recipe Initialization for Herbalists ✅ COMPLETED
 
-Current structure:
+**Goal:** New herbalist characters automatically receive base recipes; non-herbalists start with empty recipe book.
+
+**Implementation:**
+- Added `initializeBaseCharacterRecipes()` to `src/lib/db/characterInventory.ts:264-297`
+  - Fetches all non-secret recipes
+  - Bulk inserts into `character_recipes`
+  - Uses UNIQUE constraint for idempotency
+- Updated `src/app/create-character/page.tsx:317-324`
+  - Added import for `initializeBaseCharacterRecipes`
+  - Calls function conditionally for herbalist vocation
+  - Non-fatal error handling (logs but continues)
+- Build passes successfully ✅
+
+---
+
+### Fix 2: Auth Redirects for Forage/Brew
+
+**Goal:** Consistent auth handling - redirect to /login if not authenticated.
+
+**Files to modify:**
+- `src/app/forage/page.tsx`
+- `src/app/brew/page.tsx`
+
+**Implementation:**
+Add useEffect in both pages (same pattern as profile/inventory):
+```typescript
+useEffect(() => {
+  if (!authLoading && !user) {
+    router.push('/login')
+  }
+}, [authLoading, user, router])
 ```
-┌────────────────────────────────────────────────────────────────┐
-│ [Portrait] │ Name                     │ HP ████████ 24/32     │
-│            │ Level Class • Order      │ [AC 14]  [Init +2]    │
-│            │ Race • Background • Voc  │ STR DEX CON INT...HON │
-└────────────────────────────────────────────────────────────────┘
-```
-
-Things to potentially adjust:
-- Spacing/gaps between sections
-- Text sizes (currently using `banner` variant for stats)
-- Vitals column width (`md:w-64 lg:w-72`)
-- HP bar height (`h-4`)
-- AC/Initiative box sizing
-
-### 2. QuickSlots Overhaul
-**File:** `src/components/character/QuickSlots.tsx`
-
-User feedback: "super clunky"
-
-Current state:
-- 2x3 grid layout
-- Uses QuickSlotCell component
-- Item selector modal
-
-Needs complete rethink - likely too busy or hard to use.
 
 ---
 
-## Session Summary: Banner Consolidation (2025-12-30)
+### Fix 3: Herbalist Vocation Check
 
-### What Changed:
+**Goal:** Use `character.vocation === 'herbalist'` instead of `profile.isHerbalist`.
 
-1. **CharacterBanner now includes vitals + stats**
-   - HP bar, AC box, Initiative box
-   - All 7 ability scores in a row (using new `banner` variant)
-   - VitalsPanel and AbilityScorePanel no longer used on profile page
+**Files to modify:**
+- `src/app/brew/page.tsx`
 
-2. **New StatBlock `banner` variant**
-   - Larger than `compact`, smaller than `default`
-   - Honor stat gets amber/gold styling
-   - Located in `src/components/character/StatBlock.tsx`
+**Implementation:**
+Change from `if (!profile.isHerbalist)` to `if (character?.vocation !== 'herbalist')`.
 
-3. **PageLayout now supports `headerActions` prop**
-   - Edit Character + Sign out buttons moved to top-right
-   - Inline with Home link
-   - Located in `src/components/ui/PageLayout.tsx`
-
-4. **Profile page simplified**
-   - Removed separate VitalsPanel/AbilityScorePanel grid
-   - Banner handles all character identity + stats
-   - Actions in PageLayout header
-
-### Files Modified This Session:
-- `src/components/character/CharacterBanner.tsx` - Major restructure
-- `src/components/character/StatBlock.tsx` - Added `banner` variant
-- `src/components/ui/PageLayout.tsx` - Added `headerActions` prop
-- `src/app/profile/page.tsx` - Simplified, uses new banner props
+Reorder gating logic:
+1. Check auth (redirect if not authenticated)
+2. Check character exists (show CTA if not)
+3. Check vocation is herbalist (show message if not)
 
 ---
 
-## Color Palette Reference
+### Fix 4: Full-Page Character CTA on Inventory
 
-| Name | Purpose | Values |
-|------|---------|--------|
-| Grimoire | Dark backgrounds | 950:`#0d0c0a`, 900:`#151311`, 850:`#1a1815`, 800:`#211e1a` |
-| Vellum | Text colors | 50:`#f5f0e6`, 100:`#e8e0d0`, 300:`#b8a890` |
-| Sepia | Borders | 700:`#3d342a`, 600:`#4a3f32` |
-| Bronze | Accents | muted:`#8b7355`, bright:`#c9a66b`, glow:`#a68952` |
+**Goal:** Show full-page CTA when no character exists, not just partial in equipment section.
 
----
+**Files to modify:**
+- `src/app/inventory/page.tsx`
 
-## Phase 5: Supporting Sections (FUTURE)
-
-- Update `CoinPurse.tsx` - Currently using zinc palette
-- Redesign skills badge display
-- Style appearance section
+**Implementation:**
+After auth loading check, add character existence check with full-page CTA.
 
 ---
 
-## Phase 6: Final Polish (FUTURE)
+### Fix 5: Type Safety - CharacterRecipe Join Transformation
 
-- Responsive testing
-- Animation/transition polish
-- Visual consistency pass
+**Goal:** Transform `fetchCharacterRecipes` to follow the same pattern as `fetchCharacterHerbs`.
+
+**Files to modify:**
+- `src/lib/db/characterInventory.ts` - Transform join data
+- `src/lib/types.ts` - Update CharacterRecipe type
+
+**Implementation:**
+1. In `types.ts`, change CharacterRecipe:
+   - Remove: `recipes?: Recipe`
+   - Add: `recipe: Recipe` (required, singular)
+
+2. In `fetchCharacterRecipes`, add transformation:
+   ```typescript
+   const transformed = (data || []).map(row => ({
+     ...row,
+     recipe: row.recipes as Recipe,
+     recipes: undefined,
+   })) as CharacterRecipe[]
+   ```
+
+3. In `brew/page.tsx`, simplify recipe extraction:
+   - Remove filter for `cr.recipes`
+   - Change: `cr.recipes as Recipe` → `cr.recipe`
+
+---
+
+### Fix 6: Cleanup - Remove Unused Variables
+
+**Goal:** Remove unused `profileId` destructuring.
+
+**Files to modify:**
+- `src/app/forage/page.tsx` - Remove `profileId` from useProfile destructuring
+- `src/app/brew/page.tsx` - Remove `profileId` from useProfile destructuring
+
+---
+
+## Execution Order
+
+1. Recipe initialization (most impactful)
+2. Type safety fix (affects brew page, do before other brew changes)
+3. Vocation check (depends on type safety)
+4. Auth redirects
+5. Inventory CTA
+6. Cleanup
+
+---
+
+## Verification Checklist
+
+- [ ] Build passes (`npm run build`)
+- [ ] New herbalist character gets base recipes
+- [ ] New non-herbalist character has empty recipe book
+- [ ] Forage/Brew redirect to /login when not authenticated
+- [ ] Brew shows "herbalist only" message for non-herbalist characters
+- [ ] Inventory shows full-page CTA when no character
+- [ ] No TypeScript errors or unused variable warnings

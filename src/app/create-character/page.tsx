@@ -21,7 +21,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
-import { LoadingState } from '@/components/ui'
+import { LoadingState, WarningDisplay } from '@/components/ui'
 import {
   fetchSkills,
   fetchArmorSlots,
@@ -145,6 +145,7 @@ export default function CreateCharacterPage() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [warnings, setWarnings] = useState<string[]>([])
 
   // Character existence state
   const [hasExistingCharacter, setHasExistingCharacter] = useState<boolean | null>(null)
@@ -296,8 +297,7 @@ export default function CreateCharacterPage() {
         copper: data.copper,
       })
       if (moneyError) {
-        console.error('Failed to set starting money:', moneyError)
-        // Non-fatal, continue
+        setWarnings(prev => [...prev, `Failed to set starting money: ${moneyError}`])
       }
     }
 
@@ -309,8 +309,7 @@ export default function CreateCharacterPage() {
         data.armorPreset.pieces
       )
       if (armorError) {
-        console.error('Failed to set starting armor:', armorError)
-        // Non-fatal, continue
+        setWarnings(prev => [...prev, `Failed to set starting armor: ${armorError}`])
       }
     }
 
@@ -318,9 +317,14 @@ export default function CreateCharacterPage() {
     if (data.vocation === 'herbalist') {
       const { error: recipeError } = await initializeBaseCharacterRecipes(character.id)
       if (recipeError) {
-        console.error('Failed to initialize recipes:', recipeError)
-        // Non-fatal, continue to redirect
+        setWarnings(prev => [...prev, `Failed to initialize recipes: ${recipeError}`])
       }
+    }
+
+    // If there are warnings, show them before redirect
+    if (warnings.length > 0) {
+      setIsSubmitting(false)
+      return
     }
 
     // Success! Redirect to profile to see the new character
@@ -477,6 +481,29 @@ export default function CreateCharacterPage() {
         {submitError && (
           <div className="mt-4 p-4 bg-red-900/30 border border-red-700 rounded-lg">
             <p className="text-red-300">{submitError}</p>
+          </div>
+        )}
+
+        {warnings.length > 0 && (
+          <div className="mt-4 space-y-2">
+            {warnings.map((warning, idx) => (
+              <WarningDisplay
+                key={idx}
+                message={warning}
+                onDismiss={() => setWarnings(prev => prev.filter((_, i) => i !== idx))}
+              />
+            ))}
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => {
+                  setWarnings([])
+                  router.push('/profile')
+                }}
+                className="px-6 py-3 bg-emerald-700 hover:bg-emerald-600 rounded-lg font-medium transition-colors"
+              >
+                Continue to Profile →
+              </button>
+            </div>
           </div>
         )}
       </div>

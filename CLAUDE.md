@@ -6,6 +6,7 @@ D&D homebrew companion app for herbalism/alchemy - forage herbs, manage inventor
 - all code should be industry standard and scalable
 - no spaghetti code should be present and the codebase should be written in the cleanest and simplest way possible
 - before adding new features or changing existing ones, consider how these changes will interact with the existing system. If it will introduce inefficiencies, scalability issues, or bloat, reassess.
+- before implementing a plan consider if it makes sense. if it doesnt, or if you need additional clarification consider alternatives or ask for clarification.
 
 ## Tech Stack
 

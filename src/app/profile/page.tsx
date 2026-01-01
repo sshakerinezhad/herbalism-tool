@@ -369,6 +369,7 @@ function CharacterView({
 }) {
   const maxHP = calculateMaxHP(character.con)
   const isHerbalist = character.vocation === 'herbalist'
+  const [armorError, setArmorError] = useState<string | null>(null)
 
   // Get proficient skill names
   const proficientSkillNames = characterSkills
@@ -380,14 +381,19 @@ function CharacterView({
 
   // Armor management - called by ArmorDiagram
   async function handleSetArmor(slotId: number, armorType: ArmorType | null) {
+    setArmorError(null)
     if (armorType === null) {
       const { error } = await removeCharacterArmor(character.id, slotId)
-      if (!error) {
+      if (error) {
+        setArmorError(`Failed to remove armor: ${error}`)
+      } else {
         onArmorChanged() // Invalidate cache to refetch armor
       }
     } else {
       const { error } = await setCharacterArmor(character.id, slotId, armorType)
-      if (!error) {
+      if (error) {
+        setArmorError(`Failed to set armor: ${error}`)
+      } else {
         onArmorChanged() // Invalidate cache to refetch armor
       }
     }
@@ -418,6 +424,11 @@ function CharacterView({
         weapons={weapons}
         onWeaponSlotsChanged={onWeaponSlotsChanged}
       />
+
+      {/* Armor Error Display */}
+      {armorError && (
+        <ErrorDisplay message={armorError} />
+      )}
 
       {/* Skills + Coin Purse row */}
       <div className="grid md:grid-cols-2 gap-4">

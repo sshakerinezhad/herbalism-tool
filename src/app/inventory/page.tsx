@@ -266,7 +266,6 @@ function EquipmentSection({
   setError,
 }: EquipmentSectionProps) {
   const [subTab, setSubTab] = useState<EquipmentSubTab>('weapons')
-  const [searchQuery, setSearchQuery] = useState('')
 
   if (!characterId) {
     return (
@@ -312,8 +311,6 @@ function EquipmentSection({
         <WeaponsTab
           weapons={weapons}
           characterId={characterId}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
           onAddWeapon={() => setShowAddWeapon(true)}
           onWeaponDeleted={onWeaponsChanged}
           setError={setError}
@@ -324,8 +321,6 @@ function EquipmentSection({
         <ItemsTab
           items={items}
           characterId={characterId}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
           onAddItem={() => setShowAddItem(true)}
           onItemChanged={onItemsChanged}
           setError={setError}
@@ -368,8 +363,6 @@ function EquipmentSection({
 interface WeaponsTabProps {
   weapons: CharacterWeapon[]
   characterId: string
-  searchQuery: string
-  setSearchQuery: (q: string) => void
   onAddWeapon: () => void
   onWeaponDeleted: () => void
   setError: (e: string | null) => void
@@ -378,13 +371,12 @@ interface WeaponsTabProps {
 function WeaponsTab({
   weapons,
   characterId,
-  searchQuery,
-  setSearchQuery,
   onAddWeapon,
   onWeaponDeleted,
   setError,
 }: WeaponsTabProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const filteredWeapons = useMemo(() => {
     if (!searchQuery.trim()) return weapons
@@ -561,8 +553,6 @@ function WeaponCard({
 interface ItemsTabProps {
   items: CharacterItem[]
   characterId: string
-  searchQuery: string
-  setSearchQuery: (q: string) => void
   onAddItem: () => void
   onItemChanged: () => void
   setError: (e: string | null) => void
@@ -571,14 +561,13 @@ interface ItemsTabProps {
 function ItemsTab({
   items,
   characterId,
-  searchQuery,
-  setSearchQuery,
   onAddItem,
   onItemChanged,
   setError,
 }: ItemsTabProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const filteredItems = useMemo(() => {
     let result = items

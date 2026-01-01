@@ -21,8 +21,7 @@ import {
   useInvalidateQueries,
 } from '@/lib/hooks'
 import {
-  removeCharacterHerbs,
-  addCharacterBrewedItem,
+  brewItems,
 } from '@/lib/db/characterInventory'
 import {
   findRecipeForPair,
@@ -368,44 +367,44 @@ export default function BrewPage() {
     const roll = rollD20()
     const total = roll + profile.brewingModifier
     const success = total >= BREWING_DC
+    const successCount = success ? 1 : 0
 
-    // Remove herbs from character inventory
+    const type = (pairingValidation.type || 'unknown') as 'elixir' | 'bomb' | 'oil'
+    const description = computeBrewedDescription(pairedEffects, choices)
+    const effectNames = pairedEffects.flatMap(e => Array(e.count).fill(e.recipe.name))
+
+    // Build herbs to remove array
+    const herbsToRemove: Array<{ herb_id: number; quantity: number }> = []
     for (const [itemId, qty] of selectedHerbQuantities.entries()) {
       if (qty > 0) {
         const item = inventory.find(i => i.id === itemId)
         if (item) {
-          const { error } = await removeCharacterHerbs(characterId, item.herb.id, qty)
-          if (error) {
-            setMutationError(`Failed to remove herbs: ${error}`)
-            return
-          }
+          herbsToRemove.push({ herb_id: item.herb.id, quantity: qty })
         }
       }
     }
 
-    const type = (pairingValidation.type || 'unknown') as 'elixir' | 'bomb' | 'oil'
-    const description = computeBrewedDescription(pairedEffects, choices)
+    // Atomically remove herbs and create brewed item if successful
+    const { error } = await brewItems(
+      characterId,
+      herbsToRemove,
+      type,
+      effectNames,
+      description,
+      Object.keys(choices).length > 0 ? choices : {},
+      successCount
+    )
 
+    if (error) {
+      setMutationError(`Failed to brew: ${error}`)
+      return
+    }
+
+    // Invalidate caches
+    invalidateCharacterHerbs(characterId)
     if (success) {
-      const effectNames = pairedEffects.flatMap(e => Array(e.count).fill(e.recipe.name))
-      const { error } = await addCharacterBrewedItem(
-        characterId,
-        type,
-        effectNames,
-        description,
-        Object.keys(choices).length > 0 ? choices : {}
-      )
-      if (error) {
-        setMutationError(`Failed to create brewed item: ${error}`)
-        // Still invalidate herbs cache since they were consumed
-        invalidateCharacterHerbs(characterId)
-        return
-      }
-      // Invalidate brewed items cache so inventory page shows the new item
       invalidateCharacterBrewedItems(characterId)
     }
-    // Invalidate inventory cache since herbs were consumed
-    invalidateCharacterHerbs(characterId)
 
     setPhase({ phase: 'result', success, roll, total, type, description, selectedHerbs })
   }
@@ -496,50 +495,52 @@ export default function BrewPage() {
     const validation = canCombineEffects(effects)
     const type = (validation.type || 'unknown') as 'elixir' | 'bomb' | 'oil'
     const description = computeBrewedDescription(effects, choicesData)
+    const effectNames = effects.flatMap(e => Array(e.count).fill(e.recipe.name))
 
-    // Remove herbs from character inventory
+    // Build herbs to remove array
+    const herbsToRemove: Array<{ herb_id: number; quantity: number }> = []
     for (const [itemId, qty] of selectedHerbQuantities.entries()) {
       if (qty > 0) {
         const item = inventory.find(i => i.id === itemId)
         if (item) {
-          const { error } = await removeCharacterHerbs(characterId, item.herb.id, qty)
-          if (error) {
-            setMutationError(`Failed to remove herbs: ${error}`)
-            return
-          }
+          herbsToRemove.push({ herb_id: item.herb.id, quantity: qty })
         }
       }
     }
 
     if (batch === 1) {
+      // Single brew: roll dice, then atomically brew
       const roll = rollD20()
       const total = roll + profile.brewingModifier
       const success = total >= BREWING_DC
+      const successCount = success ? 1 : 0
 
+      const { error } = await brewItems(
+        characterId,
+        herbsToRemove,
+        type,
+        effectNames,
+        description,
+        Object.keys(choicesData).length > 0 ? choicesData : {},
+        successCount
+      )
+
+      if (error) {
+        setMutationError(`Failed to brew: ${error}`)
+        return
+      }
+
+      // Invalidate caches
+      invalidateCharacterHerbs(characterId)
       if (success) {
-        const effectNames = effects.flatMap(e => Array(e.count).fill(e.recipe.name))
-        const { error } = await addCharacterBrewedItem(
-          characterId,
-          type,
-          effectNames,
-          description,
-          Object.keys(choicesData).length > 0 ? choicesData : {}
-        )
-        if (error) {
-          setMutationError(`Failed to create brewed item: ${error}`)
-          // Still invalidate herbs cache since they were consumed
-          invalidateCharacterHerbs(characterId)
-          return
-        }
         invalidateCharacterBrewedItems(characterId)
       }
-      invalidateCharacterHerbs(characterId)
 
       setPhase({ phase: 'result', success, roll, total, type, description, selectedHerbs })
       return
     }
 
-    // Batch brewing
+    // Batch brewing: roll all dice first, count successes, then atomically brew
     const results: BrewResult[] = []
     let successCount = 0
 
@@ -549,30 +550,30 @@ export default function BrewPage() {
       const success = total >= BREWING_DC
 
       results.push({ success, roll, total })
-
-      if (success) {
-        const effectNames = effects.flatMap(e => Array(e.count).fill(e.recipe.name))
-        const { error } = await addCharacterBrewedItem(
-          characterId,
-          type,
-          effectNames,
-          description,
-          Object.keys(choicesData).length > 0 ? choicesData : {}
-        )
-        if (error) {
-          setMutationError(`Failed to create brewed item: ${error}`)
-          // Continue with remaining batch, invalidate caches at end
-        } else {
-          successCount++
-        }
-      }
+      if (success) successCount++
     }
 
-    // Invalidate caches after batch brewing
+    // Atomically remove herbs and create all successful brews
+    const { error } = await brewItems(
+      characterId,
+      herbsToRemove,
+      type,
+      effectNames,
+      description,
+      Object.keys(choicesData).length > 0 ? choicesData : {},
+      successCount
+    )
+
+    if (error) {
+      setMutationError(`Failed to brew: ${error}`)
+      return
+    }
+
+    // Invalidate caches
+    invalidateCharacterHerbs(characterId)
     if (successCount > 0) {
       invalidateCharacterBrewedItems(characterId)
     }
-    invalidateCharacterHerbs(characterId)
 
     setPhase({ phase: 'batch-result', results, type, description, successCount })
   }

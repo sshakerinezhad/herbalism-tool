@@ -6,6 +6,7 @@
  */
 
 export { ErrorDisplay } from './ErrorDisplay'
+export { WarningDisplay } from './WarningDisplay'
 export { LoadingState, InlineLoading } from './LoadingState'
 export { PageLayout, HomeLink } from './PageLayout'
 export { GrimoireCard } from './GrimoireCard'

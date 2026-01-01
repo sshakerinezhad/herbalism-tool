@@ -1,0 +1,1 @@
+Clear .claude/fixes.md and write: "Fresh session - [current date]"

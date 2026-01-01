@@ -61,71 +61,56 @@ export async function fetchCharacterHerbs(characterId: string): Promise<{
 
 /**
  * Add herbs to a character's inventory
- * Uses upsert to handle existing entries (adds to quantity)
+ * Uses atomic RPC function to prevent race conditions
  */
 export async function addCharacterHerbs(
   characterId: string,
   herbId: number,
   quantity: number = 1
 ): Promise<{ error: string | null }> {
-  // First check if they already have this herb
-  const { data: existing } = await supabase
-    .from('character_herbs')
-    .select('id, quantity')
-    .eq('character_id', characterId)
-    .eq('herb_id', herbId)
-    .single()
+  const { data, error } = await supabase.rpc('add_character_herbs', {
+    p_character_id: characterId,
+    p_herb_id: herbId,
+    p_quantity: quantity,
+  })
 
-  if (existing) {
-    // Update existing
-    const { error } = await supabase
-      .from('character_herbs')
-      .update({ quantity: existing.quantity + quantity })
-      .eq('id', existing.id)
-    return { error: error?.message || null }
-  } else {
-    // Insert new
-    const { error } = await supabase
-      .from('character_herbs')
-      .insert({ character_id: characterId, herb_id: herbId, quantity })
-    return { error: error?.message || null }
+  if (error) {
+    return { error: error.message }
   }
+
+  // Check for application-level errors from RPC
+  if (data?.error) {
+    return { error: data.error }
+  }
+
+  return { error: null }
 }
 
 /**
  * Remove herbs from a character's inventory
+ * Uses atomic RPC function with row locking to prevent race conditions
  */
 export async function removeCharacterHerbs(
   characterId: string,
   herbId: number,
   quantity: number = 1
 ): Promise<{ error: string | null }> {
-  const { data: existing } = await supabase
-    .from('character_herbs')
-    .select('id, quantity')
-    .eq('character_id', characterId)
-    .eq('herb_id', herbId)
-    .single()
+  const { data, error } = await supabase.rpc('remove_character_herbs', {
+    p_character_id: characterId,
+    p_herb_id: herbId,
+    p_quantity: quantity,
+  })
 
-  if (!existing) {
-    return { error: 'Herb not found in inventory' }
+  if (error) {
+    return { error: error.message }
   }
 
-  if (existing.quantity <= quantity) {
-    // Remove entire row
-    const { error } = await supabase
-      .from('character_herbs')
-      .delete()
-      .eq('id', existing.id)
-    return { error: error?.message || null }
-  } else {
-    // Reduce quantity
-    const { error } = await supabase
-      .from('character_herbs')
-      .update({ quantity: existing.quantity - quantity })
-      .eq('id', existing.id)
-    return { error: error?.message || null }
+  // Check for application-level errors from RPC
+  if (data?.error) {
+    return { error: data.error }
   }
+
+  return { error: null }
 }
 
 // ============ Character Brewed Items ============
@@ -183,36 +168,63 @@ export async function addCharacterBrewedItem(
 
 /**
  * Consume brewed items, reducing quantity
+ * Uses atomic RPC function with row locking to prevent race conditions
  */
 export async function consumeCharacterBrewedItem(
   brewedId: number,
   quantity: number = 1
 ): Promise<{ error: string | null }> {
-  const { data: existing } = await supabase
-    .from('character_brewed')
-    .select('id, quantity')
-    .eq('id', brewedId)
-    .single()
+  const { data, error } = await supabase.rpc('consume_character_brewed_item', {
+    p_brewed_id: brewedId,
+    p_quantity: quantity,
+  })
 
-  if (!existing) {
-    return { error: 'Brewed item not found' }
+  if (error) {
+    return { error: error.message }
   }
 
-  if (existing.quantity <= quantity) {
-    // Remove entire row
-    const { error } = await supabase
-      .from('character_brewed')
-      .delete()
-      .eq('id', brewedId)
-    return { error: error?.message || null }
-  } else {
-    // Reduce quantity
-    const { error } = await supabase
-      .from('character_brewed')
-      .update({ quantity: existing.quantity - quantity })
-      .eq('id', brewedId)
-    return { error: error?.message || null }
+  // Check for application-level errors from RPC
+  if (data?.error) {
+    return { error: data.error }
   }
+
+  return { error: null }
+}
+
+/**
+ * Atomically brew items
+ * Validates and removes herbs, then creates brewed items based on success count
+ * All operations are atomic - if any step fails, entire transaction rolls back
+ */
+export async function brewItems(
+  characterId: string,
+  herbsToRemove: Array<{ herb_id: number; quantity: number }>,
+  brewType: 'elixir' | 'bomb' | 'oil',
+  effects: string[],
+  computedDescription: string,
+  choices: Record<string, string> = {},
+  successCount: number = 1
+): Promise<{ data: { items_created: number } | null; error: string | null }> {
+  const { data, error } = await supabase.rpc('brew_items', {
+    p_character_id: characterId,
+    p_herbs_to_remove: herbsToRemove,
+    p_brew_type: brewType,
+    p_effects: effects,
+    p_computed_description: computedDescription,
+    p_choices: choices,
+    p_success_count: successCount,
+  })
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  // Check for application-level errors from RPC
+  if (data?.error) {
+    return { data: null, error: data.error }
+  }
+
+  return { data: { items_created: data.items_created || 0 }, error: null }
 }
 
 // ============ Character Recipes ============

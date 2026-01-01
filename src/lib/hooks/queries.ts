@@ -73,6 +73,7 @@ export const queryKeys = {
   characterHerbs: (characterId: string) => ['characterHerbs', characterId] as const,
   characterBrewedItems: (characterId: string) => ['characterBrewedItems', characterId] as const,
   characterRecipesNew: (characterId: string) => ['characterRecipesNew', characterId] as const,
+  characterRecipeStats: (characterId: string | undefined) => ['characterRecipeStats', characterId] as const,
 }
 
 // ============ Query Fetchers ============
@@ -189,7 +190,34 @@ const fetchers = {
     if (result.error) throw new Error(result.error)
     return result.data || []
   },
-  
+
+  characterRecipeStats: async (characterId: string) => {
+    // Get all recipes known by the character
+    const { data: characterRecipes, error: crError } = await supabase
+      .from('character_recipes')
+      .select('recipe_id')
+      .eq('character_id', characterId)
+
+    if (crError) throw new Error(crError.message)
+
+    // Get all recipes to compute totals
+    const { data: allRecipes, error: recipesError } = await supabase
+      .from('recipes')
+      .select('id, is_secret')
+
+    if (recipesError) throw new Error(recipesError.message)
+
+    const knownRecipeIds = new Set(characterRecipes?.map(cr => cr.recipe_id) || [])
+    const totalBase = allRecipes?.filter(r => !r.is_secret).length || 0
+    const secretsUnlocked = allRecipes?.filter(r => r.is_secret && knownRecipeIds.has(r.id)).length || 0
+
+    return {
+      known: knownRecipeIds.size,
+      totalBase,
+      secretsUnlocked,
+    }
+  },
+
   characterWeaponSlots: async (characterId: string) => {
     const result = await fetchCharacterWeaponSlots(characterId)
     if (result.error) throw new Error(result.error)
@@ -417,6 +445,17 @@ export function useCharacterRecipesNew(characterId: string | null) {
   })
 }
 
+/**
+ * Fetch character's recipe statistics (known count, secrets unlocked)
+ */
+export function useCharacterRecipeStats(characterId: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.characterRecipeStats(characterId),
+    queryFn: () => fetchers.characterRecipeStats(characterId!),
+    enabled: !!characterId,
+  })
+}
+
 // ============ Equipment Hooks ============
 
 /**
@@ -533,13 +572,22 @@ export function useInvalidateQueries() {
     invalidateCharacterRecipesNew: (characterId: string) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.characterRecipesNew(characterId) })
     },
-    
+
+    /** Invalidate character recipes and stats (new system) */
+    invalidateCharacterRecipes: (characterId: string) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.characterRecipesNew(characterId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.characterRecipeStats(characterId) })
+    },
+
     /** Invalidate all user-specific data (e.g., on logout) */
     invalidateAllUserData: () => {
+      // Legacy profile-based (keep until fully migrated)
       queryClient.invalidateQueries({ queryKey: ['inventory'] })
       queryClient.invalidateQueries({ queryKey: ['brewedItems'] })
       queryClient.invalidateQueries({ queryKey: ['userRecipes'] })
       queryClient.invalidateQueries({ queryKey: ['recipeStats'] })
+
+      // Character-based
       queryClient.invalidateQueries({ queryKey: ['character'] })
       queryClient.invalidateQueries({ queryKey: ['characterSkills'] })
       queryClient.invalidateQueries({ queryKey: ['characterArmor'] })
@@ -547,6 +595,12 @@ export function useInvalidateQueries() {
       queryClient.invalidateQueries({ queryKey: ['characterQuickSlots'] })
       queryClient.invalidateQueries({ queryKey: ['characterWeapons'] })
       queryClient.invalidateQueries({ queryKey: ['characterItems'] })
+
+      // Character-based herbalism (NEW)
+      queryClient.invalidateQueries({ queryKey: ['characterHerbs'] })
+      queryClient.invalidateQueries({ queryKey: ['characterBrewedItems'] })
+      queryClient.invalidateQueries({ queryKey: ['characterRecipesNew'] })
+      queryClient.invalidateQueries({ queryKey: ['characterRecipeStats'] })
     },
   }
 }
@@ -617,15 +671,33 @@ export function usePrefetch() {
     /** Prefetch profile page data */
     prefetchProfile: (userId: string | null) => {
       if (!userId) return
-      
+
       queryClient.prefetchQuery({
         queryKey: queryKeys.character(userId),
         queryFn: () => fetchers.character(userId),
       })
-      
+
       queryClient.prefetchQuery({
         queryKey: queryKeys.armorSlots,
         queryFn: fetchers.armorSlots,
+      })
+    },
+
+    /** Prefetch character herbalism data */
+    prefetchCharacterHerbalism: (characterId: string | null) => {
+      if (!characterId) return
+
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.characterHerbs(characterId),
+        queryFn: () => fetchers.characterHerbs(characterId),
+      })
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.characterBrewedItems(characterId),
+        queryFn: () => fetchers.characterBrewedItems(characterId),
+      })
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.characterRecipesNew(characterId),
+        queryFn: () => fetchers.characterRecipesNew(characterId),
       })
     },
   }

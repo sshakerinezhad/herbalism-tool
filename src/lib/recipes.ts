@@ -7,6 +7,8 @@ export type UserRecipe = Recipe & {
 
 /**
  * Get all recipes known by a user (from user_recipes joined with recipes)
+ *
+ * @deprecated Use character-based recipes from `@/lib/db/characterInventory.fetchCharacterRecipes` instead.
  */
 export async function getUserRecipes(userId: string): Promise<{
   recipes: UserRecipe[]
@@ -52,6 +54,8 @@ export async function getUserRecipes(userId: string): Promise<{
 /**
  * Initialize a user with all base (non-secret) recipes
  * Called when a new profile is created
+ *
+ * @deprecated Use character-based recipes from `@/lib/db/characterInventory.initializeBaseCharacterRecipes` instead.
  */
 export async function initializeBaseRecipes(userId: string): Promise<{
   count: number
@@ -103,6 +107,8 @@ export async function initializeBaseRecipes(userId: string): Promise<{
 
 /**
  * Attempt to unlock a secret recipe with a code
+ *
+ * @deprecated Use character-based recipes from `@/lib/db/characterInventory.unlockCharacterRecipeWithCode` instead.
  */
 export async function unlockRecipeWithCode(
   userId: string,
@@ -168,6 +174,8 @@ export async function unlockRecipeWithCode(
 
 /**
  * Get count of user's known recipes vs total available
+ *
+ * @deprecated Use character-based recipes from `@/lib/hooks.useCharacterRecipeStats` instead.
  */
 export async function getRecipeStats(userId: string): Promise<{
   known: number

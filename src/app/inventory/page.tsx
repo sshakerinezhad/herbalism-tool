@@ -24,7 +24,7 @@ import {
   useCharacterHerbs,
   useCharacterBrewedItems,
 } from '@/lib/hooks'
-import { addWeaponFromTemplate, addItemFromTemplate, addCustomWeapon, addCustomItem } from '@/lib/db/characters'
+import { addWeaponFromTemplate, addItemFromTemplate, addCustomWeapon, addCustomItem, deleteCharacterWeapon, consumeCharacterItem, deleteCharacterItem } from '@/lib/db/characters'
 import {
   removeCharacterHerbs,
   consumeCharacterBrewedItem,
@@ -392,13 +392,10 @@ function WeaponsTab({
 
   async function handleDelete(weaponId: string) {
     setDeletingId(weaponId)
-    const { error } = await supabase
-      .from('character_weapons')
-      .delete()
-      .eq('id', weaponId)
+    const { error } = await deleteCharacterWeapon(weaponId)
     setDeletingId(null)
     if (error) {
-      setError(error.message)
+      setError(error)
     } else {
       onWeaponDeleted()
     }
@@ -594,38 +591,25 @@ function ItemsTab({
   }, [items])
 
   async function handleUseOne(itemId: string) {
-    const item = items.find(i => i.id === itemId)
-    if (!item) return
-    
+    if (!characterId) return
+
     setDeletingId(itemId)
-    
-    if (item.quantity <= 1) {
-      const { error } = await supabase
-        .from('character_items')
-        .delete()
-        .eq('id', itemId)
-      if (error) setError(error.message)
-    } else {
-      const { error } = await supabase
-        .from('character_items')
-        .update({ quantity: item.quantity - 1 })
-        .eq('id', itemId)
-      if (error) setError(error.message)
-    }
-    
+    const { error } = await consumeCharacterItem(characterId, itemId, 1)
     setDeletingId(null)
-    onItemChanged()
+
+    if (error) {
+      setError(error)
+    } else {
+      onItemChanged()
+    }
   }
 
   async function handleDeleteAll(itemId: string) {
     setDeletingId(itemId)
-    const { error } = await supabase
-      .from('character_items')
-      .delete()
-      .eq('id', itemId)
+    const { error } = await deleteCharacterItem(itemId)
     setDeletingId(null)
     if (error) {
-      setError(error.message)
+      setError(error)
     } else {
       onItemChanged()
     }

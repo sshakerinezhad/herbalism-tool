@@ -2,7 +2,7 @@
 
 ## Overall Progress
 - ✅ **Phase 1: Stabilize User-Facing Behavior** - COMPLETED
-- ⏳ Phase 2: Data Layer Consolidation - NOT STARTED
+- ✅ **Phase 2: Data Layer Consolidation** - COMPLETED (2026-01-01)
 - ⏳ Phase 3: Refactor Monolith Pages - NOT STARTED
 - ⏳ Phase 4: Performance & Scalability - NOT STARTED
 - ⏳ Phase 5: Validation & QA - NOT STARTED
@@ -61,19 +61,44 @@
 4) Small cleanup ✅ COMPLETED
    - Updated `src/app/inventory/page.tsx` to use separate search state per tab (WeaponsTab, ItemsTab)
 
-## Phase 2: Data Layer Consolidation (foundational)
-1) Move Supabase calls out of UI pages
-   - Why: keeps UI declarative and unifies error handling; makes testing easier.
-   - Files: src/app/inventory/page.tsx, src/app/forage/page.tsx, src/app/edit-character/page.tsx.
-   - Fix: add/extend db modules or React Query mutations; UI calls hooks.
-2) Standardize return shape
-   - Why: reduces error-handling variation.
-   - Files: src/lib/db/*, src/lib/hooks/queries.ts.
-   - Fix: keep consistent { data, error } and predictable error types.
-3) React Query alignment
-   - Why: inconsistent caching; manual fetches ignore staleTime and deduping.
-   - Files: src/app/create-character/page.tsx, src/app/edit-character/page.tsx vs src/lib/hooks/queries.ts.
-   - Fix: add hooks for reference data (skills, armor slots) and use them across pages.
+## Phase 2: Data Layer Consolidation ✅ COMPLETED (2026-01-01)
+
+**Summary of completed work:**
+1) ✅ Moved Supabase calls out of UI pages into db layer
+   - `forage/page.tsx` → uses `fetchBiomeHerbs()` from `db/biomes.ts`
+   - `inventory/page.tsx` → uses `deleteCharacterWeapon()`, `consumeCharacterItem()`, `deleteCharacterItem()` from `db/characters.ts`
+   - `edit-character/page.tsx` → uses `updateCharacter()` from `db/characters.ts`
+   - `recipes/page.tsx` → fully migrated to character-based hooks
+
+2) ✅ Added atomic RPC for item consumption
+   - `supabase/migrations/010_atomic_item_functions.sql` with `consume_character_item` RPC
+   - Full safeguards: auth.uid(), SET search_path, quantity validation, row locking
+
+3) ✅ Migrated React Query hooks from legacy user-based to character-based
+   - Added `useCharacterRecipeStats` hook
+   - Added `invalidateCharacterRecipes` helper
+   - Updated `invalidateAllUserData` to include character-based herbalism
+   - Added `prefetchCharacterHerbalism` method
+
+4) ✅ Migrated recipes page to character-based
+   - Uses `useCharacter`, `useCharacterRecipesNew`, `useCharacterRecipeStats`
+   - Uses `unlockCharacterRecipeWithCode` and `invalidateCharacterRecipes`
+   - Added character requirement check with CTA
+
+5) ✅ Deprecated legacy modules
+   - `src/lib/inventory.ts` - entire module @deprecated
+   - `src/lib/brewing.ts` - DB functions @deprecated (pure utilities kept)
+   - `src/lib/recipes.ts` - DB functions @deprecated
+
+**Files modified:**
+- `src/lib/db/biomes.ts` (new)
+- `src/lib/db/characters.ts` (added functions)
+- `src/lib/db/characterInventory.ts` (added unlockCharacterRecipeWithCode)
+- `src/lib/db/index.ts` (exports biomes)
+- `src/lib/hooks/queries.ts` (new hooks + invalidation)
+- `src/app/forage/page.tsx`, `inventory/page.tsx`, `edit-character/page.tsx`, `recipes/page.tsx`
+
+**Build verified:** ✅ Passes
 
 ## Phase 3: Refactor Monolith Pages (modularization)
 1) Inventory page

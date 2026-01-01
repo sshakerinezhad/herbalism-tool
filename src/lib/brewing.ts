@@ -63,6 +63,8 @@ export async function fetchRecipes(): Promise<{ recipes: Recipe[]; error: string
 /**
  * Fetch recipes known by a specific user (from user_recipes)
  * This is what should be used for brewing
+ *
+ * @deprecated Use character-based recipe fetching from `@/lib/db/characterInventory.fetchCharacterRecipes` instead.
  */
 export async function fetchUserRecipes(userId: string): Promise<{ recipes: Recipe[]; error: string | null }> {
   const { data, error } = await supabase
@@ -244,6 +246,9 @@ export function computeBrewedDescription(
 
 /**
  * Save brewed item to database
+ *
+ * @deprecated Use character-based brewing from `@/lib/db/characterInventory.addCharacterBrewedItem` instead.
+ *
  * Note: The user_brewed table needs these columns:
  * - user_id (uuid, FK to profiles)
  * - type (text) - 'elixir' or 'bomb'
@@ -297,6 +302,8 @@ export async function saveBrewedItem(
 
 /**
  * Get all brewed items for a user
+ *
+ * @deprecated Use character-based brewing from `@/lib/db/characterInventory.fetchCharacterBrewedItems` instead.
  */
 export async function getBrewedItems(userId: string): Promise<{
   items: {
@@ -334,6 +341,8 @@ export async function getBrewedItems(userId: string): Promise<{
 /**
  * Remove/expend brewed items from inventory
  * Decrements quantity; removes row if quantity reaches 0
+ *
+ * @deprecated Use character-based brewing from `@/lib/db/characterInventory.consumeCharacterBrewedItem` instead.
  */
 export async function removeBrewedItem(
   brewedId: number,

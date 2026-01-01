@@ -17,6 +17,7 @@ import { useBiomes, useInvalidateQueries, useCharacter } from '@/lib/hooks'
 import { rollD20, rollHerbQuantity, weightedRandomSelect } from '@/lib/dice'
 import { Biome, Herb, BiomeHerb, SessionResult, ForageState } from '@/lib/types'
 import { addCharacterHerbs, removeCharacterHerbs } from '@/lib/db/characterInventory'
+import { fetchBiomeHerbs } from '@/lib/db/biomes'
 import { FORAGING_DC, getElementSymbol } from '@/lib/constants'
 import { PageLayout, ErrorDisplay, ForageSkeleton } from '@/components/ui'
 
@@ -125,13 +126,10 @@ export default function ForagePage() {
       if (!biome || count < 1) continue
 
       // Get herbs available in this biome
-      const { data: biomeHerbs, error: herbError } = await supabase
-        .from('biome_herbs')
-        .select('id, biome_id, herb_id, weight, herbs(*)')
-        .eq('biome_id', biomeId)
+      const { data: biomeHerbs, error: herbError } = await fetchBiomeHerbs(biomeId)
 
       if (herbError) {
-        setMutationError(`Failed to load herbs for ${biome.name}: ${herbError.message}`)
+        setMutationError(`Failed to load herbs for ${biome.name}: ${herbError}`)
         setState({ phase: 'setup' })
         return
       }
@@ -156,13 +154,8 @@ export default function ForagePage() {
           const herbsFound: Herb[] = []
 
           if (biomeHerbs && biomeHerbs.length > 0) {
-            const typedBiomeHerbs = biomeHerbs.map(bh => ({
-              ...bh,
-              herbs: bh.herbs as unknown as Herb
-            })) as BiomeHerb[]
-
             for (let j = 0; j < total; j++) {
-              const selected = weightedRandomSelect(typedBiomeHerbs)
+              const selected = weightedRandomSelect(biomeHerbs)
               herbsFound.push(selected.herbs)
             }
           }

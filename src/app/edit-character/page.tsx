@@ -24,6 +24,7 @@ import {
   fetchArmorSlots,
   setCharacterArmor as saveCharacterArmor,
   removeCharacterArmor,
+  updateCharacter,
 } from '@/lib/db/characters'
 import { supabase } from '@/lib/supabase'
 import {
@@ -245,13 +246,10 @@ export default function EditCharacterPage() {
       copper: form.copper,
     }
 
-    const { error } = await supabase
-      .from('characters')
-      .update(updates)
-      .eq('id', character.id)
+    const { error } = await updateCharacter(character.id, updates)
 
     if (error) {
-      setSaveError(error.message)
+      setSaveError(error)
       setSaving(false)
       return
     }

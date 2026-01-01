@@ -318,6 +318,61 @@ export async function initializeBaseCharacterRecipes(
   return { count: baseRecipes.length, error: null }
 }
 
+/**
+ * Unlock a secret recipe for a character using a code
+ * Returns the unlocked recipe on success
+ */
+export async function unlockCharacterRecipeWithCode(
+  characterId: string,
+  code: string
+): Promise<{ success: boolean; recipe: Recipe | null; error: string | null }> {
+  const normalizedCode = code.trim().toLowerCase()
+
+  // Guard against empty code
+  if (!normalizedCode) {
+    return { success: false, recipe: null, error: 'Please enter a code' }
+  }
+
+  // Find secret recipe with matching code
+  const { data: recipe, error: findError } = await supabase
+    .from('recipes')
+    .select('*')
+    .eq('is_secret', true)
+    .ilike('unlock_code', normalizedCode)
+    .single()
+
+  if (findError || !recipe) {
+    return { success: false, recipe: null, error: 'Invalid unlock code' }
+  }
+
+  // Check if already unlocked - use maybeSingle() to avoid PGRST116 when no row exists
+  const { data: existing, error: checkError } = await supabase
+    .from('character_recipes')
+    .select('id')
+    .eq('character_id', characterId)
+    .eq('recipe_id', recipe.id)
+    .maybeSingle()
+
+  if (checkError) {
+    return { success: false, recipe: null, error: checkError.message }
+  }
+
+  if (existing) {
+    return { success: false, recipe: null, error: 'Recipe already unlocked' }
+  }
+
+  // Unlock recipe
+  const { error: insertError } = await supabase
+    .from('character_recipes')
+    .insert({ character_id: characterId, recipe_id: recipe.id })
+
+  if (insertError) {
+    return { success: false, recipe: null, error: insertError.message }
+  }
+
+  return { success: true, recipe: recipe as Recipe, error: null }
+}
+
 // ============ Character Weapons (Clean Pattern) ============
 
 /**

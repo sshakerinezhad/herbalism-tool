@@ -26,6 +26,19 @@ import type {
 } from '../types'
 import { calculateMaxHP, calculateMaxHitDice } from '../constants'
 
+// ============ Types ============
+
+/**
+ * Character update type for partial updates
+ * Aligned with types.ts Character (line 373) and edit-character/page.tsx payload (line 229)
+ */
+type CharacterUpdate = Partial<Pick<Character,
+  | 'name' | 'appearance' | 'level'
+  | 'str' | 'dex' | 'con' | 'int' | 'wis' | 'cha' | 'hon'  // Stats
+  | 'hp_current' | 'hp_custom_modifier'                     // HP
+  | 'platinum' | 'gold' | 'silver' | 'copper'               // Money
+>>
+
 // ============ Reference Data ============
 
 /**
@@ -272,6 +285,25 @@ export async function updateCharacterLevel(
   }
 
   return { error: null }
+}
+
+/**
+ * Update a character's basic fields
+ * Replaces edit-character/page.tsx:248-257
+ * Explicitly sets updated_at and relies on RLS for ownership check
+ */
+export async function updateCharacter(
+  characterId: string,
+  updates: CharacterUpdate
+): Promise<{ error: string | null }> {
+  // RLS ensures user can only update their own characters, so we don't need user_id filter.
+  // This avoids the risk of eq('user_id', undefined) silently returning no rows.
+  const { error } = await supabase
+    .from('characters')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', characterId)
+
+  return { error: error?.message ?? null }
 }
 
 /**
@@ -1078,5 +1110,73 @@ export async function addItemFromTemplate(
   }
 
   return { data: data as CharacterItem, error: null }
+}
+
+// ============ Delete Weapons/Items ============
+
+/**
+ * Delete a character weapon
+ * Replaces inventory/page.tsx:393-405
+ */
+export async function deleteCharacterWeapon(weaponId: string): Promise<{
+  error: string | null
+}> {
+  const { error } = await supabase
+    .from('character_weapons')
+    .delete()
+    .eq('id', weaponId)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  return { error: null }
+}
+
+/**
+ * Consume (use) a character item
+ * Uses RPC for atomic operation
+ * Replaces inventory/page.tsx:596-618
+ */
+export async function consumeCharacterItem(
+  characterId: string,
+  itemId: string,
+  quantity: number = 1
+): Promise<{ success?: boolean; error: string | null }> {
+  const { data, error } = await supabase.rpc('consume_character_item', {
+    p_character_id: characterId,
+    p_item_id: itemId,
+    p_quantity: quantity,
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  // RPC returns { success: true } or { error: "message" }
+  if (data?.error) {
+    return { error: data.error }
+  }
+
+  return { success: true, error: null }
+}
+
+/**
+ * Delete a character item completely
+ * Replaces inventory/page.tsx:620-632
+ */
+export async function deleteCharacterItem(itemId: string): Promise<{
+  error: string | null
+}> {
+  const { error } = await supabase
+    .from('character_items')
+    .delete()
+    .eq('id', itemId)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  return { error: null }
 }
 

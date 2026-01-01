@@ -1098,6 +1098,10 @@ export type Database = {
         Args: { p_brewed_id: number; p_quantity?: number }
         Returns: Json
       }
+      consume_character_item: {
+        Args: { p_character_id: string; p_item_id: string; p_quantity?: number }
+        Returns: Json
+      }
       remove_character_herbs: {
         Args: { p_character_id: string; p_herb_id: number; p_quantity?: number }
         Returns: Json

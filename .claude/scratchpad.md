@@ -100,6 +100,12 @@
 
 **Build verified:** ✅ Passes
 
+## Post-Phase 2 Follow-ups (2026-01-01) ? COMPLETED
+- Create-character reference data now uses `useSkills`/`useArmorSlots` hooks; removed local fetch state.
+- Edit-character armor slots now use `useArmorSlots` hook; removed manual fetch in character load.
+- Removed unused `supabase` imports from inventory, forage, edit-character pages.
+- Kept legacy profile-based React Query hooks, marked `@deprecated` to guide migration while avoiding breakage.
+
 ## Phase 3: Refactor Monolith Pages (modularization)
 1) Inventory page
    - Why: 2205 lines with UI, data, and multiple modals in one file.

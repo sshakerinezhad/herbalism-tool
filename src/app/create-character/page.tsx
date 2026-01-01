@@ -21,10 +21,9 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
+import { useArmorSlots, useSkills } from '@/lib/hooks'
 import { LoadingState, WarningDisplay } from '@/components/ui'
 import {
-  fetchSkills,
-  fetchArmorSlots,
   createCharacter,
   hasCharacter,
   updateCharacterMoney,
@@ -52,7 +51,6 @@ import type {
   Vocation,
   CharacterStats,
   Skill,
-  ArmorSlot,
   ArmorPreset,
 } from '@/lib/types'
 
@@ -119,9 +117,9 @@ export default function CreateCharacterPage() {
   const router = useRouter()
 
   // Reference data
-  const [skills, setSkills] = useState<Skill[]>([])
-  const [armorSlots, setArmorSlots] = useState<ArmorSlot[]>([])
-  const [loadingRef, setLoadingRef] = useState(true)
+  const { data: skills = [], isLoading: skillsLoading } = useSkills()
+  const { data: armorSlots = [], isLoading: slotsLoading } = useArmorSlots()
+  const loadingRef = skillsLoading || slotsLoading
 
   // Wizard state
   const [currentStep, setCurrentStep] = useState<WizardStep>('name')
@@ -166,21 +164,6 @@ export default function CreateCharacterPage() {
     }
     checkExisting()
   }, [user])
-
-  // Load reference data
-  useEffect(() => {
-    async function loadReferenceData() {
-      const [skillsResult, slotsResult] = await Promise.all([
-        fetchSkills(),
-        fetchArmorSlots(),
-      ])
-
-      if (skillsResult.data) setSkills(skillsResult.data)
-      if (slotsResult.data) setArmorSlots(slotsResult.data)
-      setLoadingRef(false)
-    }
-    loadReferenceData()
-  }, [])
 
   // Calculate total skill proficiencies allowed
   const totalProficiencies = useMemo(() => {

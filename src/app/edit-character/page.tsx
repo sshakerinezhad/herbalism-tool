@@ -17,16 +17,15 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
+import { useArmorSlots } from '@/lib/hooks'
 import { LoadingState, ErrorDisplay } from '@/components/ui'
 import {
   fetchCharacter,
   fetchCharacterArmor,
-  fetchArmorSlots,
   setCharacterArmor as saveCharacterArmor,
   removeCharacterArmor,
   updateCharacter,
 } from '@/lib/db/characters'
-import { supabase } from '@/lib/supabase'
 import {
   ABILITY_NAMES,
   getAbilityModifier,
@@ -76,7 +75,7 @@ export default function EditCharacterPage() {
 
   // Armor state
   const [characterArmor, setCharacterArmor] = useState<CharacterArmorData[]>([])
-  const [allArmorSlots, setAllArmorSlots] = useState<ArmorSlot[]>([])
+  const { data: allArmorSlots = [] } = useArmorSlots()
   const [armorSaving, setArmorSaving] = useState<number | null>(null) // slot_id being saved
 
   // Redirect if not authenticated
@@ -131,16 +130,10 @@ export default function EditCharacterPage() {
       })
 
       // Fetch armor data
-      const [armorResult, slotsResult] = await Promise.all([
-        fetchCharacterArmor(data.id),
-        fetchArmorSlots(),
-      ])
+      const armorResult = await fetchCharacterArmor(data.id)
       
       if (armorResult.data) {
         setCharacterArmor(armorResult.data)
-      }
-      if (slotsResult.data) {
-        setAllArmorSlots(slotsResult.data)
       }
 
       setLoading(false)

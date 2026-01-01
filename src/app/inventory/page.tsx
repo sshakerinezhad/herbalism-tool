@@ -30,7 +30,6 @@ import {
   consumeCharacterBrewedItem,
 } from '@/lib/db/characterInventory'
 import type { CharacterHerb, CharacterBrewedItem } from '@/lib/types'
-import { supabase } from '@/lib/supabase'
 import { 
   getElementSymbol, 
   getElementColors, 

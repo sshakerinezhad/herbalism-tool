@@ -1,27 +1,28 @@
 # Herbalism Tool - Data Layer Fixes
 
 ## Status Summary
+Legend: ? Completed | ? Not started
+
 | Phase | Status |
 |-------|--------|
-| Phase 1: Stabilize User-Facing Behavior | ✅ COMPLETED |
-| Phase 2: Data Layer Consolidation | ✅ COMPLETED (2026-01-01) |
-| Phase 3: Refactor Monolith Pages | ⏳ NOT STARTED |
+| Phase 1: Stabilize User-Facing Behavior | ? COMPLETED |
+| Phase 2: Data Layer Consolidation | ? COMPLETED (2026-01-01) |
+| Phase 3: Refactor Monolith Pages | ? NOT STARTED |
 
 ---
 
-# Phase 1: Stabilize User-Facing Behavior ✅ COMPLETED
+# Phase 1: Stabilize User-Facing Behavior ? COMPLETED
 
 ## Summary
-- ✅ Error Visibility - Surface silent errors as warnings
-- ✅ Atomic Inventory Mutations - RPC functions for race-condition-free operations
-- ✅ Small Cleanup - Separate search state per tab
+- ? Error Visibility - Surface silent errors as warnings
+- ? Atomic Inventory Mutations - RPC functions for race-condition-free operations
+- ? Small Cleanup - Separate search state per tab
 
 *Details in git history and scratchpad.md*
 
 ---
----
 
-# Phase 2: Data Layer Consolidation ✅ COMPLETED
+# Phase 2: Data Layer Consolidation ? COMPLETED
 
 ## Context Summary
 
@@ -81,7 +82,7 @@ Phase 2 builds on Phase 1's atomic RPC pattern. This revision incorporates codex
 
 ---
 
-## Step 1: Create Atomic RPC (with full safeguards) ✅ COMPLETED
+## Step 1: Create Atomic RPC (with full safeguards) ? COMPLETED
 
 **Why:** `handleUseOne` reads quantity client-side, then conditionally deletes/decrements. Race condition with multiple tabs. Original RPC was missing critical safeguards from `009_atomic_inventory_functions.sql`.
 
@@ -160,11 +161,11 @@ GRANT EXECUTE ON FUNCTION consume_character_item TO authenticated;
 - `GRANT EXECUTE TO authenticated` - enables RLS bypass for authenticated users
 - `{ success: true }` return shape - matches existing RPCs
 
-**Deploy:** `npm run db:push` then `npm run db:types`
+**Deploy:** `npm run db:push` ?? `npm run db:types`
 
 ---
 
-## Step 2: Create Biomes Module (reuse existing type) ✅ COMPLETED
+## Step 2: Create Biomes Module (reuse existing type) ? COMPLETED
 
 **Why:** `fetchBiomeHerbs` is biome reference data, not character data. Type already exists in `types.ts:46-52`.
 
@@ -200,7 +201,7 @@ export async function fetchBiomeHerbs(biomeId: number): Promise<{
 
 ---
 
-## Step 3: Add Functions to characters.ts ✅ COMPLETED
+## Step 3: Add Functions to characters.ts ? COMPLETED
 
 **Status:** Added CharacterUpdate type and 4 functions (updateCharacter, deleteCharacterWeapon, consumeCharacterItem, deleteCharacterItem) to `src/lib/db/characters.ts`.
 
@@ -401,10 +402,10 @@ prefetchCharacterHerbalism: (characterId: string | null) => {
 
 **Changes:**
 1. Get `characterId` from character context (require character selection like other herbalism pages)
-2. Replace `useUserRecipes(profileId)` → `useCharacterRecipesNew(characterId)`
-3. Replace `useRecipeStats(profileId)` → `useCharacterRecipeStats(characterId)`
-4. Replace `unlockRecipeWithCode(profileId, code)` → `unlockCharacterRecipeWithCode(characterId, code)`
-5. Replace `invalidateRecipes(profileId)` → `invalidateCharacterRecipes(characterId)`
+2. Replace `useUserRecipes(profileId)` ?? `useCharacterRecipesNew(characterId)`
+3. Replace `useRecipeStats(profileId)` ?? `useCharacterRecipeStats(characterId)`
+4. Replace `unlockRecipeWithCode(profileId, code)` ?? `unlockCharacterRecipeWithCode(characterId, code)`
+5. Replace `invalidateRecipes(profileId)` ?? `invalidateCharacterRecipes(characterId)`
 6. Map `CharacterRecipe[]` to `Recipe[]` for rendering (filter missing joins)
 
 ```typescript
@@ -427,9 +428,9 @@ const recipes = useMemo(() => {
 ## Step 7: Update Other UI Pages
 
 ### 7.1 `inventory/page.tsx`
-- Line ~393: `handleDelete` → use `deleteCharacterWeapon()`
-- Line ~596: `handleUseOne` → use `consumeCharacterItem(characterId, itemId, 1)`
-- Line ~620: `handleDeleteAll` → use `deleteCharacterItem()`
+- Line ~393: `handleDelete` ?? use `deleteCharacterWeapon()`
+- Line ~596: `handleUseOne` ?? use `consumeCharacterItem(characterId, itemId, 1)`
+- Line ~620: `handleDeleteAll` ?? use `deleteCharacterItem()`
 - **Note:** Need to pass `characterId` to ItemsTab
 
 ### 7.2 `forage/page.tsx`
@@ -464,54 +465,54 @@ Deprecate DB functions:
 
 ## Current Progress (2026-01-01)
 
-**✅ ALL STEPS COMPLETED:**
-- ✅ Step 1: Migration + RPC deployed, types generated
-- ✅ Step 2: Biomes module created and exported
-- ✅ Step 3: Character functions added (updateCharacter, deleteCharacterWeapon, consumeCharacterItem, deleteCharacterItem)
-- ✅ Step 4: Added `unlockCharacterRecipeWithCode` to `characterInventory.ts`
-- ✅ Step 5: Updated `queries.ts` hooks (characterRecipeStats, invalidation, prefetch)
-- ✅ Step 6: Migrated forage/page.tsx to use fetchBiomeHerbs
-- ✅ Step 7: Migrated inventory/page.tsx to use new db functions
-- ✅ Step 8: Migrated edit-character/page.tsx to use updateCharacter
-- ✅ Step 9: Migrated recipes/page.tsx to character-based hooks
-- ✅ Step 10: Deprecated legacy modules with @deprecated tags
-- ✅ Step 11: Build verification passed
+**? ALL STEPS COMPLETED:**
+- ? Step 1: Migration + RPC deployed, types generated
+- ? Step 2: Biomes module created and exported
+- ? Step 3: Character functions added (updateCharacter, deleteCharacterWeapon, consumeCharacterItem, deleteCharacterItem)
+- ? Step 4: Added `unlockCharacterRecipeWithCode` to `characterInventory.ts`
+- ? Step 5: Updated `queries.ts` hooks (characterRecipeStats, invalidation, prefetch)
+- ? Step 6: Migrated forage/page.tsx to use fetchBiomeHerbs
+- ? Step 7: Migrated inventory/page.tsx to use new db functions
+- ? Step 8: Migrated edit-character/page.tsx to use updateCharacter
+- ? Step 9: Migrated recipes/page.tsx to character-based hooks
+- ? Step 10: Deprecated legacy modules with @deprecated tags
+- ? Step 11: Build verification passed
 
 **Phase 2: Data Layer Consolidation - COMPLETE**
 
 ---
 
-## Implementation Order ✅ ALL COMPLETE
+## Implementation Order ? ALL COMPLETE
 
-1. ✅ Migration SQL → `npm run db:push` → `npm run db:types`
-2. ✅ `biomes.ts` (new file)
-3. ✅ `characters.ts` (add functions)
-4. ✅ `characterInventory.ts` (add unlock with code)
-5. ✅ `queries.ts` (add hooks + invalidation)
-6. ✅ `db/index.ts` (export biomes)
-7. ✅ `forage/page.tsx` (lowest risk UI change)
-8. ✅ `inventory/page.tsx`
-9. ✅ `edit-character/page.tsx`
-10. ✅ `recipes/page.tsx` (highest risk - test thoroughly)
-11. ✅ Legacy deprecation (last)
-12. ✅ Build verification
+1. ? Migration SQL ?? `npm run db:push` ?? `npm run db:types`
+2. ? `biomes.ts` (new file)
+3. ? `characters.ts` (add functions)
+4. ? `characterInventory.ts` (add unlock with code)
+5. ? `queries.ts` (add hooks + invalidation)
+6. ? `db/index.ts` (export biomes)
+7. ? `forage/page.tsx` (lowest risk UI change)
+8. ? `inventory/page.tsx`
+9. ? `edit-character/page.tsx`
+10. ? `recipes/page.tsx` (highest risk - test thoroughly)
+11. ? Legacy deprecation (last)
+12. ? Build verification
 
 ---
 
 ## Testing Checklist
 
-- [x] RPC `consume_character_item` works with auth
-- [x] RPC rejects unauthorized access (wrong user)
-- [x] RPC rejects invalid quantity (`<= 0`)
-- [x] RPC returns `{ success: true }` on success
-- [x] Forage page loads biome herbs
-- [x] Inventory item use decrements correctly (qty > 1)
-- [x] Inventory item use deletes at qty = 1
-- [x] Edit character saves changes with `updated_at`
-- [x] Recipes page shows character recipes
-- [x] Recipe unlock with code works
-- [x] Recipe stats display correctly
-- [x] Build passes
+- ? RPC `consume_character_item` works with auth
+- ? RPC rejects unauthorized access (wrong user)
+- ? RPC rejects invalid quantity (`<= 0`)
+- ? RPC returns `{ success: true }` on success
+- ? Forage page loads biome herbs
+- ? Inventory item use decrements correctly (qty > 1)
+- ? Inventory item use deletes at qty = 1
+- ? Edit character saves changes with `updated_at`
+- ? Recipes page shows character recipes
+- ? Recipe unlock with code works
+- ? Recipe stats display correctly
+- ? Build passes
 
 ---
 

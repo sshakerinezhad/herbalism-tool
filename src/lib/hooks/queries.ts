@@ -246,6 +246,7 @@ const fetchers = {
 // ============ Inventory Hooks ============
 
 /**
+ * @deprecated Use useCharacterHerbs with a character id instead.
  * Fetch user's herb inventory
  */
 export function useInventory(profileId: string | null) {
@@ -257,6 +258,7 @@ export function useInventory(profileId: string | null) {
 }
 
 /**
+ * @deprecated Use useCharacterBrewedItems with a character id instead.
  * Fetch user's brewed items (elixirs, bombs, oils)
  */
 export function useBrewedItems(profileId: string | null) {
@@ -270,6 +272,7 @@ export function useBrewedItems(profileId: string | null) {
 // ============ Recipe Hooks ============
 
 /**
+ * @deprecated Use useCharacterRecipesNew with a character id instead.
  * Fetch recipes known by the user (for brewing)
  */
 export function useUserRecipesForBrewing(profileId: string | null) {
@@ -281,6 +284,7 @@ export function useUserRecipesForBrewing(profileId: string | null) {
 }
 
 /**
+ * @deprecated Use useCharacterRecipesNew with a character id instead.
  * Fetch recipes for the recipe book page (includes userRecipeId)
  */
 export function useUserRecipes(profileId: string | null) {
@@ -292,6 +296,7 @@ export function useUserRecipes(profileId: string | null) {
 }
 
 /**
+ * @deprecated Use useCharacterRecipeStats with a character id instead.
  * Fetch recipe statistics (known count, secrets unlocked)
  */
 export function useRecipeStats(profileId: string | null) {

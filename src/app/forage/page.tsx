@@ -10,7 +10,6 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
 import { useProfile } from '@/lib/profile'
 import { useAuth } from '@/lib/auth'
 import { useBiomes, useInvalidateQueries, useCharacter } from '@/lib/hooks'

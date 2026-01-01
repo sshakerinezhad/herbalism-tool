@@ -4,14 +4,18 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useProfile } from '@/lib/profile'
 import { useAuth } from '@/lib/auth'
-import { usePrefetch } from '@/lib/hooks'
+import { useCharacter, usePrefetch } from '@/lib/hooks'
 import { LoadingState, PrefetchLink } from '@/components/ui'
 
 export default function Home() {
   const { profile, profileId, isLoaded } = useProfile()
   const { user, isLoading: authLoading, signOut } = useAuth()
   const router = useRouter()
+  const { data: character } = useCharacter(user?.id ?? null)
   const { prefetchForage, prefetchInventory, prefetchRecipes } = usePrefetch()
+
+  // Derive herbalist status from character vocation
+  const isHerbalist = character?.vocation === 'herbalist'
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -86,7 +90,7 @@ export default function Home() {
           <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700 mb-6">
             <div className="flex gap-6 text-sm">
               <span className="text-zinc-400">
-                {profile.isHerbalist ? (
+                {isHerbalist ? (
                   <span className="text-green-400">🧪 Herbalist</span>
                 ) : (
                   '⚔️ Adventurer'
@@ -95,7 +99,7 @@ export default function Home() {
               <span className="text-zinc-400">
                 Foraging: <span className="text-zinc-100">{profile.foragingModifier >= 0 ? '+' : ''}{profile.foragingModifier}</span>
               </span>
-              {profile.isHerbalist && (
+              {isHerbalist && (
                 <span className="text-zinc-400">
                   Brewing: <span className="text-zinc-100">{profile.brewingModifier >= 0 ? '+' : ''}{profile.brewingModifier}</span>
                 </span>
@@ -128,7 +132,7 @@ export default function Home() {
             </p>
           </PrefetchLink>
 
-          {profile.isHerbalist ? (
+          {isHerbalist ? (
             <PrefetchLink
               href="/brew"
               prefetch="brew"

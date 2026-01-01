@@ -551,7 +551,6 @@ export default function BrewPage() {
       results.push({ success, roll, total })
 
       if (success) {
-        successCount++
         const effectNames = effects.flatMap(e => Array(e.count).fill(e.recipe.name))
         const { error } = await addCharacterBrewedItem(
           characterId,
@@ -563,6 +562,8 @@ export default function BrewPage() {
         if (error) {
           setMutationError(`Failed to create brewed item: ${error}`)
           // Continue with remaining batch, invalidate caches at end
+        } else {
+          successCount++
         }
       }
     }

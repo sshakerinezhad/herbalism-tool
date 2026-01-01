@@ -103,11 +103,14 @@ export default function InventoryPage() {
     error: herbsError 
   } = useCharacterHerbs(character?.id ?? null)
   
-  const { 
-    data: characterBrewedItems = [], 
-    isLoading: brewedLoading, 
-    error: brewedError 
+  const {
+    data: characterBrewedItems = [],
+    isLoading: brewedLoading,
+    error: brewedError
   } = useCharacterBrewedItems(character?.id ?? null)
+
+  // Derive herbalist status from character vocation
+  const isHerbalist = character?.vocation === 'herbalist'
 
   // UI State
   const [mainTab, setMainTab] = useState<MainTab>('equipment')
@@ -219,7 +222,7 @@ export default function InventoryPage() {
           characterHerbs={characterHerbs}
           characterBrewedItems={characterBrewedItems}
           characterId={character?.id ?? null}
-          profile={profile}
+          isHerbalist={isHerbalist}
           onHerbsChanged={() => character && invalidateCharacterHerbs(character.id)}
           onBrewedChanged={() => character && invalidateCharacterBrewedItems(character.id)}
           setError={setError}
@@ -815,7 +818,7 @@ interface HerbalismSectionProps {
   characterHerbs: CharacterHerb[]
   characterBrewedItems: CharacterBrewedItem[]
   characterId: string | null
-  profile: { isHerbalist: boolean } | null
+  isHerbalist: boolean
   onHerbsChanged: () => void
   onBrewedChanged: () => void
   setError: (e: string | null) => void
@@ -825,7 +828,7 @@ function HerbalismSection({
   characterHerbs,
   characterBrewedItems,
   characterId,
-  profile,
+  isHerbalist,
   onHerbsChanged,
   onBrewedChanged,
   setError,
@@ -1074,8 +1077,8 @@ function HerbalismSection({
           🌿 Herbs
           <span className="ml-2 text-xs opacity-70">({totalHerbs})</span>
         </button>
-        {profile?.isHerbalist && (
-          <button 
+        {isHerbalist && (
+          <button
             onClick={() => setViewTab('brewed')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               viewTab === 'brewed'

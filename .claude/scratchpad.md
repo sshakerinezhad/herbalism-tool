@@ -450,3 +450,56 @@ const { profile, isLoaded: profileLoaded } = useProfile()
 **Verification:**
 - ✅ Build passes (`npm run build`)
 - ✅ No TypeScript errors or lint warnings
+
+---
+
+## Deprecate profile.isHerbalist Migration ✅ COMPLETED
+
+**Context:** Completed full migration from `profile.isHerbalist` to `character.vocation === 'herbalist'` across remaining pages, plus fixed batch brewing successCount bug.
+
+### Fix 1: Home Page Migration ✅ COMPLETED
+
+**Goal:** Replace `profile.isHerbalist` usage with character-based vocation check.
+
+**Implementation:**
+- Added `useCharacter` import to `src/app/page.tsx:7`
+- Added `useCharacter` hook call at line 14: `const { data: character } = useCharacter(user?.id ?? null)`
+- Derived `isHerbalist` from character vocation at line 18: `const isHerbalist = character?.vocation === 'herbalist'`
+- Replaced `profile.isHerbalist` → `isHerbalist` at lines 93, 102, 135
+- Build passes successfully ✅
+
+**Behavior:** When no character exists, `isHerbalist` is `false` - user sees disabled brew link, which is correct since brewing requires a character.
+
+### Fix 2: Inventory Page Migration ✅ COMPLETED
+
+**Goal:** Replace `profile?.isHerbalist` usage with character-based vocation check.
+
+**Implementation:**
+- Derived `isHerbalist` from character vocation at `src/app/inventory/page.tsx:113`: `const isHerbalist = character?.vocation === 'herbalist'`
+- Updated `HerbalismSectionProps` interface at line 821: Changed `profile: { isHerbalist: boolean } | null` → `isHerbalist: boolean`
+- Updated `HerbalismSection` function signature at line 831: Changed destructured `profile` → `isHerbalist`
+- Updated `HerbalismSection` call at line 225: Changed `profile={profile}` → `isHerbalist={isHerbalist}`
+- Replaced `profile?.isHerbalist` → `isHerbalist` at line 1080 (brewed tab conditional)
+- Build passes successfully ✅
+
+### Fix 3: Batch Brewing successCount Bug ✅ COMPLETED
+
+**Goal:** Only increment `successCount` after successful database save, not before.
+
+**Problem:** `successCount++` occurred before checking if `addCharacterBrewedItem` succeeded, causing failed saves to be counted as successes in results screen.
+
+**Implementation:**
+- Modified `src/app/brew/page.tsx:553-567`
+- Moved `successCount++` inside the `else` block after successful save
+- Failed saves now properly excluded from success count
+- Build passes successfully ✅
+
+**Files Modified:**
+1. `src/app/page.tsx` - Added useCharacter hook, derived isHerbalist from character.vocation
+2. `src/app/inventory/page.tsx` - Derived isHerbalist from character.vocation, updated HerbalismSection interface and props
+3. `src/app/brew/page.tsx` - Moved successCount++ after successful save check
+
+**Verification:**
+- ✅ Build passes (`npm run build`)
+- ✅ All TypeScript checks pass
+- ✅ profile.isHerbalist fully deprecated across all pages

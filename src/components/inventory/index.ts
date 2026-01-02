@@ -16,3 +16,6 @@ export * from './modals'
 // Equipment
 export * from './equipment'
 
+// Herbalism
+export * from './herbalism'
+

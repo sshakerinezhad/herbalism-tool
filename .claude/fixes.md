@@ -9,13 +9,14 @@ Extract `src/app/inventory/page.tsx` (2333 lines) into modular components, reduc
 |-------|--------|---------------|----------------|
 | Batch 1: Types + Modals | COMPLETE | ~878 lines | 1455 lines |
 | Batch 2: Equipment | COMPLETE | ~554 lines | 901 lines |
-| Batch 3: Herbalism | Pending | - | - |
+| Batch 3: Herbalism | COMPLETE | ~705 lines | 196 lines |
 
-## Current State (After Batch 2)
-- page.tsx: 901 lines (down from 2333)
+## Current State (After Batch 3) - COMPLETE ✓
+- page.tsx: **196 lines** (down from 2333 - **91.6% reduction!**)
 - Types and helper functions extracted to `types.ts`
 - AddWeaponModal and AddItemModal extracted to `modals/`
 - Equipment components extracted to `equipment/` (EquipmentSection, WeaponsTab, ItemsTab, WeaponCard, ItemCard)
+- Herbalism components extracted to `herbalism/` (HerbalismSection, HerbsTabContent, BrewedTabContent, FilterButton)
 - Existing `src/components/inventory/` has 3 small components (HerbRow, BrewedItemCard, ElementSummary)
 
 ## Target Structure
@@ -72,47 +73,15 @@ src/components/inventory/
 
 ---
 
-## Batch 3: Herbalism Components (~635 lines)
+## Batch 3: Herbalism Components (~705 lines) - COMPLETE
 
-### Step 3.1: Extract FilterButton
-**From:** page.tsx lines 1452-1476
-**To:** `src/components/inventory/herbalism/FilterButton.tsx`
-
-Small utility component, used by BrewedTabContent.
-
-### Step 3.2: Extract HerbsTabContent
-**From:** page.tsx lines 1149-1335
-**To:** `src/components/inventory/herbalism/HerbsTabContent.tsx`
-
-Receives 18 props currently. Will keep prop drilling for now (context extraction is Phase 4 territory).
-
-**Uses:** HerbRow, ElementSummary from parent inventory folder
-
-### Step 3.3: Extract BrewedTabContent
-**From:** page.tsx lines 1355-1451
-**To:** `src/components/inventory/herbalism/BrewedTabContent.tsx`
-
-**Uses:** BrewedItemCard, FilterButton
-
-### Step 3.4: Extract HerbalismSection
-**From:** page.tsx lines 799-1127
-**To:** `src/components/inventory/herbalism/HerbalismSection.tsx`
-
-This is the complex one - contains:
-- Herb action handlers (handleAddHerb, handleDeleteHerb, handleDeleteAllHerb)
-- Brewed item handlers (handleExpendItem, handleExpendAll)
-- Search, sort, filter state
-- Grouping/filtering logic
-- Computed values
-
-All stays together for now. Will render HerbsTabContent/BrewedTabContent.
-
-### Step 3.5: Create herbalism barrel export
-**File:** `src/components/inventory/herbalism/index.ts`
-
-### Step 3.6: Update main index.ts and page.tsx
-
-**Verify:** `npm run build` passes
+- [x] Step 3.1: Extract FilterButton
+- [x] Step 3.2: Extract HerbsTabContent
+- [x] Step 3.3: Extract BrewedTabContent
+- [x] Step 3.4: Extract HerbalismSection
+- [x] Step 3.5: Create herbalism barrel export
+- [x] Step 3.6: Update main index.ts and page.tsx
+- [x] Verify: `npm run build` passes
 
 ---
 
@@ -147,8 +116,8 @@ Batch 2:
 - [ ] Commit with descriptive message
 
 Batch 3:
-- [ ] `npm run build` passes
-- [ ] No TypeScript errors
+- [x] `npm run build` passes
+- [x] No TypeScript errors
 - [ ] Manual test: navigate to /inventory, switch tabs, open modals
 - [ ] Commit with descriptive message
 

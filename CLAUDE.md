@@ -5,7 +5,7 @@ D&D homebrew companion app for herbalism/alchemy - forage herbs, manage inventor
 ## Golden Rules
 - all code should be industry standard and scalable
 - simple code is king, scalability is paramount
-- no spaghetti code
+- The WHY is as important as the WHAT. When making decisions and creating/modifying documentation, always include the reasoning behind things.
 - when implementing an existing plan, do a second pass and critique it. Does it make sense and what could go wrong?
 - before adding new features or changing existing ones, consider how these changes will interact with the existing system. If it will introduce inefficiencies, scalability issues, or bloat, reassess.
 
@@ -13,6 +13,9 @@ D&D homebrew companion app for herbalism/alchemy - forage herbs, manage inventor
 ## Planning Protocol
 
 I'm an engineer (physics/robotics) but not a software developer. I understand systems thinking — explain software-specific patterns and conventions, not basic logic.
+
+Reasoning Context
+When updating plans be sure to include what was done and why in *just* enough detail that context is preserved for the next agent.
 
 Two-Pass Thinking
 When making decision critique your own work. Does this make sense? What could go wrong?

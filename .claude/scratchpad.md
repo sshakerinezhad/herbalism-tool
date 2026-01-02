@@ -3,7 +3,10 @@
 ## Overall Progress
 - ✅ **Phase 1: Stabilize User-Facing Behavior** - COMPLETED
 - ✅ **Phase 2: Data Layer Consolidation** - COMPLETED (2026-01-01)
-- ⏳ Phase 3: Refactor Monolith Pages - NOT STARTED
+- 🔄 **Phase 3: Refactor Monolith Pages** - IN PROGRESS (2026-01-02)
+  - ✅ Inventory page refactor - COMPLETE (195 lines, down from 2333)
+  - ⏳ Brew page - NOT STARTED
+  - ⏳ Forage + Create/Edit Character - NOT STARTED
 - ⏳ Phase 4: Performance & Scalability - NOT STARTED
 - ⏳ Phase 5: Validation & QA - NOT STARTED
 
@@ -19,7 +22,8 @@
 4) Cost (low effort, high payoff first)
 
 ## Context Sources (files reviewed)
-- src/app/inventory/page.tsx (very large: ~2205 lines, mixed UI + data + mutations)
+- src/app/inventory/page.tsx (NOW: 195 lines after refactor; WAS: 2333 lines mixed UI + data + mutations)
+- src/components/inventory/* (NEW: 15 component files organized in modals/, equipment/, herbalism/)
 - src/app/brew/page.tsx, src/app/forage/page.tsx, src/app/create-character/page.tsx, src/app/edit-character/page.tsx
 - src/lib/hooks/queries.ts (React Query usage)
 - src/lib/db/characters.ts, src/lib/db/characterInventory.ts
@@ -106,19 +110,29 @@
 - Removed unused `supabase` imports from inventory, forage, edit-character pages.
 - Kept legacy profile-based React Query hooks, marked `@deprecated` to guide migration while avoiding breakage.
 
-## Phase 3: Refactor Monolith Pages (modularization)
-1) Inventory page
-   - Why: 2205 lines with UI, data, and multiple modals in one file.
-   - Files: src/app/inventory/page.tsx.
-   - Fix: split into feature modules (InventoryPage, EquipmentSection, HerbalismSection, Tabs, Modals), move logic into hooks/helpers.
-2) Brew page
-   - Why: complex logic + UI in one file; many derived computations and phase transitions.
-   - Files: src/app/brew/page.tsx.
-   - Fix: extract custom hooks for selection, pairing, and execution; componentize phases.
-3) Forage + Create/Edit Character
-   - Why: large pages with direct data access and multi-step state.
-   - Files: src/app/forage/page.tsx, src/app/create-character/page.tsx, src/app/edit-character/page.tsx.
-   - Fix: split into smaller UI sections; move data/mutations to hooks.
+## Phase 3: Refactor Monolith Pages (modularization) - IN PROGRESS
+
+### 1) Inventory page ✅ COMPLETED (2026-01-02)
+   - **Why:** 2333 lines with UI, data, and multiple modals in one file; unmaintainable monolith.
+   - **Result:** Reduced from 2333 → 195 lines (91.6% reduction)
+   - **What was done:**
+     - Extracted types and helper functions to `types.ts`
+     - Created `modals/` folder: AddWeaponModal, AddItemModal
+     - Created `equipment/` folder: EquipmentSection, WeaponsTab, ItemsTab, WeaponCard, ItemCard
+     - Created `herbalism/` folder: HerbalismSection, HerbsTabContent, BrewedTabContent, FilterButton
+     - page.tsx now only handles: auth guards, data fetching, top-level state, and orchestration
+   - **Build verified:** ✅ Passes, no TypeScript errors
+   - **Detailed plan:** See `.claude/fixes.md`
+
+### 2) Brew page - NOT STARTED
+   - **Why:** Complex logic + UI in one file; many derived computations and phase transitions.
+   - **Files:** src/app/brew/page.tsx
+   - **Proposed fix:** Extract custom hooks for selection, pairing, and execution; componentize phases.
+
+### 3) Forage + Create/Edit Character - NOT STARTED
+   - **Why:** Large pages with direct data access and multi-step state.
+   - **Files:** src/app/forage/page.tsx, src/app/create-character/page.tsx, src/app/edit-character/page.tsx
+   - **Proposed fix:** Split into smaller UI sections; move data/mutations to hooks.
 
 ## Phase 4: Performance & Scalability
 1) Lazy-load heavy data

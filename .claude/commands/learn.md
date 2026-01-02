@@ -1,4 +1,7 @@
-# .claude/commands/learn.md
+---
+model: claude-haiku-4-5-20251001
+description: Capture key learnings after completing a task
+---
 
 I just approved a plan or completed a feature. Before we move on:
 

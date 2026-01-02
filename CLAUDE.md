@@ -6,11 +6,14 @@ D&D homebrew companion app for herbalism/alchemy - forage herbs, manage inventor
 - all code should be industry standard and scalable
 - no spaghetti code should be present and the codebase should be written in the cleanest and simplest way possible
 - before adding new features or changing existing ones, consider how these changes will interact with the existing system. If it will introduce inefficiencies, scalability issues, or bloat, reassess.
-- before implementing a plan consider if it makes sense. if it doesnt, or if you need additional clarification consider alternatives or ask for clarification.
+- simple code is king, scalability is paramount
 
 ## Planning Protocol
 
 I'm an engineer (physics/robotics) but not a software developer. I understand systems thinking — explain software-specific patterns and conventions, not basic logic.
+
+Two-Pass Thinking
+When making decision critique your own work. Does this make sense? What could go wrong?
 
 When presenting plans:
 1. Present the full plan, marking major decision points with `[DECISION]`

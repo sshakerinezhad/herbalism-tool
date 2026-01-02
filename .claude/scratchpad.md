@@ -133,6 +133,10 @@
    - Why: all main pages are client components, limiting SSR.
    - Files: src/app/*/page.tsx.
    - Fix: move static scaffolding to server components where feasible.
+4) Reduce props drilling in HerbalismSection
+   - Why: HerbsTabContent receives 18 props, BrewedTabContent receives 13 - excessive prop passing.
+   - Files: src/components/inventory/herbalism/*.tsx
+   - Fix: introduce React Context or state container to reduce prop threading; improves maintainability.
 
 ## Phase 5: Validation & QA
 - Run build and spot-check core flows: login -> create character -> inventory -> forage -> brew.

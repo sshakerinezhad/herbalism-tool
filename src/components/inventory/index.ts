@@ -13,3 +13,6 @@ export * from './types'
 // Modals
 export * from './modals'
 
+// Equipment
+export * from './equipment'
+

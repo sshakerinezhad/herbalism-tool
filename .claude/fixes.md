@@ -8,13 +8,14 @@ Extract `src/app/inventory/page.tsx` (2333 lines) into modular components, reduc
 | Batch | Status | Lines Removed | page.tsx After |
 |-------|--------|---------------|----------------|
 | Batch 1: Types + Modals | COMPLETE | ~878 lines | 1455 lines |
-| Batch 2: Equipment | Pending | - | - |
+| Batch 2: Equipment | COMPLETE | ~554 lines | 901 lines |
 | Batch 3: Herbalism | Pending | - | - |
 
-## Current State (After Batch 1)
-- page.tsx: 1455 lines (down from 2333)
+## Current State (After Batch 2)
+- page.tsx: 901 lines (down from 2333)
 - Types and helper functions extracted to `types.ts`
 - AddWeaponModal and AddItemModal extracted to `modals/`
+- Equipment components extracted to `equipment/` (EquipmentSection, WeaponsTab, ItemsTab, WeaponCard, ItemCard)
 - Existing `src/components/inventory/` has 3 small components (HerbRow, BrewedItemCard, ElementSummary)
 
 ## Target Structure
@@ -58,48 +59,16 @@ src/components/inventory/
 
 ---
 
-## Batch 2: Equipment Components (~520 lines)
+## Batch 2: Equipment Components (~554 lines) - COMPLETE
 
-### Step 2.1: Extract WeaponCard
-**From:** page.tsx lines 460-548
-**To:** `src/components/inventory/equipment/WeaponCard.tsx`
-
-Self-contained card component. Receives weapon data + handlers via props.
-
-### Step 2.2: Extract ItemCard
-**From:** page.tsx lines 704-788
-**To:** `src/components/inventory/equipment/ItemCard.tsx`
-
-Same pattern as WeaponCard.
-
-### Step 2.3: Extract WeaponsTab
-**From:** page.tsx lines 370-459
-**To:** `src/components/inventory/equipment/WeaponsTab.tsx`
-
-Renders list of WeaponCard components. Manages local search state.
-
-**Imports:** WeaponCard from same folder
-
-### Step 2.4: Extract ItemsTab
-**From:** page.tsx lines 557-703
-**To:** `src/components/inventory/equipment/ItemsTab.tsx`
-
-Same pattern. Renders ItemCard list.
-
-### Step 2.5: Extract EquipmentSection
-**From:** page.tsx lines 252-361
-**To:** `src/components/inventory/equipment/EquipmentSection.tsx`
-
-Container that switches between WeaponsTab/ItemsTab.
-
-**Imports:** WeaponsTab, ItemsTab from same folder
-
-### Step 2.6: Create equipment barrel export
-**File:** `src/components/inventory/equipment/index.ts`
-
-### Step 2.7: Update main index.ts and page.tsx
-
-**Verify:** `npm run build` passes
+- [x] Step 2.1: Extract WeaponCard
+- [x] Step 2.2: Extract ItemCard
+- [x] Step 2.3: Extract WeaponsTab
+- [x] Step 2.4: Extract ItemsTab
+- [x] Step 2.5: Extract EquipmentSection
+- [x] Step 2.6: Create equipment barrel export
+- [x] Step 2.7: Update main index.ts and page.tsx
+- [x] Verify: `npm run build` passes
 
 ---
 
@@ -165,7 +134,19 @@ All stays together for now. Will render HerbsTabContent/BrewedTabContent.
 
 ## Verification Checklist
 
-After each batch:
+Batch 1:
+- [x] `npm run build` passes
+- [x] No TypeScript errors
+- [x] Manual test: navigate to /inventory, switch tabs, open modals
+- [x] Commit with descriptive message
+
+Batch 2:
+- [x] `npm run build` passes
+- [x] No TypeScript errors
+- [ ] Manual test: navigate to /inventory, switch tabs, open modals
+- [ ] Commit with descriptive message
+
+Batch 3:
 - [ ] `npm run build` passes
 - [ ] No TypeScript errors
 - [ ] Manual test: navigate to /inventory, switch tabs, open modals

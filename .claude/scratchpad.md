@@ -100,7 +100,7 @@
 
 **Build verified:** ✅ Passes
 
-## Post-Phase 2 Follow-ups (2026-01-01) ? COMPLETED
+## Post-Phase 2 Follow-ups (2026-01-01) ✅ COMPLETED
 - Create-character reference data now uses `useSkills`/`useArmorSlots` hooks; removed local fetch state.
 - Edit-character armor slots now use `useArmorSlots` hook; removed manual fetch in character load.
 - Removed unused `supabase` imports from inventory, forage, edit-character pages.

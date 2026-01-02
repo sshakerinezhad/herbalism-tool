@@ -4,9 +4,11 @@ D&D homebrew companion app for herbalism/alchemy - forage herbs, manage inventor
 
 ## Golden Rules
 - all code should be industry standard and scalable
-- no spaghetti code should be present and the codebase should be written in the cleanest and simplest way possible
-- before adding new features or changing existing ones, consider how these changes will interact with the existing system. If it will introduce inefficiencies, scalability issues, or bloat, reassess.
 - simple code is king, scalability is paramount
+- no spaghetti code
+- when implementing an existing plan, do a second pass and critique it. Does it make sense and what could go wrong?
+- before adding new features or changing existing ones, consider how these changes will interact with the existing system. If it will introduce inefficiencies, scalability issues, or bloat, reassess.
+
 
 ## Planning Protocol
 

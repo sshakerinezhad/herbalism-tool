@@ -8,6 +8,18 @@ D&D homebrew companion app for herbalism/alchemy - forage herbs, manage inventor
 - before adding new features or changing existing ones, consider how these changes will interact with the existing system. If it will introduce inefficiencies, scalability issues, or bloat, reassess.
 - before implementing a plan consider if it makes sense. if it doesnt, or if you need additional clarification consider alternatives or ask for clarification.
 
+## Planning Protocol
+
+I'm an engineer (physics/robotics) but not a software developer. I understand systems thinking — explain software-specific patterns and conventions, not basic logic.
+
+When presenting plans:
+1. Present the full plan, marking major decision points with `[DECISION]`
+2. For each `[DECISION]`: what choice, what alternative, why (1 sentence each)
+3. Ask which decisions I want explained further before proceeding
+4. Do not start implementation until I explicitly confirm
+
+When things break: after fixing, briefly explain why it happened and what I should know to catch it earlier.
+
 ## Tech Stack
 
 - Next.js 16 (App Router, all client components with `'use client'`)

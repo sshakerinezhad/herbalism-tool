@@ -19,6 +19,7 @@ import {
   useCharacterHerbs,
   useCharacterRecipesNew,
   useInvalidateQueries,
+  useBrewState,
 } from '@/lib/hooks'
 import {
   brewItems,
@@ -80,27 +81,30 @@ export default function BrewPage() {
     error: recipesError
   } = useCharacterRecipesNew(characterId)
 
-  // Extract recipes from character_recipes join
-  const recipes = useMemo(() => {
-    return characterRecipes
-      .filter((cr: CharacterRecipe) => cr.recipe)
-      .map((cr: CharacterRecipe) => cr.recipe as Recipe)
-      .sort((a, b) => a.name.localeCompare(b.name))
-  }, [characterRecipes])
-  
-  // Local error state for mutations
-  const [mutationError, setMutationError] = useState<string | null>(null)
-  
-  // Mode and phase
-  const [brewMode, setBrewMode] = useState<BrewMode>('by-herbs')
-  const [phase, setPhase] = useState<BrewPhase>({ phase: 'select-herbs' })
-  
-  // Selection state
-  const [selectedHerbQuantities, setSelectedHerbQuantities] = useState<Map<number, number>>(new Map())
-  const [assignedPairs, setAssignedPairs] = useState<[string, string][]>([])
-  const [choices, setChoices] = useState<Record<string, string>>({})
-  const [selectedRecipes, setSelectedRecipes] = useState<SelectedRecipe[]>([])
-  const [batchCount, setBatchCount] = useState(1)
+  // Brew state hook (Step 2b: useState declarations moved to hook)
+  const brewState = useBrewState({ inventory, characterRecipes })
+  const {
+    brewMode,
+    phase,
+    selectedHerbQuantities,
+    assignedPairs,
+    choices,
+    selectedRecipes,
+    batchCount,
+    mutationError,
+    selectedHerbs,
+    totalHerbsSelected,
+    elementPool,
+    remainingElements,
+    pairedEffects,
+    pairingValidation,
+    requiredChoices,
+    recipes,
+    requiredElements,
+    matchingHerbs,
+    herbsSatisfyRecipes,
+    actions
+  } = brewState
   
   // Derived loading and error state
   const loading = !profileLoaded || inventoryLoading || recipesLoading
@@ -113,158 +117,32 @@ export default function BrewPage() {
     }
   }, [authLoading, user, router])
 
-  // ============ Computed Values ============
+  // ============ Computed Values (moved to useBrewState hook) ============
+  // selectedHerbs, totalHerbsSelected, elementPool, remainingElements, pairedEffects,
+  // pairingValidation, requiredChoices, recipes, requiredElements, matchingHerbs,
+  // herbsSatisfyRecipes - all provided by hook
 
-  const selectedHerbs = useMemo(() => {
-    const items: InventoryItem[] = []
-    for (const [itemId, qty] of selectedHerbQuantities) {
-      const item = inventory.find(i => i.id === itemId)
-      if (item && qty > 0) items.push(item)
-    }
-    return items
-  }, [inventory, selectedHerbQuantities])
-  
-  const totalHerbsSelected = useMemo(() => {
-    let total = 0
-    for (const qty of selectedHerbQuantities.values()) total += qty
-    return total
-  }, [selectedHerbQuantities])
-
-  const elementPool = useMemo(() => {
-    const pool = new Map<string, number>()
-    for (const [itemId, qty] of selectedHerbQuantities) {
-      const item = inventory.find(i => i.id === itemId)
-      if (item && qty > 0) {
-        for (const element of item.herb.elements) {
-          pool.set(element, (pool.get(element) || 0) + qty)
-        }
-      }
-    }
-    return pool
-  }, [selectedHerbQuantities, inventory])
-
-  const remainingElements = useMemo(() => {
-    const remaining = new Map(elementPool)
-    for (const [el1, el2] of assignedPairs) {
-      remaining.set(el1, (remaining.get(el1) || 0) - 1)
-      remaining.set(el2, (remaining.get(el2) || 0) - 1)
-    }
-    for (const [el, count] of remaining) {
-      if (count <= 0) remaining.delete(el)
-    }
-    return remaining
-  }, [elementPool, assignedPairs])
-
-  const pairedEffects = useMemo(() => {
-    const effectCounts = new Map<string, { recipe: Recipe; count: number }>()
-    for (const [el1, el2] of assignedPairs) {
-      const recipe = findRecipeForPair(recipes, el1, el2)
-      if (recipe) {
-        const existing = effectCounts.get(recipe.name)
-        if (existing) existing.count++
-        else effectCounts.set(recipe.name, { recipe, count: 1 })
-      }
-    }
-    return Array.from(effectCounts.values())
-  }, [assignedPairs, recipes])
-
-  const pairingValidation = useMemo(() => canCombineEffects(pairedEffects), [pairedEffects])
-
-  const requiredChoices = useMemo(() => {
-    const allChoices: { variable: string; options: string[] | null }[] = []
-    const seen = new Set<string>()
-    for (const effect of pairedEffects) {
-      if (effect.recipe.description) {
-        for (const v of parseTemplateVariables(effect.recipe.description)) {
-          if (!seen.has(v.variable)) {
-            seen.add(v.variable)
-            allChoices.push(v)
-          }
-        }
-      }
-    }
-    return allChoices
-  }, [pairedEffects])
-
-  // Recipe mode computed values
-  const requiredElements = useMemo(() => {
-    const elements = new Map<string, number>()
-    for (const { recipe, count } of selectedRecipes) {
-      for (const element of recipe.elements) {
-        elements.set(element, (elements.get(element) || 0) + (count * batchCount))
-      }
-    }
-    return elements
-  }, [selectedRecipes, batchCount])
-  
-  const matchingHerbs = useMemo(() => {
-    if (requiredElements.size === 0) return []
-    const requiredSet = new Set(requiredElements.keys())
-    return inventory.filter(item => item.herb.elements.some(el => requiredSet.has(el)))
-  }, [inventory, requiredElements])
-  
-  const herbsSatisfyRecipes = useMemo(() => {
-    if (selectedRecipes.length === 0) return false
-    
-    // Check total elements
-    const totalElements = new Map<string, number>()
-    for (const [itemId, qty] of selectedHerbQuantities) {
-      const item = inventory.find(i => i.id === itemId)
-      if (item && qty > 0) {
-        for (const element of item.herb.elements) {
-          totalElements.set(element, (totalElements.get(element) || 0) + qty)
-        }
-      }
-    }
-    
-    for (const [element, needed] of requiredElements) {
-      if ((totalElements.get(element) || 0) < needed) return false
-    }
-    
-    // Check instances per element for batch brewing
-    const instancesWithElement = new Map<string, number>()
-    for (const [itemId, qty] of selectedHerbQuantities) {
-      const item = inventory.find(i => i.id === itemId)
-      if (item && qty > 0) {
-        for (const element of new Set(item.herb.elements)) {
-          instancesWithElement.set(element, (instancesWithElement.get(element) || 0) + qty)
-        }
-      }
-    }
-    
-    const recipeElements = new Set<string>()
-    for (const { recipe } of selectedRecipes) {
-      for (const el of recipe.elements) recipeElements.add(el)
-    }
-    
-    for (const element of recipeElements) {
-      if ((instancesWithElement.get(element) || 0) < batchCount) return false
-    }
-    
-    return true
-  }, [selectedHerbQuantities, inventory, requiredElements, selectedRecipes, batchCount])
-
-  // ============ Browser Back Button ============
+  // ============ Browser Back Button (will move to hook in Step 2d) ============
 
   const handleBrowserBack = useCallback(() => {
     if (phase.phase === 'result' || phase.phase === 'batch-result') {
       reset()
     } else if (phase.phase === 'make-choices') {
       if (brewMode === 'by-recipe') {
-        setPhase({ phase: 'select-herbs-for-recipes', selectedRecipes })
+        actions.setPhase({ phase: 'select-herbs-for-recipes', selectedRecipes })
       } else {
-        setPhase({ phase: 'pair-elements', selectedHerbs })
+        actions.setPhase({ phase: 'pair-elements', selectedHerbs })
       }
     } else if (phase.phase === 'pair-elements') {
-      setPhase({ phase: 'select-herbs' })
+      actions.setPhase({ phase: 'select-herbs' })
     } else if (phase.phase === 'select-herbs-for-recipes') {
-      setSelectedHerbQuantities(new Map())
-      setPhase({ phase: 'select-recipes' })
+      // This will be handled by action in Step 2d
+      actions.setPhase({ phase: 'select-recipes' })
     } else {
       return false
     }
     return true
-  }, [phase, brewMode, selectedRecipes, selectedHerbs])
+  }, [phase, brewMode, selectedRecipes, selectedHerbs, actions])
 
   useEffect(() => {
     const isDeepPhase = phase.phase !== 'select-herbs' && phase.phase !== 'select-recipes'
@@ -282,60 +160,10 @@ export default function BrewPage() {
     return () => window.removeEventListener('popstate', handlePopState)
   }, [handleBrowserBack])
 
-  // ============ Actions ============
-
-  function addHerb(itemId: number) {
-    const item = inventory.find(i => i.id === itemId)
-    if (!item) return
-    
-    const currentQty = selectedHerbQuantities.get(itemId) || 0
-    if (currentQty >= item.quantity) return
-    
-    const maxHerbs = brewMode === 'by-recipe' ? MAX_HERBS_PER_BREW * batchCount : MAX_HERBS_PER_BREW
-    if (totalHerbsSelected >= maxHerbs) return
-    
-    setSelectedHerbQuantities(prev => new Map(prev).set(itemId, currentQty + 1))
-  }
-  
-  function removeHerb(itemId: number) {
-    const currentQty = selectedHerbQuantities.get(itemId) || 0
-    if (currentQty <= 0) return
-    
-    setSelectedHerbQuantities(prev => {
-      const next = new Map(prev)
-      if (currentQty === 1) next.delete(itemId)
-      else next.set(itemId, currentQty - 1)
-      return next
-    })
-  }
-
-  function addPair(el1: string, el2: string) {
-    setAssignedPairs(prev => [...prev, [el1, el2]])
-  }
-
-  function removePair(index: number) {
-    setAssignedPairs(prev => prev.filter((_, i) => i !== index))
-  }
-
-  function proceedToPairing() {
-    if (selectedHerbs.length === 0) return
-    setAssignedPairs([])
-    setChoices({})
-    setPhase({ phase: 'pair-elements', selectedHerbs })
-  }
-
-  function proceedToChoices() {
-    if (!pairingValidation.valid || pairedEffects.length === 0) return
-    
-    if (requiredChoices.length > 0) {
-      setPhase({ phase: 'make-choices', selectedHerbs, pairedEffects })
-    } else {
-      proceedToBrewing()
-    }
-  }
+  // ============ Actions (moved to useBrewState hook, wrapped here for side effects) ============
 
   function proceedToBrewing() {
-    setPhase({ phase: 'brewing', selectedHerbs, pairedEffects, choices })
+    actions.setPhase({ phase: 'brewing', selectedHerbs, pairedEffects, choices })
     executeBrew()
   }
 
@@ -374,7 +202,7 @@ export default function BrewPage() {
     )
 
     if (error) {
-      setMutationError(`Failed to brew: ${error}`)
+      actions.setMutationError(`Failed to brew: ${error}`)
       return
     }
 
@@ -384,86 +212,15 @@ export default function BrewPage() {
       invalidateCharacterBrewedItems(characterId)
     }
 
-    setPhase({ phase: 'result', success, roll, total, type, description, selectedHerbs })
+    actions.setPhase({ phase: 'result', success, roll, total, type, description, selectedHerbs })
   }
 
+  // Wrapper for reset that includes invalidate side effect
   function reset() {
-    setSelectedHerbQuantities(new Map())
-    setAssignedPairs([])
-    setChoices({})
-    setSelectedRecipes([])
-    setBatchCount(1)
-    setMutationError(null)
-    setPhase(brewMode === 'by-herbs' ? { phase: 'select-herbs' } : { phase: 'select-recipes' })
-
+    actions.reset()
     // Invalidate inventory cache to get fresh data after brewing used herbs
     if (characterId) {
       invalidateCharacterHerbs(characterId)
-    }
-  }
-  
-  function switchBrewMode(mode: BrewMode) {
-    setBrewMode(mode)
-    setSelectedHerbQuantities(new Map())
-    setAssignedPairs([])
-    setChoices({})
-    setSelectedRecipes([])
-    setBatchCount(1)
-    setPhase(mode === 'by-herbs' ? { phase: 'select-herbs' } : { phase: 'select-recipes' })
-  }
-  
-  // Recipe mode actions
-  function addRecipeSelection(recipe: Recipe) {
-    setSelectedRecipes(prev => {
-      const existing = prev.find(r => r.recipe.id === recipe.id)
-      if (existing) {
-        return prev.map(r => r.recipe.id === recipe.id ? { ...r, count: r.count + 1 } : r)
-      }
-      return [...prev, { recipe, count: 1 }]
-    })
-  }
-  
-  function removeRecipeSelection(recipeId: number) {
-    setSelectedRecipes(prev => {
-      const existing = prev.find(r => r.recipe.id === recipeId)
-      if (existing && existing.count > 1) {
-        return prev.map(r => r.recipe.id === recipeId ? { ...r, count: r.count - 1 } : r)
-      }
-      return prev.filter(r => r.recipe.id !== recipeId)
-    })
-  }
-  
-  function proceedToHerbSelection() {
-    if (selectedRecipes.length === 0) return
-    setSelectedHerbQuantities(new Map())
-    setPhase({ phase: 'select-herbs-for-recipes', selectedRecipes })
-  }
-  
-  function proceedFromRecipeMode() {
-    if (!herbsSatisfyRecipes) return
-    
-    const effects: PairedEffect[] = selectedRecipes.map(({ recipe, count }) => ({ recipe, count }))
-    
-    // Check for choices
-    const allChoices: { variable: string; options: string[] | null }[] = []
-    const seen = new Set<string>()
-    for (const { recipe } of selectedRecipes) {
-      if (recipe.description) {
-        for (const v of parseTemplateVariables(recipe.description)) {
-          if (!seen.has(v.variable)) {
-            seen.add(v.variable)
-            allChoices.push(v)
-          }
-        }
-      }
-    }
-    
-    if (allChoices.length > 0) {
-      setPhase({ phase: 'make-choices', selectedHerbs, pairedEffects: effects })
-    } else {
-      setChoices({})
-      setPhase({ phase: 'brewing', selectedHerbs, pairedEffects: effects, choices: {} })
-      executeBrewWithEffects(effects, {}, batchCount)
     }
   }
   
@@ -504,7 +261,7 @@ export default function BrewPage() {
       )
 
       if (error) {
-        setMutationError(`Failed to brew: ${error}`)
+        actions.setMutationError(`Failed to brew: ${error}`)
         return
       }
 
@@ -514,7 +271,7 @@ export default function BrewPage() {
         invalidateCharacterBrewedItems(characterId)
       }
 
-      setPhase({ phase: 'result', success, roll, total, type, description, selectedHerbs })
+      actions.setPhase({ phase: 'result', success, roll, total, type, description, selectedHerbs })
       return
     }
 
@@ -543,7 +300,7 @@ export default function BrewPage() {
     )
 
     if (error) {
-      setMutationError(`Failed to brew: ${error}`)
+      actions.setMutationError(`Failed to brew: ${error}`)
       return
     }
 
@@ -553,7 +310,7 @@ export default function BrewPage() {
       invalidateCharacterBrewedItems(characterId)
     }
 
-    setPhase({ phase: 'batch-result', results, type, description, successCount })
+    actions.setPhase({ phase: 'batch-result', results, type, description, successCount })
   }
 
   // ============ Render ============
@@ -611,7 +368,7 @@ export default function BrewPage() {
 
       {/* Mode Toggle */}
       {(phase.phase === 'select-herbs' || phase.phase === 'select-recipes') && (
-        <ModeToggle brewMode={brewMode} onModeChange={switchBrewMode} />
+        <ModeToggle brewMode={brewMode} onModeChange={actions.switchBrewMode} />
       )}
 
       {error && <ErrorDisplay message={error} className="mb-6" />}
@@ -625,7 +382,7 @@ export default function BrewPage() {
             elementPool={elementPool}
             totalSelected={totalHerbsSelected}
             maxHerbs={MAX_HERBS_PER_BREW}
-            onRemove={removeHerb}
+            onRemove={actions.removeHerb}
           />
 
           <div>
@@ -635,17 +392,17 @@ export default function BrewPage() {
               selectedQuantities={selectedHerbQuantities}
               totalSelected={totalHerbsSelected}
               maxHerbs={MAX_HERBS_PER_BREW}
-              onAdd={addHerb}
-              onRemove={removeHerb}
+              onAdd={actions.addHerb}
+              onRemove={actions.removeHerb}
             />
           </div>
 
           <button
-            onClick={proceedToPairing}
+            onClick={actions.proceedToPairing}
             disabled={totalHerbsSelected === 0}
             className="w-full py-3 bg-purple-700 hover:bg-purple-600 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
           >
-            {totalHerbsSelected === 0 
+            {totalHerbsSelected === 0
               ? 'Select Herbs to Continue'
               : `Continue with ${totalHerbsSelected} Herb${totalHerbsSelected > 1 ? 's' : ''}`
             }
@@ -660,10 +417,10 @@ export default function BrewPage() {
           selectedRecipes={selectedRecipes}
           batchCount={batchCount}
           requiredElements={requiredElements}
-          onAddRecipe={addRecipeSelection}
-          onRemoveRecipe={removeRecipeSelection}
-          onBatchCountChange={setBatchCount}
-          onProceed={proceedToHerbSelection}
+          onAddRecipe={actions.addRecipeSelection}
+          onRemoveRecipe={actions.removeRecipeSelection}
+          onBatchCountChange={actions.setBatchCount}
+          onProceed={actions.proceedToHerbSelection}
         />
       )}
 
@@ -687,28 +444,25 @@ export default function BrewPage() {
               selectedQuantities={selectedHerbQuantities}
               totalSelected={totalHerbsSelected}
               maxHerbs={MAX_HERBS_PER_BREW * batchCount}
-              onAdd={addHerb}
-              onRemove={removeHerb}
+              onAdd={actions.addHerb}
+              onRemove={actions.removeHerb}
               highlightElements={new Set(requiredElements.keys())}
             />
           </div>
-          
+
           <div className="text-sm text-zinc-400 text-center">
             {totalHerbsSelected} / {MAX_HERBS_PER_BREW * batchCount} herbs selected
           </div>
 
           <div className="flex gap-4">
             <button
-              onClick={() => {
-                setSelectedHerbQuantities(new Map())
-                setPhase({ phase: 'select-recipes' })
-              }}
+              onClick={() => actions.setPhase({ phase: 'select-recipes' })}
               className="px-6 py-3 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium transition-colors"
             >
               ← Back
             </button>
             <button
-              onClick={proceedFromRecipeMode}
+              onClick={actions.proceedFromRecipeMode}
               disabled={!herbsSatisfyRecipes}
               className="flex-1 py-3 bg-purple-700 hover:bg-purple-600 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
             >
@@ -727,10 +481,10 @@ export default function BrewPage() {
           pairedEffects={pairedEffects}
           recipes={recipes}
           pairingValidation={pairingValidation}
-          onAddPair={addPair}
-          onRemovePair={removePair}
-          onProceed={proceedToChoices}
-          onBack={() => setPhase({ phase: 'select-herbs' })}
+          onAddPair={actions.addPair}
+          onRemovePair={actions.removePair}
+          onProceed={actions.proceedToChoices}
+          onBack={() => actions.setPhase({ phase: 'select-herbs' })}
         />
       )}
 
@@ -739,10 +493,10 @@ export default function BrewPage() {
         <ChoicesPhase
           pairedEffects={phase.pairedEffects}
           choices={choices}
-          onUpdateChoice={(variable, value) => setChoices(prev => ({ ...prev, [variable]: value }))}
+          onUpdateChoice={actions.setChoice}
           onProceed={() => {
             if (brewMode === 'by-recipe') {
-              setPhase({ phase: 'brewing', selectedHerbs: phase.selectedHerbs, pairedEffects: phase.pairedEffects, choices })
+              actions.setPhase({ phase: 'brewing', selectedHerbs: phase.selectedHerbs, pairedEffects: phase.pairedEffects, choices })
               executeBrewWithEffects(phase.pairedEffects, choices, batchCount)
             } else {
               proceedToBrewing()
@@ -750,9 +504,9 @@ export default function BrewPage() {
           }}
           onBack={() => {
             if (brewMode === 'by-recipe') {
-              setPhase({ phase: 'select-herbs-for-recipes', selectedRecipes })
+              actions.setPhase({ phase: 'select-herbs-for-recipes', selectedRecipes })
             } else {
-              setPhase({ phase: 'pair-elements', selectedHerbs })
+              actions.setPhase({ phase: 'pair-elements', selectedHerbs })
             }
           }}
         />

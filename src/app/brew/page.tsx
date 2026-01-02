@@ -33,48 +33,26 @@ import {
 import type { CharacterHerb, CharacterRecipe } from '@/lib/types'
 import { Recipe } from '@/lib/types'
 import { rollD20 } from '@/lib/dice'
-import { BREWING_DC, MAX_HERBS_PER_BREW, getElementSymbol } from '@/lib/constants'
+import { BREWING_DC, MAX_HERBS_PER_BREW } from '@/lib/constants'
 import { PageLayout, ErrorDisplay, BrewSkeleton } from '@/components/ui'
-import { 
-  HerbSelector, 
+import {
+  HerbSelector,
   SelectedHerbsSummary,
-  PairingPhase, 
-  ChoicesPhase, 
-  ResultPhase, 
+  PairingPhase,
+  ChoicesPhase,
+  ResultPhase,
   BatchResultPhase,
-  RecipeSelector 
+  RecipeSelector,
+  RecipeRequirements,
+  ModeToggle,
+  type BrewMode,
+  type BrewPhase,
+  type BrewResult,
+  type SelectedRecipe,
+  type InventoryItem
 } from '@/components/brew'
 
-// ============ Types ============
-
-type BrewMode = 'by-herbs' | 'by-recipe'
-
-type BrewResult = {
-  success: boolean
-  roll: number
-  total: number
-}
-
-type SelectedRecipe = {
-  recipe: Recipe
-  count: number
-}
-
-type BrewPhase = 
-  | { phase: 'select-herbs' }
-  | { phase: 'pair-elements'; selectedHerbs: InventoryItem[] }
-  | { phase: 'select-recipes' }
-  | { phase: 'select-herbs-for-recipes'; selectedRecipes: SelectedRecipe[] }
-  | { phase: 'make-choices'; selectedHerbs: InventoryItem[]; pairedEffects: PairedEffect[] }
-  | { phase: 'brewing'; selectedHerbs: InventoryItem[]; pairedEffects: PairedEffect[]; choices: Record<string, string> }
-  | { phase: 'result'; success: boolean; roll: number; total: number; type: string; description: string; selectedHerbs: InventoryItem[] }
-  | { phase: 'batch-result'; results: BrewResult[]; type: string; description: string; successCount: number }
-
 // ============ Main Component ============
-
-// Adapt CharacterHerb to InventoryItem-like interface for component compatibility
-// herb is always present when fetched with join
-type InventoryItem = CharacterHerb & { herb: NonNullable<CharacterHerb['herb']> }
 
 export default function BrewPage() {
   const router = useRouter()
@@ -633,24 +611,7 @@ export default function BrewPage() {
 
       {/* Mode Toggle */}
       {(phase.phase === 'select-herbs' || phase.phase === 'select-recipes') && (
-        <div className="flex gap-1 p-1 bg-zinc-800 rounded-lg mb-6 w-fit">
-          <button
-            onClick={() => switchBrewMode('by-herbs')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              brewMode === 'by-herbs' ? 'bg-purple-600 text-white' : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            🌿 By Herbs
-          </button>
-          <button
-            onClick={() => switchBrewMode('by-recipe')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              brewMode === 'by-recipe' ? 'bg-purple-600 text-white' : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            📖 By Recipe
-          </button>
-        </div>
+        <ModeToggle brewMode={brewMode} onModeChange={switchBrewMode} />
       )}
 
       {error && <ErrorDisplay message={error} className="mb-6" />}
@@ -848,109 +809,5 @@ export default function BrewPage() {
         />
       )}
     </PageLayout>
-  )
-}
-
-// ============ Helper Components ============
-
-function RecipeRequirements({
-  selectedRecipes,
-  requiredElements,
-  selectedHerbQuantities,
-  inventory,
-  batchCount,
-}: {
-  selectedRecipes: SelectedRecipe[]
-  requiredElements: Map<string, number>
-  selectedHerbQuantities: Map<number, number>
-  inventory: InventoryItem[]
-  batchCount: number
-}) {
-  return (
-    <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
-      <h2 className="font-semibold mb-3">Brewing</h2>
-      <div className="space-y-2">
-        {selectedRecipes.map(({ recipe, count }) => (
-          <div key={recipe.id} className="flex items-center gap-3 text-sm">
-            <span>
-              {recipe.elements.map((el, i) => (
-                <span key={i}>{getElementSymbol(el)}</span>
-              ))}
-            </span>
-            <span className="text-zinc-200">{recipe.name}</span>
-            {count > 1 && <span className="text-purple-400">×{count}</span>}
-          </div>
-        ))}
-      </div>
-      
-      {/* Element requirements with fulfillment status */}
-      <div className="pt-3 mt-3 border-t border-zinc-700">
-        <p className="text-zinc-400 text-sm mb-2">Required elements:</p>
-        <div className="flex flex-wrap gap-2">
-          {Array.from(requiredElements.entries()).map(([element, needed]) => {
-            let totalHave = 0
-            for (const [itemId, qty] of selectedHerbQuantities) {
-              const item = inventory.find(i => i.id === itemId)
-              if (item && qty > 0) {
-                totalHave += item.herb.elements.filter(e => e === element).length * qty
-              }
-            }
-            const fulfilled = totalHave >= needed
-            
-            return (
-              <div 
-                key={element}
-                className={`px-2 py-1 rounded text-sm flex items-center gap-1 ${
-                  fulfilled ? 'bg-green-900/50 border border-green-700' : 'bg-zinc-700 border border-zinc-600'
-                }`}
-              >
-                <span>{getElementSymbol(element)}</span>
-                <span className={fulfilled ? 'text-green-300' : 'text-zinc-300'}>
-                  {totalHave}/{needed}
-                </span>
-                {fulfilled && <span className="text-green-400">✓</span>}
-              </div>
-            )
-          })}
-        </div>
-        
-        {/* Instance check for batch brewing */}
-        {batchCount > 1 && (() => {
-          const recipeElements = new Set<string>()
-          for (const { recipe } of selectedRecipes) {
-            for (const el of recipe.elements) recipeElements.add(el)
-          }
-          
-          const instanceCheck: { element: string; have: number; need: number; ok: boolean }[] = []
-          for (const element of recipeElements) {
-            let instances = 0
-            for (const [itemId, qty] of selectedHerbQuantities) {
-              const item = inventory.find(i => i.id === itemId)
-              if (item && qty > 0 && item.herb.elements.includes(element)) {
-                instances += qty
-              }
-            }
-            instanceCheck.push({ element, have: instances, need: batchCount, ok: instances >= batchCount })
-          }
-          
-          if (instanceCheck.every(c => c.ok)) return null
-          
-          return (
-            <div className="mt-2 pt-2 border-t border-zinc-600">
-              <p className="text-amber-400 text-xs mb-1">
-                ⚠️ Need {batchCount} herb instances per element for {batchCount} brews:
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {instanceCheck.filter(c => !c.ok).map(({ element, have, need }) => (
-                  <span key={element} className="text-xs text-red-400">
-                    {getElementSymbol(element)} {have}/{need} herbs
-                  </span>
-                ))}
-              </div>
-            </div>
-          )
-        })()}
-      </div>
-    </div>
   )
 }

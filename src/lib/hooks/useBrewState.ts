@@ -18,6 +18,7 @@ import type {
   InventoryItem
 } from '@/components/brew'
 import type { PairedEffect } from '@/lib/brewing'
+import { findRecipeForPair, canCombineEffects, parseTemplateVariables } from '@/lib/brewing'
 
 // ============ Types ============
 
@@ -41,6 +42,7 @@ export type BrewActions = {
   addRecipeSelection: (recipe: Recipe) => void
   removeRecipeSelection: (recipeId: number) => void
   setBatchCount: (count: number) => void
+  clearHerbSelections: () => void
   switchBrewMode: (mode: BrewMode) => void
   proceedToPairing: () => void
   proceedToChoices: () => void
@@ -93,19 +95,139 @@ export function useBrewState({ inventory, characterRecipes }: UseBrewStateParams
   const [selectedRecipes, setSelectedRecipes] = useState<SelectedRecipe[]>([])
   const [batchCount, setBatchCount] = useState(1)
 
-  // ============ Computed Values (stubs for now - Step 2c) ============
+  // ============ Computed Values ============
 
-  const selectedHerbs: InventoryItem[] = []
-  const totalHerbsSelected = 0
-  const elementPool = new Map<string, number>()
-  const remainingElements = new Map<string, number>()
-  const pairedEffects: PairedEffect[] = []
-  const pairingValidation = { valid: false, type: null }
-  const requiredChoices: { variable: string; options: string[] | null }[] = []
-  const recipes: Recipe[] = []
-  const requiredElements = new Map<string, number>()
-  const matchingHerbs: InventoryItem[] = []
-  const herbsSatisfyRecipes = false
+  // Group 1: No memo dependencies
+  const recipes = useMemo(() => {
+    return characterRecipes
+      .filter((cr) => cr.recipes)
+      .map((cr) => cr.recipes as unknown as Recipe)
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [characterRecipes])
+
+  // Group 2: Depend on state + inventory
+  const selectedHerbs = useMemo(() => {
+    const herbs: InventoryItem[] = []
+    selectedHerbQuantities.forEach((qty, itemId) => {
+      const item = inventory.find((i) => i.id === itemId)
+      if (item) {
+        for (let i = 0; i < qty; i++) herbs.push(item)
+      }
+    })
+    return herbs
+  }, [inventory, selectedHerbQuantities])
+
+  const totalHerbsSelected = useMemo(() => {
+    let total = 0
+    selectedHerbQuantities.forEach((qty) => (total += qty))
+    return total
+  }, [selectedHerbQuantities])
+
+  const elementPool = useMemo(() => {
+    const pool = new Map<string, number>()
+    selectedHerbQuantities.forEach((qty, itemId) => {
+      const item = inventory.find((i) => i.id === itemId)
+      if (item?.herb?.elements) {
+        for (let i = 0; i < qty; i++) {
+          item.herb.elements.forEach((el) => {
+            pool.set(el, (pool.get(el) || 0) + 1)
+          })
+        }
+      }
+    })
+    return pool
+  }, [selectedHerbQuantities, inventory])
+
+  // Group 3: Depend on Group 2
+  const remainingElements = useMemo(() => {
+    const remaining = new Map(elementPool)
+    assignedPairs.forEach(([el1, el2]) => {
+      remaining.set(el1, (remaining.get(el1) || 0) - 1)
+      remaining.set(el2, (remaining.get(el2) || 0) - 1)
+    })
+    // Remove zeros
+    remaining.forEach((count, el) => {
+      if (count <= 0) remaining.delete(el)
+    })
+    return remaining
+  }, [elementPool, assignedPairs])
+
+  const pairedEffects = useMemo(() => {
+    const effectCounts = new Map<string, { recipe: Recipe; count: number }>()
+    for (const [el1, el2] of assignedPairs) {
+      const recipe = findRecipeForPair(recipes, el1, el2)
+      if (recipe) {
+        const existing = effectCounts.get(recipe.name)
+        if (existing) existing.count++
+        else effectCounts.set(recipe.name, { recipe, count: 1 })
+      }
+    }
+    return Array.from(effectCounts.values())
+  }, [assignedPairs, recipes])
+
+  // Group 4: Depend on Group 3
+  const pairingValidation = useMemo(() => canCombineEffects(pairedEffects), [pairedEffects])
+
+  const requiredChoices = useMemo(() => {
+    const allChoices: { variable: string; options: string[] | null }[] = []
+    const seen = new Set<string>()
+    for (const effect of pairedEffects) {
+      if (effect.recipe.description) {
+        for (const v of parseTemplateVariables(effect.recipe.description)) {
+          if (!seen.has(v.variable)) {
+            seen.add(v.variable)
+            allChoices.push(v)
+          }
+        }
+      }
+    }
+    return allChoices
+  }, [pairedEffects])
+
+  // Group 5: Recipe mode (parallel to Groups 2-4)
+  const requiredElements = useMemo(() => {
+    const elements = new Map<string, number>()
+    for (const { recipe, count } of selectedRecipes) {
+      for (const element of recipe.elements) {
+        elements.set(element, (elements.get(element) || 0) + (count * batchCount))
+      }
+    }
+    return elements
+  }, [selectedRecipes, batchCount])
+
+  const matchingHerbs = useMemo(() => {
+    const neededElements = new Set(requiredElements.keys())
+    return inventory.filter((item) =>
+      item.herb?.elements?.some((el) => neededElements.has(el))
+    )
+  }, [inventory, requiredElements])
+
+  const herbsSatisfyRecipes = useMemo(() => {
+    if (selectedRecipes.length === 0) return false
+
+    // Build element pool from selected herbs
+    const available = new Map<string, number>()
+    selectedHerbQuantities.forEach((qty, itemId) => {
+      const item = inventory.find((i) => i.id === itemId)
+      if (item?.herb?.elements) {
+        for (let i = 0; i < qty; i++) {
+          item.herb.elements.forEach((el) => {
+            available.set(el, (available.get(el) || 0) + 1)
+          })
+        }
+      }
+    })
+
+    // Check if we have enough of each required element
+    let satisfied = true
+    requiredElements.forEach((needed, el) => {
+      if ((available.get(el) || 0) < needed) {
+        satisfied = false
+      }
+    })
+
+    return satisfied
+  }, [selectedRecipes, selectedHerbQuantities, batchCount, inventory, requiredElements])
 
   // ============ Actions (stubs for now - Step 2d) ============
 
@@ -133,6 +255,9 @@ export function useBrewState({ inventory, characterRecipes }: UseBrewStateParams
     },
     setBatchCount: (count: number) => {
       setBatchCount(count)
+    },
+    clearHerbSelections: () => {
+      setSelectedHerbQuantities(new Map())
     },
     switchBrewMode: (mode: BrewMode) => {
       setBrewMode(mode)
@@ -181,7 +306,7 @@ export function useBrewState({ inventory, characterRecipes }: UseBrewStateParams
     selectedRecipes,
     batchCount,
     mutationError,
-    // Computed (stubs)
+    // Computed (by-herbs)
     selectedHerbs,
     totalHerbsSelected,
     elementPool,

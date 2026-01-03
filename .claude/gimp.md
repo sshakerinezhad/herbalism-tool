@@ -4,28 +4,33 @@
 
 **✓ Step 2a COMPLETE** - Hook shell with types established
 **✓ Step 2b COMPLETE** - useState declarations moved to hook
+**✓ Step 2c COMPLETE** - All 11 useMemo computations implemented
 
 **Current status:**
 - `src/app/brew/page.tsx`: 813 → **567 lines** (246 lines extracted)
-- `src/lib/hooks/useBrewState.ts`: **199 lines** (8 useState + basic actions implemented)
+- `src/lib/hooks/useBrewState.ts`: **325 lines** (8 useState + 11 useMemo + basic actions)
 - `npm run build`: ✓ Passing
 
 **What's working:**
 - All 8 state variables moved to hook and exposed via return object
-- Basic actions implemented: `addPair`, `removePair`, `setChoice`, `setBatchCount`, `switchBrewMode`, `reset`, `setPhase`, `setMutationError`
+- All 11 useMemo computed values now return real computed data
+- Basic actions implemented: `addPair`, `removePair`, `setChoice`, `setBatchCount`, `clearHerbSelections`, `switchBrewMode`, `reset`, `setPhase`, `setMutationError`
 - Page successfully uses `brewState.actions.*` for all interactions
 - Async functions (`executeBrew`, `executeBrewWithEffects`, `proceedToBrewing`) remain in page.tsx as planned
 
-**What's stubbed (Step 2c):**
-- 11 useMemo computed values currently return empty/default values
-- Actions that depend on computed values: `addHerb`, `removeHerb`, `proceedToPairing`, `proceedToChoices`, `proceedToHerbSelection`, `proceedFromRecipeMode`, `addRecipeSelection`, `removeRecipeSelection`
+**What's still stubbed (Step 2d):**
+- Actions that need inventory/validation logic: `addHerb`, `removeHerb`, `proceedToPairing`, `proceedToChoices`, `proceedToHerbSelection`, `proceedFromRecipeMode`, `addRecipeSelection`, `removeRecipeSelection`
 
-**Next:** Step 2c - Implement 11 useMemo computations in hook
+**Next:** Step 2d - Move browser history + remaining action implementations
 
-**Known Issues to Fix (from codex review):**
-- **P1 (Regression):** Back-navigation from select-herbs-for-recipes no longer clears selectedHerbQuantities. The original code had `setSelectedHerbQuantities(new Map())` on the back button (old line 703-704), but it was lost during refactor. Need to add back temporarily in page.tsx onClick or add `clearHerbSelections()` action to hook.
-- **P3 (Cleanup):** Remove unused `useMemo` import from useBrewState.ts line 12 (it's imported but computed values are still stubbed).
-- **P0 (Expected):** Stubbed computed values are intentional - Step 2c will implement them. Don't wire hook fully until Step 2c is complete.
+**Resolved Issues:**
+- **P1 (Fixed):** Added `clearHerbSelections()` action to hook for back-navigation use
+- **P3 (Fixed):** `useMemo` import now used by 11 computed values
+
+**Plan corrections made during Step 2c:**
+- temp.md plan used wrong property `herbs` → corrected to `herb` (InventoryItem has `herb: Herb`, not `herbs`)
+- temp.md plan used wrong `pairedEffects` structure `{ elements, recipe: null }` → corrected to `{ recipe: Recipe, count: number }` per actual PairedEffect type
+- temp.md plan used `recipe.element_pair` → corrected to `recipe.elements` per actual Recipe type
 
 ---
 
@@ -164,39 +169,22 @@ const { addHerb, removeHerb, ... } = brewState.actions
 
 ---
 
-### Step 2c: Move useMemo Computations (Medium Risk)
+### Step 2c: Move useMemo Computations ✓ COMPLETE
 
 **Goal:** Transfer 11 useMemo hooks into useBrewState.
 
-**Order of migration (respects dependencies):**
-
-**Group 1 - No memo dependencies:**
-- `recipes` (depends on: characterRecipes)
-
-**Group 2 - Depend on state + inventory:**
-- `selectedHerbs` (depends on: inventory, selectedHerbQuantities)
-- `totalHerbsSelected` (depends on: selectedHerbQuantities)
-- `elementPool` (depends on: selectedHerbQuantities, inventory)
-
-**Group 3 - Depend on Group 2:**
-- `remainingElements` (depends on: elementPool, assignedPairs)
-- `pairedEffects` (depends on: assignedPairs, recipes)
-
-**Group 4 - Depend on Group 3:**
-- `pairingValidation` (depends on: pairedEffects)
-- `requiredChoices` (depends on: pairedEffects)
-
-**Group 5 - Recipe mode (parallel to Group 2-4):**
-- `requiredElements` (depends on: selectedRecipes, batchCount)
-- `matchingHerbs` (depends on: inventory, requiredElements)
-- `herbsSatisfyRecipes` (depends on: selectedHerbQuantities, inventory, requiredElements, selectedRecipes, batchCount)
+**Implementation notes:**
+- All 11 useMemo values implemented following dependency order
+- Fixed plan errors: `herbs` → `herb`, `element_pair` → `elements`, corrected PairedEffect structure
+- Added `clearHerbSelections()` action to fix P1 regression
 
 **Testing after each group:**
-- [ ] Element pool displays correctly in SelectedHerbsSummary
-- [ ] Pairing validation shows errors when mixing types
-- [ ] herbsSatisfyRecipes enables/disables Continue button
+- [x] `npm run build` passes
+- [ ] Element pool displays correctly in SelectedHerbsSummary (needs manual test)
+- [ ] Pairing validation shows errors when mixing types (needs manual test)
+- [ ] herbsSatisfyRecipes enables/disables Continue button (needs manual test)
 
-**Verify:** `npm run build` passes after each group
+**Verify:** ✓ `npm run build` passes
 
 ---
 

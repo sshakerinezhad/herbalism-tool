@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-D&D homebrew companion app for herbalism/alchemy - forage herbs, manage inventory, brew elixirs/bombs/oils.
+D&D homebrew companion app for vocations and character tracking - track character, forage herbs, manage inventory, brew elixirs/bombs/oils, forge weapons, manage martial skill trees.
 
 ## Golden Rules
 - all code should be industry standard and scalable
@@ -13,6 +13,8 @@ D&D homebrew companion app for herbalism/alchemy - forage herbs, manage inventor
 ## Planning Protocol
 
 I'm an engineer (physics/robotics) but not a software developer. I understand systems thinking — explain software-specific patterns and conventions, not basic logic.
+
+Explain things simply, avoid jargon and provide simple examples to illustrate complex ideas.
 
 Reasoning Context
 When updating plans be sure to include what was done and why in *just* enough detail that context is preserved for the next agent.
@@ -39,7 +41,7 @@ When things break: after fixing, briefly explain why it happened and what I shou
 
 1. **Field name mismatch:** `brewingModifier` in app code maps to `herbalism_modifier` in database
 2. **RLS status:** ON for all character tables including herbalism (`character_herbs`, `character_brewed`, `character_recipes`)
-3. **Type casting:** Use `as unknown as Type` for Supabase join results
+3. **Type casting:** For Supabase joins, keep explicit type annotations (e.g., `(cr: CharacterRecipe) =>`) to catch property errors at build time. Use `as Type` when necessary, but avoid `as unknown as Type` which bypasses all type checking and hides bugs.
 4. **Auth required:** No guest mode - pages redirect to `/login` if not authenticated
 5. **Data fetching:** Always use React Query hooks from `@/lib/hooks`, not direct Supabase calls in components
 6. **Herbalism is character-based:** All herbalism data (herbs, brewed items, recipes) is tied to `character_id`, not `user_id`. Forage/Brew pages require a character to exist.

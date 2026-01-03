@@ -9,7 +9,7 @@
  * - "By Recipe": Select recipes first, then find matching herbs
  */                                       
 
-import { useEffect, useState, useMemo, useCallback } from 'react'
+import { useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useProfile } from '@/lib/profile'
@@ -117,33 +117,9 @@ export default function BrewPage() {
     }
   }, [authLoading, user, router])
 
-  // ============ Computed Values (moved to useBrewState hook) ============
-  // selectedHerbs, totalHerbsSelected, elementPool, remainingElements, pairedEffects,
-  // pairingValidation, requiredChoices, recipes, requiredElements, matchingHerbs,
-  // herbsSatisfyRecipes - all provided by hook
+  // ============ Browser History ============
 
-  // ============ Browser Back Button (will move to hook in Step 2d) ============
-
-  const handleBrowserBack = useCallback(() => {
-    if (phase.phase === 'result' || phase.phase === 'batch-result') {
-      reset()
-    } else if (phase.phase === 'make-choices') {
-      if (brewMode === 'by-recipe') {
-        actions.setPhase({ phase: 'select-herbs-for-recipes', selectedRecipes })
-      } else {
-        actions.setPhase({ phase: 'pair-elements', selectedHerbs })
-      }
-    } else if (phase.phase === 'pair-elements') {
-      actions.setPhase({ phase: 'select-herbs' })
-    } else if (phase.phase === 'select-herbs-for-recipes') {
-      // This will be handled by action in Step 2d
-      actions.setPhase({ phase: 'select-recipes' })
-    } else {
-      return false
-    }
-    return true
-  }, [phase, brewMode, selectedRecipes, selectedHerbs, actions])
-
+  // Push state when entering deep phases
   useEffect(() => {
     const isDeepPhase = phase.phase !== 'select-herbs' && phase.phase !== 'select-recipes'
     if (isDeepPhase) {
@@ -151,14 +127,22 @@ export default function BrewPage() {
     }
   }, [phase.phase])
 
+  // Handle browser back button
   useEffect(() => {
     const handlePopState = () => {
-      const handled = handleBrowserBack()
+      // Special case: result phases need reset with invalidation
+      if (phase.phase === 'result' || phase.phase === 'batch-result') {
+        reset()
+        window.history.pushState({ brewPhase: 'back' }, '')
+        return
+      }
+
+      const handled = actions.handleBrowserBack()
       if (handled) window.history.pushState({ brewPhase: 'back' }, '')
     }
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
-  }, [handleBrowserBack])
+  }, [phase.phase, actions])
 
   // ============ Actions (moved to useBrewState hook, wrapped here for side effects) ============
 
@@ -462,7 +446,15 @@ export default function BrewPage() {
               ← Back
             </button>
             <button
-              onClick={actions.proceedFromRecipeMode}
+              onClick={() => {
+                const result = actions.proceedFromRecipeMode()
+                if (result) {
+                  // No choices needed - brew immediately
+                  actions.setPhase({ phase: 'brewing', selectedHerbs, pairedEffects: result.pairedEffects, choices: result.choices })
+                  executeBrewWithEffects(result.pairedEffects, result.choices, batchCount)
+                }
+                // If void returned, hook already set phase to make-choices
+              }}
               disabled={!herbsSatisfyRecipes}
               className="flex-1 py-3 bg-purple-700 hover:bg-purple-600 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
             >

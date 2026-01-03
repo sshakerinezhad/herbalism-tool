@@ -5,32 +5,110 @@
 **✓ Step 2a COMPLETE** - Hook shell with types established
 **✓ Step 2b COMPLETE** - useState declarations moved to hook
 **✓ Step 2c COMPLETE** - All 11 useMemo computations implemented
+**✓ Step 2d COMPLETE** - All actions implemented + browser back handling
+**✓ POST-EXTRACTION BUGFIXES COMPLETE** - See below
 
-**Current status:**
-- `src/app/brew/page.tsx`: 813 → **567 lines** (246 lines extracted)
-- `src/lib/hooks/useBrewState.ts`: **325 lines** (8 useState + 11 useMemo + basic actions)
+**Final status:**
+- `src/app/brew/page.tsx`: 813 → **559 lines** (254 lines extracted)
+- `src/lib/hooks/useBrewState.ts`: **~452 lines** (8 useState + 11 useMemo + 18 actions)
 - `npm run build`: ✓ Passing
 
-**What's working:**
-- All 8 state variables moved to hook and exposed via return object
-- All 11 useMemo computed values now return real computed data
-- Basic actions implemented: `addPair`, `removePair`, `setChoice`, `setBatchCount`, `clearHerbSelections`, `switchBrewMode`, `reset`, `setPhase`, `setMutationError`
-- Page successfully uses `brewState.actions.*` for all interactions
-- Async functions (`executeBrew`, `executeBrewWithEffects`, `proceedToBrewing`) remain in page.tsx as planned
+---
 
-**What's still stubbed (Step 2d):**
-- Actions that need inventory/validation logic: `addHerb`, `removeHerb`, `proceedToPairing`, `proceedToChoices`, `proceedToHerbSelection`, `proceedFromRecipeMode`, `addRecipeSelection`, `removeRecipeSelection`
+## Post-Extraction Bugfixes (Session 2026-01-03)
 
-**Next:** Step 2d - Move browser history + remaining action implementations
+Manual testing + code review revealed 4 issues after extraction. Root cause analysis performed.
+
+### Bug 1: Recipe list empty in both modes (FIXED)
+**Symptom:** By-recipe mode showed "No recipes known", by-herbs pairing showed "No effects selected"
+**Root cause:** Transcription error during extraction - `cr.recipe` (correct) became `cr.recipes` (wrong)
+**Fix:** `useBrewState.ts` lines 105-106: `cr.recipes` → `cr.recipe`
+
+**Why it happened:**
+- Original code: `.filter((cr: CharacterRecipe) => cr.recipe)` with explicit type
+- Extracted code: `.filter((cr) => cr.recipes)` - typo + dropped type annotation
+- Used `as unknown as Recipe` which bypassed TypeScript, hiding the error
+
+**Prevention:** Updated CLAUDE.md gotcha #3 to warn against `as unknown as Type` pattern.
+
+### Bug 2: Back button didn't clear element pairings (PARTIALLY FIXED)
+**Symptom:** Going back from pairing phase kept old pairs; re-entering showed stale state
+**Root cause:** Pre-existing design gap - `handleBrowserBack` only changed phase, never cleared state
+**Initial fix:** Added `setAssignedPairs([])` and `setChoices({})` calls when going back from `pair-elements`
+**Issue:** Fix didn't work reliably - stale closure in `handleBrowserBack` caused condition to fail silently
+
+### Bug 3: Stale pairs still present after back+forward (FIXED)
+**Symptom:** Back from pairing → modify herbs → forward to pairing → old pairs still there
+**Root cause:** Bug 2 fix relied on `handleBrowserBack` which had stale closure issues
+**Fix:** Belt-and-suspenders approach - clear state in `proceedToPairing()` action instead:
+```typescript
+proceedToPairing: () => {
+  if (totalHerbsSelected === 0) return
+  setAssignedPairs([])  // Always clear pairs when entering pairing phase
+  setChoices({})        // Also clear any stale choices
+  setPhase({ phase: 'pair-elements', selectedHerbs })
+},
+```
+**Location:** `useBrewState.ts` lines 356-361
+
+### Bug 4: Stale choices in by-recipe path (FIXED - Codex review)
+**Symptom:** In by-recipe mode, selecting Recipe A → making choices → going back → selecting Recipe B → proceeding forward → old choices from Recipe A persist
+**Root cause:** By-herbs path was fixed for Bugs 2/3, but same pattern wasn't applied to by-recipe path
+- `proceedFromRecipeMode` entered `make-choices` without clearing `choices`
+- `handleBrowserBack` from `make-choices` in by-recipe mode didn't clear `choices`
+**Fix:** Added `setChoices({})` in two locations:
+```typescript
+// 1. handleBrowserBack for by-recipe (line 243)
+if (brewMode === 'by-recipe') {
+  setChoices({})  // Clear choices when going back (matches by-herbs behavior)
+  setPhase({ phase: 'select-herbs-for-recipes', selectedRecipes })
+}
+
+// 2. proceedFromRecipeMode before entering make-choices (line 399)
+if (allChoices.length > 0) {
+  setChoices({})  // Clear stale choices from previous recipe selections
+  setPhase({ phase: 'make-choices', pairedEffects: effects, selectedHerbs })
+  return
+}
+```
+**Locations:** `useBrewState.ts` lines 243 and 399
+**Why it happened:** Bugs 2/3 only fixed by-herbs path; by-recipe path oversight
+
+---
+
+## What's Left: Manual Testing
+
+All code changes complete. Need manual verification:
+
+- [x] By-herbs: browser back at each phase (should clear state) - **verified working**
+- [ ] By-herbs: select → pair → choices → brew → result
+- [ ] By-recipe: select → herbs → choices → brew → batch result
+- [ ] By-recipe: browser back at each phase
+- [ ] Mode switching resets all state
+- [ ] No console errors
+
+---
+
+## What's Implemented
+
+- All 8 state variables in hook
+- All 11 useMemo computed values
+- All 18 actions: `addHerb`, `removeHerb`, `addPair`, `removePair`, `setChoice`, `addRecipeSelection`, `removeRecipeSelection`, `setBatchCount`, `clearHerbSelections`, `switchBrewMode`, `proceedToPairing`, `proceedToChoices`, `proceedToHerbSelection`, `proceedFromRecipeMode`, `handleBrowserBack`, `reset`, `setPhase`, `setMutationError`
+- Browser back handling via `handleBrowserBack()` action
+
+**What stays in page.tsx:**
+- `executeBrew()` - async DB mutation + profile.brewingModifier
+- `executeBrewWithEffects()` - async DB mutation + profile.brewingModifier
+- `proceedToBrewing()` - wrapper that calls executeBrew
+- `reset()` wrapper - calls actions.reset() + invalidateCharacterHerbs()
+- Browser history useEffects (push state, popstate listener)
+- Auth redirect useEffect
+- All render logic
 
 **Resolved Issues:**
-- **P1 (Fixed):** Added `clearHerbSelections()` action to hook for back-navigation use
-- **P3 (Fixed):** `useMemo` import now used by 11 computed values
-
-**Plan corrections made during Step 2c:**
-- temp.md plan used wrong property `herbs` → corrected to `herb` (InventoryItem has `herb: Herb`, not `herbs`)
-- temp.md plan used wrong `pairedEffects` structure `{ elements, recipe: null }` → corrected to `{ recipe: Recipe, count: number }` per actual PairedEffect type
-- temp.md plan used `recipe.element_pair` → corrected to `recipe.elements` per actual Recipe type
+- **P1 (Fixed in 2c):** Added `clearHerbSelections()` action
+- **P3 (Fixed in 2c):** `useMemo` import used
+- **Type error (Fixed in 2d):** `make-choices` phase doesn't need `selectedRecipes` - hook state already has it
 
 ---
 

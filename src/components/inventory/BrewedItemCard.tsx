@@ -3,18 +3,10 @@
  */
 
 import { fillTemplate } from '@/lib/brewing'
-
-type BrewedItem = {
-  id: number
-  type: string
-  effects: string[] | string
-  quantity: number
-  computedDescription?: string
-  choices?: Record<string, string>
-}
+import type { CharacterBrewedItem } from '@/lib/types'
 
 type BrewedItemCardProps = {
-  item: BrewedItem
+  item: CharacterBrewedItem
   isDeleting: boolean
   isConfirming: boolean
   isConfirmingAll: boolean
@@ -49,42 +41,21 @@ const TYPE_STYLES = {
 /**
  * Get the potency (total number of stacked effects) from a brewed item
  */
-function getBrewedPotency(effects: string[] | string): number {
-  if (Array.isArray(effects)) {
-    return effects.length
-  } else if (typeof effects === 'string') {
-    try {
-      const parsed = JSON.parse(effects)
-      return Array.isArray(parsed) ? parsed.length : 1
-    } catch {
-      return 1
-    }
-  }
-  return 1
+function getBrewedPotency(effects: string[]): number {
+  return effects.length
 }
 
 /**
  * Format brewed effects nicely: "Healing Elixir x3 + Fire Bomb x2"
  */
-function formatBrewedEffects(effects: string[] | string): string {
-  let effectsArray: string[]
-  
-  if (Array.isArray(effects)) {
-    effectsArray = effects
-  } else if (typeof effects === 'string') {
-    try {
-      const parsed = JSON.parse(effects)
-      effectsArray = Array.isArray(parsed) ? parsed : [effects]
-    } catch {
-      effectsArray = [effects]
-    }
-  } else {
+export function formatBrewedEffects(effects: string[]): string {
+  if (!effects || effects.length === 0) {
     return 'Unknown Effect'
   }
 
   // Count occurrences of each effect
   const counts = new Map<string, number>()
-  for (const effect of effectsArray) {
+  for (const effect of effects) {
     counts.set(effect, (counts.get(effect) || 0) + 1)
   }
 
@@ -149,9 +120,9 @@ export function BrewedItemCard({
         </div>
         
         {/* Description */}
-        {item.computedDescription && (
+        {item.computed_description && (
           <div className="text-sm text-zinc-400 mt-2 pl-8 space-y-1">
-            {fillTemplate(item.computedDescription, potency, item.choices || {})
+            {fillTemplate(item.computed_description, potency, item.choices || {})
               .split('. ')
               .filter(Boolean)
               .map((sentence, i) => (
@@ -250,4 +221,3 @@ function ExpendControls({
     </>
   )
 }
-

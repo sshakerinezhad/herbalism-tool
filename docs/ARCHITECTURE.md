@@ -52,18 +52,43 @@ ProfileProvider lives inside AuthProvider because:
 
 ```
 Pages
-  ├── components/*   (UI components)
-  ├── lib/constants  (shared constants)
-  ├── lib/types      (shared types)
-  └── lib/*          (domain logic + DB operations)
+  ├── components/*       (UI components)
+  ├── lib/hooks          (React Query hooks - DATA LAYER)
+  ├── lib/constants      (shared constants)
+  ├── lib/types          (shared types)
+  └── lib/*              (domain logic + DB operations)
         └── lib/supabase (database client)
 ```
 
 Rules:
 - Pages can import from anywhere
+- Pages use `@/lib/hooks` for data fetching (not direct lib/*.ts calls)
 - Components import from lib/ but not other pages
+- lib/hooks imports from lib/*.ts for actual DB operations
 - lib/ modules can import from each other
 - supabase.ts is the leaf - imports nothing from app
+
+### Data Flow (with React Query)
+
+```
+User navigates to page
+         │
+         ▼
+    useXxx hook (from @/lib/hooks)
+         │
+         ├─► Cache hit? → Return cached data immediately
+         │
+         └─► Cache miss? → Call fetcher function
+                              │
+                              ▼
+                         lib/*.ts (DB operations)
+                              │
+                              ▼
+                         Supabase
+                              │
+                              ▼
+                    Cache data, return to component
+```
 
 ---
 
@@ -299,28 +324,26 @@ function mapProfileToDatabase(profile: Partial<Profile>): object {
 
 ### Session Tracking
 
-Foraging sessions are tracked in localStorage, not the database:
+Foraging sessions are tracked in localStorage (scoped to user ID), not the database:
 
 ```typescript
 // In ProfileProvider
-const [sessionsUsedToday, setSessionsUsedToday] = useState(0)
+const SESSIONS_KEY_PREFIX = 'herbalism-sessions-used'
+const getSessionsKey = (userId: string) => `${SESSIONS_KEY_PREFIX}:${userId}`
 
-useEffect(() => {
-  const stored = localStorage.getItem('herbalism-sessions-used')
-  if (stored) {
-    const { count, date } = JSON.parse(stored)
-    // Check if it's the same day
-    if (date === new Date().toDateString()) {
-      setSessionsUsedToday(count)
-    }
-  }
-}, [])
+// Load on init
+const sessionsKey = getSessionsKey(user.id)
+const stored = localStorage.getItem(sessionsKey)
+
+// Save on change
+localStorage.setItem(sessionsKey, sessionsUsedToday.toString())
 ```
 
-**Why localStorage?** 
+**Why localStorage?**
 - Sessions reset on "long rest" (sleep), not at midnight
 - No need to persist across devices
 - Simpler than tracking in DB
+- Scoped to user ID to prevent cross-user session leakage
 
 ---
 
@@ -489,10 +512,12 @@ function applyChoices(description: string, choices: BrewChoices): string {
 
 ### Brewing Roll
 
+**Note:** Brewing is now character-based. The `characterId` is required, and all herbalism data (herbs, brewed items, recipes) is stored in `character_*` tables.
+
 ```typescript
 async function brew(
-  userId: string,
-  herbs: InventoryItem[],
+  characterId: string,  // Character ID, not user ID
+  herbs: CharacterHerb[],
   pairings: Pairing[],
   choices: BrewChoices,
   modifier: number
@@ -504,19 +529,20 @@ async function brew(
   if (success) {
     // Calculate final description with potency and choices
     const description = computeDescription(pairings, choices)
-    
-    // Save to user_brewed
-    await saveBrewedItem(userId, {
+
+    // Save to character_brewed
+    await addCharacterBrewedItem(characterId, {
       type: determineType(pairings),
       effects: pairings.map(p => p.recipe.name),
-      quantity: 1,
       choices,
       computed_description: description
     })
   }
 
-  // Always consume herbs
-  await removeHerbsFromInventory(userId, herbs)
+  // Always consume herbs from character_herbs
+  for (const herb of herbs) {
+    await removeCharacterHerbs(characterId, herb.herb_id, 1)
+  }
 
   return { success, roll, total }
 }
@@ -544,10 +570,12 @@ interface Recipe {
 
 ### Recipe Initialization
 
-New users get base (non-secret) recipes:
+**Note:** Recipe knowledge is now character-based, stored in `character_recipes`.
+
+New characters get base (non-secret) recipes:
 
 ```typescript
-async function initializeBaseRecipes(userId: string) {
+async function initializeBaseRecipes(characterId: string) {
   // Get all non-secret recipes
   const { data: recipes } = await supabase
     .from('recipes')
@@ -556,13 +584,13 @@ async function initializeBaseRecipes(userId: string) {
 
   if (!recipes) return
 
-  // Insert user_recipes entries
-  const userRecipes = recipes.map(r => ({
-    user_id: userId,
+  // Insert character_recipes entries
+  const characterRecipes = recipes.map(r => ({
+    character_id: characterId,
     recipe_id: r.id
   }))
 
-  await supabase.from('user_recipes').insert(userRecipes)
+  await supabase.from('character_recipes').insert(characterRecipes)
 }
 ```
 
@@ -570,7 +598,7 @@ async function initializeBaseRecipes(userId: string) {
 
 ```typescript
 async function unlockRecipeWithCode(
-  userId: string, 
+  characterId: string,  // Character ID, not user ID
   code: string
 ): Promise<{ recipe?: Recipe; error?: string }> {
   // Find recipe with matching code
@@ -586,9 +614,9 @@ async function unlockRecipeWithCode(
 
   // Check if already unlocked
   const { data: existing } = await supabase
-    .from('user_recipes')
+    .from('character_recipes')
     .select('id')
-    .eq('user_id', userId)
+    .eq('character_id', characterId)
     .eq('recipe_id', recipe.id)
     .single()
 
@@ -596,9 +624,9 @@ async function unlockRecipeWithCode(
     return { error: 'Recipe already unlocked' }
   }
 
-  // Unlock it
-  await supabase.from('user_recipes').insert({
-    user_id: userId,
+  // Unlock it for this character
+  await supabase.from('character_recipes').insert({
+    character_id: characterId,
     recipe_id: recipe.id
   })
 
@@ -723,27 +751,97 @@ class ErrorBoundary extends React.Component<Props, State> {
 
 ### Current Optimizations
 
-1. **Lazy Loading:** Each page only fetches data it needs
-2. **Memoization:** Uses React.memo for expensive components
-3. **Debounced Updates:** Profile saves are debounced
-4. **Batched Inventory Operations:** `addHerbsToInventory` and `removeHerbsFromInventory` use:
+1. **React Query Caching:** All data fetching uses TanStack Query (`@/lib/hooks/queries.ts`)
+   - Automatic caching across components
+   - Request deduplication (same query = single request)
+   - Configurable stale time (biomes: 30min, static data: infinite)
+   - No refetch on tab switch
+
+2. **Prefetching:** Data loads before navigation
+   - `PrefetchLink` component prefetches on hover (100ms delay)
+   - Home page prefetches common data on load
+   - Near-instant navigation after initial load
+
+3. **Skeleton Loading:** Instant perceived performance
+   - Page structure shows immediately
+   - Animated placeholders during data fetch
+   - Per-page skeletons match actual layout
+
+4. **Memoization:** Uses React.memo for expensive components
+
+5. **Debounced Updates:** Profile saves are debounced
+
+6. **Batched Inventory Operations:** `addHerbsToInventory` and `removeHerbsFromInventory` use:
    - Single SELECT with `IN` clause instead of N queries
    - Batch INSERT for new items
    - Chunked parallel UPDATEs (max 20 concurrent) to avoid rate limits
    - Configurable chunk sizes (`MAX_CONCURRENT_REQUESTS`, `MAX_IN_CLAUSE_SIZE`)
 
-### Potential Improvements
+### React Query Architecture
 
-1. **React Query:** Replace manual fetching with react-query for caching
-2. **Virtual Lists:** For large inventories, use react-window
-3. **Supabase Subscriptions:** Real-time updates instead of polling
-4. **Image Optimization:** If herb images are added, use next/image
+```typescript
+// Centralized in @/lib/hooks/queries.ts
+
+// 1. Query Keys (for cache management)
+export const queryKeys = {
+  inventory: (profileId: string) => ['inventory', profileId],
+  biomes: ['biomes'],
+  // ...
+}
+
+// 2. Shared Fetchers (DRY - used by hooks and prefetch)
+const fetchers = {
+  inventory: async (profileId: string) => { /* ... */ },
+  biomes: async () => { /* ... */ },
+}
+
+// 3. Hooks (used in components)
+export function useInventory(profileId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.inventory(profileId ?? ''),
+    queryFn: () => fetchers.inventory(profileId!),
+    enabled: !!profileId,
+  })
+}
+
+// 4. Prefetch (called on link hover)
+export function usePrefetch() {
+  const queryClient = useQueryClient()
+  return {
+    prefetchInventory: (profileId: string | null) => {
+      if (!profileId) return
+      queryClient.prefetchQuery({
+        queryKey: queryKeys.inventory(profileId),
+        queryFn: () => fetchers.inventory(profileId),
+      })
+    },
+  }
+}
+
+// 5. Invalidation (after mutations)
+export function useInvalidateQueries() {
+  const queryClient = useQueryClient()
+  return {
+    invalidateInventory: (profileId: string) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.inventory(profileId) })
+    },
+  }
+}
+```
+
+### Potential Future Improvements
+
+1. **Virtual Lists:** For large inventories, use react-window
+2. **Supabase Subscriptions:** Real-time updates instead of polling
+3. **Image Optimization:** If herb images are added, use next/image
+4. **Service Worker:** Offline support for reference data
 
 ### Bundle Size
 
-Current dependencies are minimal:
+Current dependencies:
 - next, react, react-dom (core)
 - @supabase/supabase-js (database)
+- @tanstack/react-query (data fetching)
 - tailwindcss (styling)
 
 No animation libraries or heavy UI frameworks.

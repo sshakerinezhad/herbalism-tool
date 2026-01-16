@@ -79,14 +79,19 @@ import { useRouter } from 'next/navigation'
 // 2. External libraries
 import { supabase } from '@/lib/supabase'
 
-// 3. Internal components
-import { PageLayout, LoadingState } from '@/components/ui'
+// 3. Internal hooks
+import { useInventory, useInvalidateQueries } from '@/lib/hooks'
+import { useProfile } from '@/lib/profile'
+import { useAuth } from '@/lib/auth'
+
+// 4. Internal components
+import { PageLayout, InventorySkeleton, PrefetchLink } from '@/components/ui'
 import { ElementBadge } from '@/components/elements'
 
-// 4. Types
+// 5. Types
 import type { Herb, Recipe } from '@/lib/types'
 
-// 5. Constants
+// 6. Constants
 import { ELEMENT_SYMBOLS, FORAGING_DC } from '@/lib/constants'
 ```
 
@@ -128,6 +133,10 @@ src/components/
 
 ```
 src/lib/
+├── hooks/                # React Query hooks (DATA LAYER)
+│   ├── queries.ts        # All data hooks, prefetch, invalidation
+│   └── index.ts          # Barrel export
+│
 ├── auth.tsx              # AuthContext + AuthProvider
 ├── profile.tsx           # ProfileContext + ProfileProvider
 ├── supabase.ts           # Database client
@@ -159,56 +168,54 @@ src/app/
 
 ## Component Patterns
 
-### Page Component Structure
+### Page Component Structure (with React Query)
 
 ```tsx
 'use client'
 
-import { useState, useEffect } from 'react'
-import { PageLayout, LoadingState, ErrorDisplay } from '@/components/ui'
+import { PageLayout, ErrorDisplay, PageNameSkeleton } from '@/components/ui'
 import { useProfile } from '@/lib/profile'
-import type { SomeType } from '@/lib/types'
+import { useSomeData, useInvalidateQueries } from '@/lib/hooks'
 
 export default function PageName() {
   // 1. Context hooks
   const { profile, profileId, isLoaded } = useProfile()
+  const { invalidateSomeData } = useInvalidateQueries()
   
-  // 2. Local state
-  const [data, setData] = useState<SomeType[]>([])
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  // 2. React Query hooks (handles loading, caching, errors)
+  const { 
+    data = [], 
+    isLoading, 
+    error 
+  } = useSomeData(profileId)
   
-  // 3. Data fetching
-  useEffect(() => {
-    if (!profileId) return
-    
-    async function loadData() {
-      const { items, error } = await fetchData(profileId)
-      if (error) {
-        setError(error)
-      } else {
-        setData(items || [])
-      }
-      setIsLoading(false)
-    }
-    
-    loadData()
-  }, [profileId])
+  // 3. Local UI state only
+  const [selectedItem, setSelectedItem] = useState<number | null>(null)
+  const [mutationError, setMutationError] = useState<string | null>(null)
   
-  // 4. Event handlers
+  // 4. Event handlers (with cache invalidation)
   const handleSomething = async () => {
-    // ...
+    setMutationError(null)
+    const { error } = await someMutation(profileId, data)
+    if (error) {
+      setMutationError(error)
+    } else {
+      invalidateSomeData(profileId) // Refresh cached data
+    }
   }
   
-  // 5. Loading state
+  // 5. Loading state (use skeleton for better UX)
   if (!isLoaded || isLoading) {
-    return <LoadingState message="Loading..." />
+    return <PageNameSkeleton />
   }
   
   // 6. Render
   return (
     <PageLayout>
-      <ErrorDisplay message={error} onDismiss={() => setError(null)} />
+      <ErrorDisplay 
+        message={error?.message || mutationError} 
+        onDismiss={() => setMutationError(null)} 
+      />
       {/* Page content */}
     </PageLayout>
   )
@@ -281,33 +288,37 @@ import { HerbSelector, PairingPhase } from '@/components/brew'
 
 ## Database Operations
 
+**Important:** All herbalism data is character-based. Use `character_herbs`, `character_brewed`, and `character_recipes` tables (not the legacy `user_*` tables).
+
 ### Return Pattern
 
 All database operations return `{ data?, error }`:
 
 ```typescript
-export async function getInventory(userId: string): Promise<{
-  items?: InventoryItem[]
+export async function getCharacterHerbs(characterId: string): Promise<{
+  items?: CharacterHerb[]
   error: string | null
 }> {
   try {
     const { data, error } = await supabase
-      .from('user_inventory')
+      .from('character_herbs')
       .select('*, herbs(*)')
-      .eq('user_id', userId)
+      .eq('character_id', characterId)
 
     if (error) throw error
 
     const items = (data || []).map(row => ({
       id: row.id,
+      character_id: row.character_id,
+      herb_id: row.herb_id,
       herb: row.herbs as unknown as Herb,
       quantity: row.quantity
     }))
 
     return { items, error: null }
   } catch (err) {
-    console.error('getInventory failed:', err)
-    return { error: 'Failed to load inventory' }
+    console.error('getCharacterHerbs failed:', err)
+    return { error: 'Failed to load herbs' }
   }
 }
 ```
@@ -331,16 +342,27 @@ For operations that should create or update:
 
 ```typescript
 const { error } = await supabase
-  .from('user_inventory')
+  .from('character_herbs')
   .upsert(
-    { user_id: userId, herb_id: herbId, quantity: newQuantity },
-    { onConflict: 'user_id,herb_id' }
+    { character_id: characterId, herb_id: herbId, quantity: newQuantity },
+    { onConflict: 'character_id,herb_id' }
   )
 ```
 
 ---
 
 ## State Management
+
+### State Management Decision Tree
+
+| Data Type | Where to Store |
+|-----------|----------------|
+| Server data (inventory, recipes, etc.) | **React Query hooks** (`@/lib/hooks`) |
+| User authentication | **AuthContext** |
+| User profile/settings | **ProfileContext** |
+| Cross-page data | **Context** |
+| Form inputs | **Local useState** |
+| UI state (selections, modals) | **Local useState** |
 
 ### When to Use Context
 
@@ -478,6 +500,72 @@ try {
 3. Add TypeScript types for inputs/outputs
 4. Log errors to console
 
+### Adding a New React Query Hook
+
+Add to `src/lib/hooks/queries.ts`:
+
+```typescript
+// 1. Add fetcher function
+const fetchers = {
+  // ... existing fetchers
+  
+  newData: async (id: string) => {
+    const result = await fetchNewData(id)
+    if (result.error) throw new Error(result.error)
+    return result.data
+  },
+}
+
+// 2. Add query key
+export const queryKeys = {
+  // ... existing keys
+  newData: (id: string) => ['newData', id] as const,
+}
+
+// 3. Add hook
+export function useNewData(id: string | null) {
+  return useQuery({
+    queryKey: queryKeys.newData(id ?? ''),
+    queryFn: () => fetchers.newData(id!),
+    enabled: !!id,
+  })
+}
+
+// 4. Add invalidation helper (in useInvalidateQueries)
+invalidateNewData: (id: string) => {
+  queryClient.invalidateQueries({ queryKey: queryKeys.newData(id) })
+},
+
+// 5. (Optional) Add prefetch (in usePrefetch)
+prefetchNewData: (id: string | null) => {
+  if (!id) return
+  queryClient.prefetchQuery({
+    queryKey: queryKeys.newData(id),
+    queryFn: () => fetchers.newData(id),
+  })
+},
+```
+
+### Adding a New Skeleton
+
+Add to `src/components/ui/Skeleton.tsx`:
+
+```tsx
+export function NewPageSkeleton() {
+  return (
+    <div className="min-h-screen bg-zinc-900 text-zinc-100 p-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Match your page structure */}
+        <Skeleton className="h-10 w-48 mb-8" />
+        {/* ... */}
+      </div>
+    </div>
+  )
+}
+```
+
+Export from `src/components/ui/index.ts`.
+
 ### Adding a New Constant
 
 1. Add to `src/lib/constants.ts`
@@ -532,4 +620,6 @@ How was this tested?
 ---
 
 *Keep this guide updated as patterns evolve.*
+
+*Last updated: December 2024*
 

@@ -10,6 +10,8 @@ One-page cheat sheet for the herbalism-tool codebase.
 |------|---------|
 | `src/app/*/page.tsx` | All pages (routes) |
 | `src/components/` | Reusable React components |
+| `src/components/ui/` | Generic UI (Layout, Loading, Skeleton, PrefetchLink) |
+| `src/lib/hooks/` | **React Query hooks** (data fetching + caching) |
 | `src/lib/types.ts` | All TypeScript interfaces |
 | `src/lib/constants.ts` | Shared constants (elements, DCs, etc.) |
 | `src/lib/auth.tsx` | Auth context + provider |
@@ -51,7 +53,7 @@ import {
 
 ## 📊 Database Tables
 
-**Herbalism (Legacy):**
+**Reference Data:**
 
 | Table | Purpose | Key Fields |
 |-------|---------|------------|
@@ -60,21 +62,26 @@ import {
 | `biomes` | Locations | name |
 | `biome_herbs` | Herb spawns | biome_id, herb_id, weight |
 | `recipes` | Brewing formulas | name, elements[], type, is_secret |
-| `user_inventory` | Owned herbs | user_id, herb_id, quantity |
-| `user_brewed` | Crafted items | user_id, type, effects[], choices |
-| `user_recipes` | Known recipes | user_id, recipe_id |
+| `skills` | Reference: 26 skills | name, ability |
+| `armor_slots` | Reference: 12 body slots | name, position |
 
-**Knights of Belyar (New):**
+**Character Data (all tied to character_id):**
 
 | Table | Purpose |
 |-------|---------|
 | `characters` | Core character data (stats, class, race, etc.) |
-| `skills` | Reference: 26 skills |
-| `armor_slots` | Reference: 12 body slots |
 | `character_skills` | Skill proficiencies |
 | `character_armor` | Equipped armor |
-| `character_weapons` | Weapons |
+| `character_weapons` | Owned weapons |
 | `character_items` | General inventory |
+| `character_weapon_slots` | 6 weapon slots (3 per hand) |
+| `character_quick_slots` | 6 quick access combat slots |
+| `character_herbs` | Herb inventory (foraging) |
+| `character_brewed` | Crafted items (elixirs/bombs/oils) |
+| `character_recipes` | Known brewing recipes |
+
+**Legacy Tables (DEPRECATED - do not use):**
+- `user_inventory`, `user_brewed`, `user_recipes` - replaced by character_* equivalents
 
 ---
 
@@ -100,11 +107,61 @@ const {
 
 ---
 
+## 📦 React Query Hooks
+
+```typescript
+import {
+  // Character data
+  useCharacter,
+  useCharacterSkills,
+  useCharacterArmor,
+  useCharacterWeapons,
+  useCharacterItems,
+  useCharacterWeaponSlots,
+  useCharacterQuickSlots,
+
+  // Character-based herbalism
+  useCharacterHerbs,       // Herb inventory
+  useCharacterBrewedItems, // Crafted items
+  useCharacterRecipesNew,  // Known recipes
+  useBiomes,               // Reference data for foraging
+
+  // Reference data
+  useArmorSlots,
+  useSkills,
+
+  // Cache management
+  useInvalidateQueries,
+  usePrefetch,
+} from '@/lib/hooks'
+
+// Usage - herbalism requires characterId
+const { data: character } = useCharacter(userId)
+const { data: herbs } = useCharacterHerbs(character?.id ?? null)
+
+// After mutations
+const { invalidateCharacterHerbs } = useInvalidateQueries()
+await addCharacterHerbs(characterId, herbId, quantity)
+invalidateCharacterHerbs(characterId)
+```
+
+---
+
 ## 📦 Component Imports
 
 ```typescript
 // UI components
-import { PageLayout, LoadingState, ErrorDisplay } from '@/components/ui'
+import { 
+  PageLayout, 
+  LoadingState, 
+  ErrorDisplay,
+  PrefetchLink,           // Smart link with prefetching
+  InventorySkeleton,      // Page skeletons
+  ForageSkeleton,
+  BrewSkeleton,
+  RecipesSkeleton,
+  ProfileSkeleton,
+} from '@/components/ui'
 
 // Element display
 import { ElementBadge, ElementList } from '@/components/elements'
@@ -117,6 +174,13 @@ import { HerbRow, BrewedItemCard, ElementSummary } from '@/components/inventory'
 
 // Recipes
 import { RecipeCard } from '@/components/recipes'
+
+// Character
+import { ArmorDiagram } from '@/components/ArmorDiagram'
+import { CoinPurse, WeaponSlots, QuickSlots } from '@/components/character'
+
+// Item details
+import { ItemTooltip } from '@/components/ui'
 ```
 
 ---
@@ -134,21 +198,43 @@ if (error) {
 // Use data
 ```
 
-### Page Structure
+### Page Structure (with React Query)
 
 ```tsx
 'use client'
+import { useInventory } from '@/lib/hooks'
+import { InventorySkeleton } from '@/components/ui'
+
 export default function Page() {
   const { profileId, isLoaded } = useProfile()
-  const [loading, setLoading] = useState(true)
+  const { data: inventory, isLoading } = useInventory(profileId)
   
-  useEffect(() => {
-    if (profileId) loadData()
-  }, [profileId])
-  
-  if (!isLoaded || loading) return <LoadingState />
+  if (!isLoaded || isLoading) return <InventorySkeleton />
   
   return <PageLayout>{/* content */}</PageLayout>
+}
+```
+
+### PrefetchLink Usage
+
+```tsx
+<PrefetchLink 
+  href="/inventory" 
+  prefetch="inventory"  // Type: 'inventory' | 'forage' | 'brew' | 'recipes' | 'profile'
+  profileId={profileId}
+>
+  View Inventory
+</PrefetchLink>
+```
+
+### Invalidate After Mutation
+
+```tsx
+const { invalidateInventory } = useInvalidateQueries()
+
+async function handleAdd() {
+  await addHerbsToInventory(profileId, herbs)
+  invalidateInventory(profileId)  // Refresh cache
 }
 ```
 
@@ -157,12 +243,13 @@ export default function Page() {
 ## ⚠️ Gotchas
 
 1. **Auth Required:** No guest mode. Pages redirect to `/login` if not authenticated.
-2. **Field Mismatch:** `brewingModifier` in app = `herbalism_modifier` in DB
-3. **Type Casting:** Use `as unknown as Type` for Supabase joins
-4. **RLS Status:** ON for new character tables, OFF for legacy herbalism tables
-5. **Sessions in localStorage:** Foraging sessions don't sync across devices
-6. **Navigation in useEffect:** Always use `router.push()` inside `useEffect`, never during render
-7. **RecipeType:** Defined in `constants.ts`, re-exported from `types.ts` for convenience
+2. **Character Required for Herbalism:** Forage/Brew pages require a character to exist.
+3. **Field Mismatch:** `brewingModifier` in app = `herbalism_modifier` in DB
+4. **Type Casting:** Use `as unknown as Type` for Supabase joins
+5. **RLS Status:** ON for all character tables including herbalism
+6. **Sessions in localStorage:** Foraging sessions are scoped to user ID, don't sync across devices
+7. **Navigation in useEffect:** Always use `router.push()` inside `useEffect`, never during render
+8. **Legacy Tables:** `user_inventory`, `user_brewed`, `user_recipes` are deprecated - use character_* tables
 
 ---
 
@@ -187,6 +274,15 @@ npm run lint     # Check for errors
 1. Create `src/app/{route}/page.tsx`
 2. Add `'use client'`
 3. Use `<PageLayout>`
+4. Use React Query hooks for data
+5. Add skeleton loading state
+
+**New Data Hook:**
+1. Add fetcher to `fetchers` object in `queries.ts`
+2. Add query key to `queryKeys`
+3. Create `useXxx` hook
+4. (Optional) Add prefetch function
+5. (Optional) Add skeleton in `Skeleton.tsx`
 
 **New Constant:**
 1. Add to `src/lib/constants.ts`
@@ -196,4 +292,6 @@ npm run lint     # Check for errors
 ---
 
 *Print this and pin it next to your monitor!*
+
+*Last updated: December 2025*
 

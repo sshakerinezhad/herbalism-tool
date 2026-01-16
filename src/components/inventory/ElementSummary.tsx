@@ -2,18 +2,20 @@
  * ElementSummary - Display total element counts from inventory
  */
 
-import { InventoryItem } from '@/lib/inventory'
+import type { CharacterHerb } from '@/lib/types'
 import { getElementSymbol } from '@/lib/constants'
 
 type ElementSummaryProps = {
-  inventory: InventoryItem[]
+  characterHerbs: CharacterHerb[]
 }
 
-export function ElementSummary({ inventory }: ElementSummaryProps) {
+export function ElementSummary({ characterHerbs }: ElementSummaryProps) {
   // Count elements across all inventory items
   const elementCounts = new Map<string, number>()
-  for (const item of inventory) {
-    for (const element of item.herb.elements) {
+  for (const item of characterHerbs) {
+    if (!item.herb) continue
+    const elements = item.herb.elements || []
+    for (const element of elements) {
       const current = elementCounts.get(element) || 0
       elementCounts.set(element, current + item.quantity)
     }
@@ -43,4 +45,3 @@ export function ElementSummary({ inventory }: ElementSummaryProps) {
     </div>
   )
 }
-

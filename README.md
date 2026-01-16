@@ -98,6 +98,17 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 │  └───────────────────────────────────────────────────────────┘ │
 │                            │                                    │
 │  ┌─────────────────────────┴─────────────────────────────────┐ │
+│  │                 REACT QUERY LAYER                          │ │
+│  │  ┌────────────────────────────────────────────────────┐   │ │
+│  │  │  @/lib/hooks (queries.ts)                          │   │ │
+│  │  │  • useInventory, useBrewedItems, useBiomes, etc.   │   │ │
+│  │  │  • usePrefetch (link hover prefetching)            │   │ │
+│  │  │  • useInvalidateQueries (cache management)         │   │ │
+│  │  │  • Automatic caching & request deduplication       │   │ │
+│  │  └────────────────────────────────────────────────────┘   │ │
+│  └───────────────────────────────────────────────────────────┘ │
+│                            │                                    │
+│  ┌─────────────────────────┴─────────────────────────────────┐ │
 │  │                    LIB LAYER                               │ │
 │  │  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌─────────┐│ │
 │  │  │ profiles.ts│ │inventory.ts│ │ brewing.ts │ │recipes.ts││ │
@@ -169,13 +180,20 @@ src/
 │   │   ├── RecipeCard.tsx     # Recipe card with lore
 │   │   └── index.ts
 │   │
-│   └── ui/                    # Generic UI components
-│       ├── ErrorDisplay.tsx   # Error message display
-│       ├── LoadingState.tsx   # Loading indicators
-│       ├── PageLayout.tsx     # Page wrapper + home link
-│       └── index.ts
+│   ├── ui/                    # Generic UI components
+│   │   ├── ErrorDisplay.tsx   # Error message display
+│   │   ├── LoadingState.tsx   # Loading indicators
+│   │   ├── PageLayout.tsx     # Page wrapper + home link
+│   │   ├── Skeleton.tsx       # Skeleton loading components
+│   │   └── index.ts
+│   │
+│   └── PrefetchLink.tsx       # Smart link with data prefetching
 │
 └── lib/                       # Core logic and utilities
+    ├── hooks/                 # React Query hooks (data fetching)
+    │   ├── queries.ts         # All data hooks + prefetch + invalidate
+    │   └── index.ts           # Barrel export
+    │
     ├── auth.tsx               # AuthContext and useAuth hook
     ├── brewing.ts             # Brewing logic and DB operations
     ├── constants.ts           # Shared constants (elements, DCs, etc.)
@@ -439,6 +457,13 @@ select-recipes → select-herbs-for-recipes → make-choices → brewing → res
 | `LoadingState` | Full-page loading indicator | `message?` |
 | `ErrorDisplay` | Error message box | `message`, `onDismiss?`, `className?` |
 | `HomeLink` | Back to home link | (none) |
+| `PrefetchLink` | Smart link with data prefetching on hover | `href`, `prefetch`, `profileId?`, `userId?` |
+| `Skeleton` | Animated loading placeholder | `className?` |
+| `InventorySkeleton` | Full page skeleton for inventory | (none) |
+| `ForageSkeleton` | Full page skeleton for forage | (none) |
+| `BrewSkeleton` | Full page skeleton for brew | (none) |
+| `RecipesSkeleton` | Full page skeleton for recipes | (none) |
+| `ProfileSkeleton` | Full page skeleton for profile | (none) |
 
 ### Element Components (`@/components/elements`)
 
@@ -483,15 +508,42 @@ import {
 - Tracks `sessionsUsedToday` (in localStorage)
 - Methods: `updateProfile`, `spendForagingSessions`, `longRest`
 
+### React Query Hooks (`@/lib/hooks`)
+
+Data fetching uses TanStack Query (React Query) for automatic caching:
+
+```typescript
+import { 
+  useInventory,        // Fetch herb inventory
+  useBrewedItems,      // Fetch brewed items
+  useBiomes,           // Fetch biomes (static data)
+  useUserRecipes,      // Fetch known recipes
+  usePrefetch,         // Prefetch data on hover
+  useInvalidateQueries // Invalidate cache after mutations
+} from '@/lib/hooks'
+
+// Usage in components
+const { data: inventory, isLoading, error } = useInventory(profileId)
+const { prefetchInventory, prefetchRecipes } = usePrefetch()
+const { invalidateInventory } = useInvalidateQueries()
+```
+
+**Benefits:**
+- Automatic caching across components
+- No refetch on tab switch (configurable)
+- Request deduplication
+- Built-in loading/error states
+- Prefetching on link hover for instant navigation
+
 ### Data Flow
 
 ```
 User Action
     │
     ▼
-Page Component (useState for local UI state)
+Page Component
     │
-    ├─► Context (for shared state like profile)
+    ├─► React Query Hooks (data fetching + caching)
     │       │
     │       ▼
     │   lib/*.ts (database operations)
@@ -499,7 +551,9 @@ Page Component (useState for local UI state)
     │       ▼
     │   Supabase
     │
-    └─► Optimistic Update (immediate UI feedback)
+    ├─► Context (for shared state like profile)
+    │
+    └─► Skeleton Loading (instant perceived load)
 ```
 
 ### Local Storage Keys
@@ -607,6 +661,46 @@ type BrewPhase =
   | { phase: 'result'; success: boolean; roll: number; /* ... */ }
 ```
 
+### 7. React Query for Data Fetching
+
+All data fetching uses React Query hooks with shared fetchers:
+
+```typescript
+// In @/lib/hooks/queries.ts
+const fetchers = {
+  inventory: async (profileId: string) => { /* ... */ },
+  biomes: async () => { /* ... */ },
+}
+
+export function useInventory(profileId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.inventory(profileId ?? ''),
+    queryFn: () => fetchers.inventory(profileId!),
+    enabled: !!profileId,
+  })
+}
+```
+
+### 8. Prefetching on Hover
+
+Links prefetch data for instant navigation:
+
+```tsx
+<PrefetchLink href="/inventory" prefetch="inventory" profileId={profileId}>
+  View Inventory
+</PrefetchLink>
+```
+
+### 9. Skeleton Loading
+
+Pages show structure immediately while data loads:
+
+```tsx
+if (isLoading) {
+  return <InventorySkeleton />  // Shows animated page structure
+}
+```
+
 ---
 
 ## Known Issues & Gotchas
@@ -680,6 +774,50 @@ The `user_brewed.effects` column stores a PostgreSQL array, but when retrieved i
 3. Export from folder's `index.ts`
 4. Import from barrel: `import { YourComponent } from '@/components/folder'`
 
+### Adding a New Data Hook
+
+1. Add fetcher function to `src/lib/hooks/queries.ts`:
+   ```typescript
+   const fetchers = {
+     newData: async (id: string) => {
+       const result = await fetchNewData(id)
+       if (result.error) throw new Error(result.error)
+       return result.data
+     },
+   }
+   ```
+
+2. Add query key:
+   ```typescript
+   export const queryKeys = {
+     newData: (id: string) => ['newData', id] as const,
+   }
+   ```
+
+3. Add hook:
+   ```typescript
+   export function useNewData(id: string | null) {
+     return useQuery({
+       queryKey: queryKeys.newData(id ?? ''),
+       queryFn: () => fetchers.newData(id!),
+       enabled: !!id,
+     })
+   }
+   ```
+
+4. (Optional) Add prefetch function:
+   ```typescript
+   prefetchNewData: (id: string | null) => {
+     if (!id) return
+     queryClient.prefetchQuery({
+       queryKey: queryKeys.newData(id),
+       queryFn: () => fetchers.newData(id),
+     })
+   }
+   ```
+
+5. (Optional) Add skeleton in `src/components/ui/Skeleton.tsx`
+
 ### Modifying Database Schema
 
 1. Update types in `src/lib/types.ts`
@@ -718,6 +856,44 @@ npm run lint     # Run ESLint
 
 ---
 
+## Supabase CLI
+
+This project includes the Supabase CLI for database management. See `docs/SUPABASE-CLI.md` for full documentation.
+
+### Quick Setup
+
+1. Generate an access token at https://supabase.com/dashboard/account/tokens
+2. Add to `.env.local`: `SUPABASE_ACCESS_TOKEN=sbp_your_token_here`
+3. Link the project: `npx supabase link --project-ref cliiijgqzwkiknukfgqc`
+
+### Database Commands
+
+```bash
+npm run db:status   # Show database info
+npm run db:pull     # Pull remote schema to migrations
+npm run db:push     # Push migrations to remote
+npm run db:diff     # Generate migration from changes
+npm run db:types    # Generate TypeScript types
+npm run supabase    # Run any supabase command
+```
+
+### Generated Types
+
+Run `npm run db:types` to generate `src/lib/database.types.ts` with full TypeScript types for all tables.
+
+### For AI Agents
+
+Agents can query the database directly:
+
+```bash
+npx supabase db execute --sql "SELECT * FROM profiles LIMIT 5"
+npx supabase inspect db table-stats
+```
+
+See `docs/SUPABASE-CLI.md` for complete documentation including troubleshooting.
+
+---
+
 ## Contact & History
 
 **Original Development:** Built as a D&D homebrew companion tool.
@@ -732,3 +908,18 @@ npm run lint     # Run ESLint
 ---
 
 *Last updated: December 2024*
+
+---
+
+## Recent Changes (Dec 2024)
+
+### Performance & Data Fetching
+- **React Query Integration:** All data fetching now uses TanStack Query for automatic caching, request deduplication, and smart refetching
+- **Prefetching:** Links prefetch data on hover for near-instant navigation
+- **Skeleton Loading:** Pages show animated structure immediately while data loads
+- **No Tab-Switch Reload:** Data persists when switching browser tabs
+
+### Code Organization
+- **Centralized Hooks:** All data hooks in `@/lib/hooks/queries.ts`
+- **Shared Fetchers:** DRY pattern prevents code duplication between hooks and prefetch
+- **Barrel Exports:** Clean imports via `@/lib/hooks` and `@/components/ui`

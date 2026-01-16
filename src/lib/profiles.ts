@@ -7,7 +7,6 @@
 
 import { supabase } from './supabase'
 import { Profile } from './types'
-import { initializeBaseRecipes } from './recipes'
 
 // Default profile values for new users
 const DEFAULT_PROFILE: Profile = {
@@ -82,13 +81,6 @@ async function createProfile(id: string): Promise<{
       profile: DEFAULT_PROFILE,
       error: `Failed to create profile: ${error.message}`
     }
-  }
-
-  // Initialize the user with all base (non-secret) recipes
-  const { error: recipeError } = await initializeBaseRecipes(id)
-  if (recipeError) {
-    console.warn('Failed to initialize base recipes:', recipeError)
-    // Don't fail profile creation if recipe init fails
   }
 
   return {

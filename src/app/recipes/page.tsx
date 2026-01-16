@@ -7,14 +7,14 @@
  * Allows unlocking secret recipes with codes.
  */
 
-import { useEffect, useState, useMemo } from 'react'
-import { useProfile } from '@/lib/profile'
-import { getUserRecipes, unlockRecipeWithCode, getRecipeStats, UserRecipe } from '@/lib/recipes'
-import { Recipe } from '@/lib/types'
+import { useState, useMemo, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/auth'
+import { useCharacter, useCharacterRecipesNew, useCharacterRecipeStats, useInvalidateQueries } from '@/lib/hooks'
+import { unlockCharacterRecipeWithCode } from '@/lib/db/characterInventory'
+import { Recipe, CharacterRecipe } from '@/lib/types'
 import { getElementSymbol } from '@/lib/constants'
-import { PageLayout } from '@/components/ui'
-import { LoadingState } from '@/components/ui'
-import { ErrorDisplay } from '@/components/ui'
+import { PageLayout, ErrorDisplay, RecipesSkeleton } from '@/components/ui'
 import { RecipeCard } from '@/components/recipes'
 
 type ViewTab = 'elixir' | 'bomb' | 'oil'
@@ -46,10 +46,35 @@ const TYPE_DESCRIPTIONS: Record<ViewTab, { icon: string; text: string; className
 }
 
 export default function RecipesPage() {
-  const { profileId, isLoaded: profileLoaded } = useProfile()
-  const [recipes, setRecipes] = useState<UserRecipe[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
+  const { user, isLoading: authLoading } = useAuth()
+  const { invalidateCharacterRecipes } = useInvalidateQueries()
+
+  // Character data - herbalism is now character-based
+  const { data: character, isLoading: characterLoading } = useCharacter(user?.id ?? null)
+  const characterId = character?.id ?? null
+
+  // React Query handles data fetching and caching
+  const {
+    data: characterRecipes = [],
+    isLoading: recipesLoading,
+    error: recipesError
+  } = useCharacterRecipesNew(characterId)
+
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    error: statsError
+  } = useCharacterRecipeStats(characterId ?? undefined)
+
+  // Map CharacterRecipe[] to Recipe[] for rendering (filter missing joins)
+  const recipes = useMemo(() => {
+    return characterRecipes
+      .filter((cr: CharacterRecipe) => cr.recipe)
+      .map((cr: CharacterRecipe) => cr.recipe as Recipe)
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [characterRecipes])
+  
   const [viewTab, setViewTab] = useState<ViewTab>('elixir')
   
   // Unlock modal state
@@ -62,42 +87,16 @@ export default function RecipesPage() {
     recipe?: Recipe
   } | null>(null)
   
-  // Recipe stats
-  const [stats, setStats] = useState<{
-    known: number
-    totalBase: number
-    secretsUnlocked: number
-  } | null>(null)
-
-  // Load recipes and stats
+  // Redirect to login if not authenticated
   useEffect(() => {
-    async function loadData() {
-      if (!profileLoaded || !profileId) return
-
-      const [recipesResult, statsResult] = await Promise.all([
-        getUserRecipes(profileId),
-        getRecipeStats(profileId)
-      ])
-
-      if (recipesResult.error) {
-        setError(recipesResult.error)
-      } else {
-        setRecipes(recipesResult.recipes)
-      }
-
-      if (!statsResult.error) {
-        setStats({
-          known: statsResult.known,
-          totalBase: statsResult.totalBase,
-          secretsUnlocked: statsResult.secretsUnlocked,
-        })
-      }
-
-      setLoading(false)
+    if (!authLoading && !user) {
+      router.push('/login')
     }
+  }, [authLoading, user, router])
 
-    loadData()
-  }, [profileLoaded, profileId])
+  // Derived loading and error state
+  const loading = authLoading || characterLoading || recipesLoading || statsLoading
+  const error = recipesError?.message || statsError?.message
 
   // Group recipes by type
   const recipesByType = useMemo(() => ({
@@ -110,12 +109,12 @@ export default function RecipesPage() {
 
   // Handle unlock attempt
   async function handleUnlock() {
-    if (!profileId || !unlockCode.trim()) return
+    if (!characterId || !unlockCode.trim()) return
 
     setUnlockLoading(true)
     setUnlockResult(null)
 
-    const result = await unlockRecipeWithCode(profileId, unlockCode)
+    const result = await unlockCharacterRecipeWithCode(characterId, unlockCode)
 
     if (result.success && result.recipe) {
       setUnlockResult({
@@ -123,21 +122,9 @@ export default function RecipesPage() {
         message: `Recipe unlocked: ${result.recipe.name}!`,
         recipe: result.recipe,
       })
-      
-      // Reload recipes and stats
-      const [recipesResult, statsResult] = await Promise.all([
-        getUserRecipes(profileId),
-        getRecipeStats(profileId)
-      ])
-      
-      if (!recipesResult.error) setRecipes(recipesResult.recipes)
-      if (!statsResult.error) {
-        setStats({
-          known: statsResult.known,
-          totalBase: statsResult.totalBase,
-          secretsUnlocked: statsResult.secretsUnlocked,
-        })
-      }
+
+      // Invalidate recipes cache to show the new recipe
+      invalidateCharacterRecipes(characterId)
     } else {
       setUnlockResult({
         success: false,
@@ -154,8 +141,25 @@ export default function RecipesPage() {
     setUnlockResult(null)
   }
 
-  if (!profileLoaded || loading) {
-    return <LoadingState message="Loading recipes..." />
+  if (loading) {
+    return <RecipesSkeleton />
+  }
+
+  // Show character requirement CTA if no character exists
+  if (!character) {
+    return (
+      <PageLayout maxWidth="max-w-3xl">
+        <div className="bg-zinc-800/50 rounded-lg p-8 text-center">
+          <p className="text-zinc-400 mb-4">You need a character to access the recipe book</p>
+          <a
+            href="/profile"
+            className="inline-block px-4 py-2 bg-emerald-700 hover:bg-emerald-600 rounded-lg text-sm font-medium transition-colors"
+          >
+            Create Character
+          </a>
+        </div>
+      </PageLayout>
+    )
   }
 
   return (

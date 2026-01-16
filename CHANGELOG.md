@@ -14,6 +14,51 @@ All notable changes to the herbalism-tool project.
   - SQL migrations in `supabase/migrations/`
   - RLS policies for all new tables
   - Planning document: `docs/PLANNING-KNIGHTS.md`
+- **ArmorDiagram component** (`src/components/ArmorDiagram.tsx`):
+  - Visual armor slot editor with character silhouette
+  - 12 slots split into left/right columns
+  - Lock/unlock editing mode
+  - AC and armor level display
+  - Strength requirement validation
+- **CoinPurse component** (`src/components/character/CoinPurse.tsx`):
+  - Coin management with ±1/±10/±100 increment controls
+  - Lock/unlock editing mode (matches ArmorDiagram pattern)
+  - Optimistic updates with error rollback
+  - Metallic gradient styling per coin type (platinum, gold, silver, copper)
+  - Config-driven for easy extension
+- **WeaponSlots component** (`src/components/character/WeaponSlots.tsx`):
+  - Elden Ring-style weapon equipment (3 slots per hand)
+  - Active weapon cycling during combat
+  - Two-handed weapon support (locks off-hand)
+  - Lock/unlock editing mode
+  - Weapon selector modal
+- **QuickSlots component** (`src/components/character/QuickSlots.tsx`):
+  - 6 combat quick-access slots for potions, scrolls, bombs
+  - Supports both regular items and brewed items
+  - Category icons per item type
+  - Lock/unlock editing mode
+  - Item selector modal with category grouping
+- **Equipment page** (`src/app/equipment/page.tsx`):
+  - Full inventory management for weapons and items
+  - Weapons tab with search and add/delete
+  - Items tab with category filtering and quantity management
+  - Add Weapon modal with full property support
+  - Add Item modal with category selection
+- **ItemTooltip component** (`src/components/ui/ItemTooltip.tsx`):
+  - Hover tooltips showing item quick stats
+  - Click to open full detail modal
+  - Works with weapons, items, and brewed items
+  - Escape key closes modal
+- **Equipment database tables:**
+  - `character_weapon_slots` - 3 slots per hand with active tracking
+  - `character_quick_slots` - 6 slots for combat items
+  - Support for brewed items in quick slots (`brewed_item_id`)
+  - Auto-initialization trigger for new characters
+  - RLS policies for all new tables
+- **Shared slot types** (`src/lib/types.ts`):
+  - `WeaponSlotNumber` (1 | 2 | 3)
+  - `QuickSlotNumber` (1 | 2 | 3 | 4 | 5 | 6)
+  - `BrewedItem` type consolidated from duplicates
 - Comprehensive documentation suite:
   - `README.md` - Complete project overview and quick start
   - `docs/ARCHITECTURE.md` - Technical deep-dive
@@ -173,8 +218,8 @@ Complete codebase cleanup for scalability and maintainability.
 
 | Version | Date | Summary |
 |---------|------|---------|
-| 1.1.0 | 2024-12-22 | Major refactor, documentation |
-| 1.0.0 | 2024-12 | Initial release |
+| 1.1.0 | 2025-12-22 | Major refactor, documentation |
+| 1.0.0 | 2025-12 | Initial release |
 
 ---
 

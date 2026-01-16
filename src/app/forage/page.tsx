@@ -9,13 +9,16 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
 import { useProfile } from '@/lib/profile'
+import { useAuth } from '@/lib/auth'
+import { useBiomes, useInvalidateQueries, useCharacter } from '@/lib/hooks'
 import { rollD20, rollHerbQuantity, weightedRandomSelect } from '@/lib/dice'
 import { Biome, Herb, BiomeHerb, SessionResult, ForageState } from '@/lib/types'
-import { addHerbsToInventory, removeHerbsFromInventory } from '@/lib/inventory'
+import { addCharacterHerbs, removeCharacterHerbs } from '@/lib/db/characterInventory'
+import { fetchBiomeHerbs } from '@/lib/db/biomes'
 import { FORAGING_DC, getElementSymbol } from '@/lib/constants'
-import { PageLayout, LoadingState, ErrorDisplay } from '@/components/ui'
+import { PageLayout, ErrorDisplay, ForageSkeleton } from '@/components/ui'
 
 // ============ Types ============
 
@@ -28,19 +31,26 @@ type ForagedHerb = {
 // ============ Main Component ============
 
 export default function ForagePage() {
-  const { 
-    profile, 
-    profileId, 
-    isLoaded: profileLoaded, 
-    sessionsUsedToday, 
-    spendForagingSessions, 
-    longRest 
+  const router = useRouter()
+  const { user, isLoading: authLoading } = useAuth()
+  const {
+    profile,
+    isLoaded: profileLoaded,
+    sessionsUsedToday,
+    spendForagingSessions,
+    longRest
   } = useProfile()
+  const { invalidateCharacterHerbs } = useInvalidateQueries()
+
+  // Character data - herbalism is now character-based
+  const { data: character, isLoading: characterLoading } = useCharacter(user?.id ?? null)
+  const characterId = character?.id ?? null
   
-  // Data state
-  const [biomes, setBiomes] = useState<Biome[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // React Query handles biome data fetching and caching
+  const { data: biomes = [], isLoading: biomesLoading, error: biomesError } = useBiomes()
+  
+  // Local error state for mutations
+  const [mutationError, setMutationError] = useState<string | null>(null)
   
   // Foraging state
   const [biomeAllocations, setBiomeAllocations] = useState<Record<number, number>>({})
@@ -56,26 +66,14 @@ export default function ForagePage() {
   const foragingMod = profile.foragingModifier
   const totalAllocated = Object.values(biomeAllocations).reduce((sum, n) => sum + n, 0)
   const canAllocateMore = totalAllocated < sessionsRemaining
+  const error = biomesError?.message || mutationError
 
-  // Load biomes
+  // Redirect to login if not authenticated
   useEffect(() => {
-    async function fetchBiomes() {
-      const { data, error: fetchError } = await supabase
-        .from('biomes')
-        .select('*')
-        .order('name')
-      
-      if (fetchError) {
-        setError(`Failed to load biomes: ${fetchError.message}`)
-        setLoading(false)
-        return
-      }
-      
-      setBiomes(data || [])
-      setLoading(false)
+    if (!authLoading && !user) {
+      router.push('/login')
     }
-    fetchBiomes()
-  }, [])
+  }, [authLoading, user, router])
 
   // Reset allocations if sessions remaining decreases
   useEffect(() => {
@@ -114,7 +112,7 @@ export default function ForagePage() {
   async function startForaging() {
     if (totalAllocated < 1 || totalAllocated > sessionsRemaining) return
 
-    setError(null)
+    setMutationError(null)
     setState({ phase: 'rolling', totalSessions: totalAllocated, currentSession: 1 })
 
     const results: SessionResult[] = []
@@ -127,13 +125,10 @@ export default function ForagePage() {
       if (!biome || count < 1) continue
 
       // Get herbs available in this biome
-      const { data: biomeHerbs, error: herbError } = await supabase
-        .from('biome_herbs')
-        .select('id, biome_id, herb_id, weight, herbs(*)')
-        .eq('biome_id', biomeId)
+      const { data: biomeHerbs, error: herbError } = await fetchBiomeHerbs(biomeId)
 
       if (herbError) {
-        setError(`Failed to load herbs for ${biome.name}: ${herbError.message}`)
+        setMutationError(`Failed to load herbs for ${biome.name}: ${herbError}`)
         setState({ phase: 'setup' })
         return
       }
@@ -158,13 +153,8 @@ export default function ForagePage() {
           const herbsFound: Herb[] = []
 
           if (biomeHerbs && biomeHerbs.length > 0) {
-            const typedBiomeHerbs = biomeHerbs.map(bh => ({
-              ...bh,
-              herbs: bh.herbs as unknown as Herb
-            })) as BiomeHerb[]
-
             for (let j = 0; j < total; j++) {
-              const selected = weightedRandomSelect(typedBiomeHerbs)
+              const selected = weightedRandomSelect(biomeHerbs)
               herbsFound.push(selected.herbs)
             }
           }
@@ -196,11 +186,28 @@ export default function ForagePage() {
     }))
     setForagedHerbs(herbInstances)
 
-    // Auto-add to inventory
-    if (herbInstances.length > 0 && profileId) {
-      const { error: addError } = await addHerbsToInventory(profileId, allHerbs)
+    // Auto-add to inventory (character-based)
+    if (herbInstances.length > 0 && characterId) {
+      // Group herbs by ID and add to character inventory
+      const herbCounts = new Map<number, number>()
+      for (const herb of allHerbs) {
+        herbCounts.set(herb.id, (herbCounts.get(herb.id) || 0) + 1)
+      }
+
+      let addError: string | null = null
+      for (const [herbId, quantity] of herbCounts) {
+        const result = await addCharacterHerbs(characterId, herbId, quantity)
+        if (result.error) {
+          addError = result.error
+          break
+        }
+      }
+
       if (addError) {
-        setError(`Herbs found but failed to add to inventory: ${addError}`)
+        setMutationError(`Herbs found but failed to add to inventory: ${addError}`)
+      } else {
+        // Invalidate inventory cache so it's fresh when user visits inventory page
+        invalidateCharacterHerbs(characterId)
       }
     }
 
@@ -209,7 +216,7 @@ export default function ForagePage() {
 
   function reset() {
     setBiomeAllocations({})
-    setError(null)
+    setMutationError(null)
     setForagedHerbs([])
     setState({ phase: 'setup' })
   }
@@ -217,51 +224,59 @@ export default function ForagePage() {
   // ============ Herb Removal Actions ============
 
   async function handleRemoveHerb(instanceId: string) {
-    if (!profileId) return
-    
+    if (!characterId) return
+
     const herbToRemove = foragedHerbs.find(h => h.instanceId === instanceId)
     if (!herbToRemove || herbToRemove.removed) return
 
     setRemovingHerb(instanceId)
-    const { error: removeError } = await removeHerbsFromInventory(profileId, [
-      { herbId: herbToRemove.herb.id, quantity: 1 }
-    ])
+    const { error: removeError } = await removeCharacterHerbs(
+      characterId,
+      herbToRemove.herb.id,
+      1
+    )
     setRemovingHerb(null)
 
     if (removeError) {
-      setError(removeError)
+      setMutationError(removeError)
     } else {
-      setForagedHerbs(prev => 
+      setForagedHerbs(prev =>
         prev.map(h => h.instanceId === instanceId ? { ...h, removed: true } : h)
       )
+      invalidateCharacterHerbs(characterId)
     }
   }
 
   async function handleRemoveAll() {
-    if (!profileId) return
-    
+    if (!characterId) return
+
     const herbsToRemove = foragedHerbs.filter(h => !h.removed)
     if (herbsToRemove.length === 0) return
 
     setRemovingAll(true)
 
+    // Group herbs by ID
     const herbCounts = new Map<number, number>()
     for (const { herb } of herbsToRemove) {
       herbCounts.set(herb.id, (herbCounts.get(herb.id) || 0) + 1)
     }
 
-    const removals = Array.from(herbCounts.entries()).map(([herbId, quantity]) => ({
-      herbId,
-      quantity
-    }))
-
-    const { error: removeError } = await removeHerbsFromInventory(profileId, removals)
+    // Remove each herb type from character inventory
+    let removeError: string | null = null
+    for (const [herbId, quantity] of herbCounts) {
+      const result = await removeCharacterHerbs(characterId, herbId, quantity)
+      if (result.error) {
+        removeError = result.error
+        break
+      }
+    }
     setRemovingAll(false)
 
     if (removeError) {
-      setError(removeError)
+      setMutationError(removeError)
     } else {
       setForagedHerbs(prev => prev.map(h => ({ ...h, removed: true })))
+      invalidateCharacterHerbs(characterId)
     }
   }
 
@@ -269,8 +284,28 @@ export default function ForagePage() {
   const remainingHerbs = foragedHerbs.filter(h => !h.removed)
   const removedCount = foragedHerbs.filter(h => h.removed).length
 
-  if (loading || !profileLoaded) {
-    return <LoadingState />
+  if (biomesLoading || !profileLoaded || authLoading || characterLoading) {
+    return <ForageSkeleton />
+  }
+
+  // Gate: require character for herbalism
+  if (!character) {
+    return (
+      <PageLayout maxWidth="max-w-4xl">
+        <h1 className="text-3xl font-bold mb-2">Forage for Herbs</h1>
+        <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-6">
+          <p className="text-amber-200 mb-4">
+            You need to create a character before you can forage for herbs.
+          </p>
+          <Link
+            href="/profile"
+            className="inline-block px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors"
+          >
+            Create Character
+          </Link>
+        </div>
+      </PageLayout>
+    )
   }
 
   return (
@@ -282,7 +317,7 @@ export default function ForagePage() {
         </p>
       )}
 
-      {error && <ErrorDisplay message={error} onDismiss={() => setError(null)} className="mb-6" />}
+      {error && <ErrorDisplay message={error} onDismiss={() => setMutationError(null)} className="mb-6" />}
 
       {/* Setup Phase */}
       {state.phase === 'setup' && (

@@ -1,6 +1,9 @@
 /**
  * Inventory Management
- * 
+ *
+ * @deprecated This entire module is deprecated. Use character-based inventory from `@/lib/db/characterInventory` instead.
+ * Legacy user_inventory table operations - all new code should use character_herbs table.
+ *
  * Handles user herb inventory operations with optimized batch queries.
  * Designed to scale for large inventory operations.
  */

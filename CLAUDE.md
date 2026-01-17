@@ -64,6 +64,13 @@ See these files for detailed guidance:
 - `README.md` - Full project overview
 
 
+When committing code, follow these key points:
+- Write concise, human-sounding commit messages (under 72 chars preferred)
+- NO "Co-Authored-By" tags or AI attribution
+- NO emojis unless the repo conventionally uses them
+- Describe what changed and briefly why
+
+
 ## Commands
 
 ```bash

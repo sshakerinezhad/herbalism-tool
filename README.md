@@ -4,7 +4,7 @@ A character tracker for our D&D games. Built for the **Elros Player's Guide** - 
 
 This app is also a love letter to my friend Finn who hates everything about the EPG. Not becuase it ain't fun, but because it's "way too complicated"...
 
-Additionally, the herbalism system describenin the **EPG** and implemented here is based on the work of *AeronDrake* & *calculuschild* so thanks to them as well.
+Additionally, the herbalism system described in the **EPG** and implemented here is based on the work of *AeronDrake* & *calculuschild* so thanks to them as well.
 
 ---
 

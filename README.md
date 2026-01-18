@@ -1,8 +1,10 @@
 # Knights of Belyar Companion
 
-A character tracker for our D&D games. Built for the **Elros Player's Guide** - a 70-page expansion that adds vocations, an elemental magic system, and a martial combat overhaul to 5E.
+A character tracker for our D&D games. Built for the **Elros Player's Guide** - a 70-page expansion written by my buddy Nick that adds vocations, an elemental magic system, a martial combat overhaul, and more to 5E.
 
-This app is a love letter to my friend Finn who hates everything about the EPG. Not becuase it ain't fun, but because it's way too much to keep track of...
+This app is also a love letter to my friend Finn who hates everything about the EPG. Not becuase it ain't fun, but because it's "way too complicated"...
+
+Additionally, the herbalism system describenin the **EPG** and implemented here is based on the work of *AeronDrake* & *calculuschild* so thanks to them as well.
 
 ---
 

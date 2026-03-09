@@ -109,7 +109,7 @@
   - **Verify**: `bash __verify__/tests/t020_forage_setupphase.sh`
 - [x] T021 [P] [US2] Extract `src/components/forage/ResultsPhase.tsx` — results display, herb cards, add-to-inventory (~170 lines)
   - **Verify**: `bash __verify__/tests/t021_forage_resultsphase.sh`
-- [ ] T022 [US2] Create barrel export `src/components/forage/index.ts`, update `src/app/forage/page.tsx` to import from new components, verify page retains: auth guard, data fetching, state management, phase routing, async mutations
+- [x] T022 [US2] Create barrel export `src/components/forage/index.ts`, update `src/app/forage/page.tsx` to import from new components, verify page retains: auth guard, data fetching, state management, phase routing, async mutations
   - **Verify**: `bash __verify__/tests/t022_forage_barrel_and_page.sh`
 - [ ] T023 [US2] Verify: `npm run build` passes. Manual smoke test of forage flow (setup → roll → results → add to inventory). Commit: `"extract forage page components"`
   - **Checkpoint**: `bash __verify__/checkpoint_3_forage.sh` — MUST pass before proceeding to next phase

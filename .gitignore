@@ -44,3 +44,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# speckit state
+.specify/.current-feature
+**/.progress.md
+**/.speckit-state.json

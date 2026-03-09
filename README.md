@@ -136,4 +136,4 @@ Check `docs/`:
 
 ---
 
-*Made for the Knights of Belyar. If you somehow stumbled here from the internet - hi, this is a very specific tool for a very specific homebrew system, but you're welcome to poke around.*
+*Made for the Knights of Belyar. If you somehow stumbled here from the internet - hi, this is a very specific tool for a very specific homebrew system, but you're welcome to poke around and maybe even try implementing it in your games!*

@@ -1,1 +1,0 @@
-Clear .claude/scratchpad.md and write: "Fresh session - [current date]"

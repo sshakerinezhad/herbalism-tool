@@ -124,48 +124,26 @@ type NewCharacter = Database['public']['Tables']['characters']['Insert']
 
 **Note:** The project also has manual types in `src/lib/types.ts` with domain-specific names and additional computed types. Use whichever fits your needs.
 
-## Database Schema
-
-The database schema is defined in `supabase/migrations/`. Key tables:
-
-### Legacy Herbalism Tables
-- `profiles` - User profiles (links to auth.uid())
-- `herbs` - Herb reference data
-- `biomes` - Biome reference data  
-- `biome_herbs` - Herb availability by biome
-- `recipes` - Brewing recipes
-- `user_inventory` - User's collected herbs
-- `user_brewed` - User's brewed items
-- `user_recipes` - User's discovered recipes
-
-### Knights of Belyar Tables
-- `characters` - Core character data (1:1 with auth.users)
-- `skills` - Skill reference table
-- `armor_slots` - Armor slot reference table
-- `character_skills` - Character skill proficiencies
-- `character_armor` - Equipped armor
-- `character_weapons` - Character weapons
-- `character_items` - Character inventory
-
 ## Migrations
 
-All migrations are in `supabase/migrations/` and are numbered sequentially:
+All migrations are in `supabase/migrations/`, numbered sequentially:
 
 1. `001_characters_foundation.sql` - Base character tables
 2. `002_seed_reference_data.sql` - Initial reference data
 3. `003_rls_policies.sql` - Row Level Security
 4. `004_equipment_slots.sql` - Equipment slot system
-5. `005_quick_slots_brewed_items.sql` - Quick slots
+5. `005_quick_slots_brewed_items.sql` - Quick slots and brewed items
 6. `006_seed_equipment_data.sql` - Equipment data
-7. `007_equipment_reference_tables.sql` - Equipment references
+7. `007_equipment_reference_tables.sql` - Weapon templates, materials, item templates
+8. `008_unified_character_inventory.sql` - Character-based inventory unification
+9. `009_atomic_inventory_functions.sql` - Atomic inventory operations
+10. `010_atomic_item_functions.sql` - Atomic item operations
 
 To create a new migration:
 
 ```bash
 npx supabase migration new descriptive_name
 ```
-
-This creates a new file in `supabase/migrations/` that you can edit.
 
 ## Troubleshooting
 

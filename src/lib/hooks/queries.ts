@@ -1,13 +1,13 @@
 /**
  * React Query Hooks
- * 
+ *
  * Centralized data fetching with automatic caching, deduplication,
  * and smart refetching. These hooks replace manual useEffect + useState
  * patterns throughout the app.
- * 
+ *
  * Usage:
- *   const { data, isLoading, error } = useInventory(profileId)
- * 
+ *   const { data, isLoading, error } = useCharacterHerbs(characterId)
+ *
  * Benefits:
  *   - No refetch on tab switch (configurable)
  *   - Automatic caching across components
@@ -17,13 +17,10 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../supabase'
-import { getInventory, InventoryItem } from '../inventory'
-import { getBrewedItems, fetchUserRecipes } from '../brewing'
-import { getUserRecipes, getRecipeStats, UserRecipe } from '../recipes'
-import { 
-  fetchCharacter, 
-  fetchCharacterSkills, 
-  fetchCharacterArmor, 
+import {
+  fetchCharacter,
+  fetchCharacterSkills,
+  fetchCharacterArmor,
   fetchArmorSlots,
   fetchSkills,
   fetchCharacterWeaponSlots,
@@ -46,13 +43,8 @@ import type { Biome, Skill, ArmorSlot, ArmorType, CharacterWeaponSlot, Character
 // Centralized query keys for consistency and easy invalidation
 
 export const queryKeys = {
-  // Herbalism
-  inventory: (profileId: string) => ['inventory', profileId] as const,
-  brewedItems: (profileId: string) => ['brewedItems', profileId] as const,
-  userRecipes: (profileId: string) => ['userRecipes', profileId] as const,
-  recipeStats: (profileId: string) => ['recipeStats', profileId] as const,
   biomes: ['biomes'] as const,
-  
+
   // Character
   character: (userId: string) => ['character', userId] as const,
   characterSkills: (characterId: string) => ['characterSkills', characterId] as const,
@@ -61,15 +53,15 @@ export const queryKeys = {
   characterQuickSlots: (characterId: string) => ['characterQuickSlots', characterId] as const,
   characterWeapons: (characterId: string) => ['characterWeapons', characterId] as const,
   characterItems: (characterId: string) => ['characterItems', characterId] as const,
-  
+
   // Reference data (static, rarely changes)
   armorSlots: ['armorSlots'] as const,
   skills: ['skills'] as const,
   weaponTemplates: ['weaponTemplates'] as const,
   materials: ['materials'] as const,
   itemTemplates: ['itemTemplates'] as const,
-  
-  // Character-based inventory (new clean system)
+
+  // Character-based inventory
   characterHerbs: (characterId: string) => ['characterHerbs', characterId] as const,
   characterBrewedItems: (characterId: string) => ['characterBrewedItems', characterId] as const,
   characterRecipesNew: (characterId: string) => ['characterRecipesNew', characterId] as const,
@@ -81,40 +73,6 @@ export const queryKeys = {
 // This avoids duplication and ensures consistency
 
 const fetchers = {
-  inventory: async (profileId: string) => {
-    const result = await getInventory(profileId)
-    if (result.error) throw new Error(result.error)
-    return result.items
-  },
-  
-  brewedItems: async (profileId: string) => {
-    const result = await getBrewedItems(profileId)
-    if (result.error) throw new Error(result.error)
-    return result.items
-  },
-  
-  userRecipesForBrewing: async (profileId: string) => {
-    const result = await fetchUserRecipes(profileId)
-    if (result.error) throw new Error(result.error)
-    return result.recipes
-  },
-  
-  userRecipesFull: async (profileId: string) => {
-    const result = await getUserRecipes(profileId)
-    if (result.error) throw new Error(result.error)
-    return result.recipes
-  },
-  
-  recipeStats: async (profileId: string) => {
-    const result = await getRecipeStats(profileId)
-    if (result.error) throw new Error(result.error)
-    return {
-      known: result.known,
-      totalBase: result.totalBase,
-      secretsUnlocked: result.secretsUnlocked,
-    }
-  },
-  
   biomes: async () => {
     const { data, error } = await supabase
       .from('biomes')
@@ -241,70 +199,6 @@ const fetchers = {
     if (result.error) throw new Error(result.error)
     return result.data || []
   },
-}
-
-// ============ Inventory Hooks ============
-
-/**
- * @deprecated Use useCharacterHerbs with a character id instead.
- * Fetch user's herb inventory
- */
-export function useInventory(profileId: string | null) {
-  return useQuery({
-    queryKey: queryKeys.inventory(profileId ?? ''),
-    queryFn: () => fetchers.inventory(profileId!),
-    enabled: !!profileId,
-  })
-}
-
-/**
- * @deprecated Use useCharacterBrewedItems with a character id instead.
- * Fetch user's brewed items (elixirs, bombs, oils)
- */
-export function useBrewedItems(profileId: string | null) {
-  return useQuery({
-    queryKey: queryKeys.brewedItems(profileId ?? ''),
-    queryFn: () => fetchers.brewedItems(profileId!),
-    enabled: !!profileId,
-  })
-}
-
-// ============ Recipe Hooks ============
-
-/**
- * @deprecated Use useCharacterRecipesNew with a character id instead.
- * Fetch recipes known by the user (for brewing)
- */
-export function useUserRecipesForBrewing(profileId: string | null) {
-  return useQuery({
-    queryKey: queryKeys.userRecipes(profileId ?? ''),
-    queryFn: () => fetchers.userRecipesForBrewing(profileId!),
-    enabled: !!profileId,
-  })
-}
-
-/**
- * @deprecated Use useCharacterRecipesNew with a character id instead.
- * Fetch recipes for the recipe book page (includes userRecipeId)
- */
-export function useUserRecipes(profileId: string | null) {
-  return useQuery({
-    queryKey: [...queryKeys.userRecipes(profileId ?? ''), 'full'] as const,
-    queryFn: () => fetchers.userRecipesFull(profileId!),
-    enabled: !!profileId,
-  })
-}
-
-/**
- * @deprecated Use useCharacterRecipeStats with a character id instead.
- * Fetch recipe statistics (known count, secrets unlocked)
- */
-export function useRecipeStats(profileId: string | null) {
-  return useQuery({
-    queryKey: queryKeys.recipeStats(profileId ?? ''),
-    queryFn: () => fetchers.recipeStats(profileId!),
-    enabled: !!profileId,
-  })
 }
 
 // ============ Biome Hooks ============
@@ -517,22 +411,6 @@ export function useInvalidateQueries() {
   const queryClient = useQueryClient()
   
   return {
-    /** Invalidate inventory after adding/removing herbs */
-    invalidateInventory: (profileId: string) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.inventory(profileId) })
-    },
-    
-    /** Invalidate brewed items after brewing */
-    invalidateBrewedItems: (profileId: string) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.brewedItems(profileId) })
-    },
-    
-    /** Invalidate recipes after unlocking a new recipe */
-    invalidateRecipes: (profileId: string) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.userRecipes(profileId) })
-      queryClient.invalidateQueries({ queryKey: queryKeys.recipeStats(profileId) })
-    },
-    
     /** Invalidate character data after updates */
     invalidateCharacter: (userId: string) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.character(userId) })
@@ -586,13 +464,6 @@ export function useInvalidateQueries() {
 
     /** Invalidate all user-specific data (e.g., on logout) */
     invalidateAllUserData: () => {
-      // Legacy profile-based (keep until fully migrated)
-      queryClient.invalidateQueries({ queryKey: ['inventory'] })
-      queryClient.invalidateQueries({ queryKey: ['brewedItems'] })
-      queryClient.invalidateQueries({ queryKey: ['userRecipes'] })
-      queryClient.invalidateQueries({ queryKey: ['recipeStats'] })
-
-      // Character-based
       queryClient.invalidateQueries({ queryKey: ['character'] })
       queryClient.invalidateQueries({ queryKey: ['characterSkills'] })
       queryClient.invalidateQueries({ queryKey: ['characterArmor'] })
@@ -620,21 +491,9 @@ export function usePrefetch() {
   const queryClient = useQueryClient()
   
   return {
-    /** Prefetch inventory page data */
-    prefetchInventory: (profileId: string | null) => {
-      if (!profileId) return
-      
-      queryClient.prefetchQuery({
-        queryKey: queryKeys.inventory(profileId),
-        queryFn: () => fetchers.inventory(profileId),
-      })
-      
-      queryClient.prefetchQuery({
-        queryKey: queryKeys.brewedItems(profileId),
-        queryFn: () => fetchers.brewedItems(profileId),
-      })
-    },
-    
+    /** @deprecated No-op, will be removed in T008/T009 */
+    prefetchInventory: (_profileId: string | null) => {},
+
     /** Prefetch forage page data */
     prefetchForage: () => {
       queryClient.prefetchQuery({
@@ -643,36 +502,12 @@ export function usePrefetch() {
       })
     },
     
-    /** Prefetch brew page data */
-    prefetchBrew: (profileId: string | null) => {
-      if (!profileId) return
-      
-      queryClient.prefetchQuery({
-        queryKey: queryKeys.inventory(profileId),
-        queryFn: () => fetchers.inventory(profileId),
-      })
-      
-      queryClient.prefetchQuery({
-        queryKey: queryKeys.userRecipes(profileId),
-        queryFn: () => fetchers.userRecipesForBrewing(profileId),
-      })
-    },
-    
-    /** Prefetch recipes page data */
-    prefetchRecipes: (profileId: string | null) => {
-      if (!profileId) return
-      
-      queryClient.prefetchQuery({
-        queryKey: [...queryKeys.userRecipes(profileId), 'full'],
-        queryFn: () => fetchers.userRecipesFull(profileId),
-      })
-      
-      queryClient.prefetchQuery({
-        queryKey: queryKeys.recipeStats(profileId),
-        queryFn: () => fetchers.recipeStats(profileId),
-      })
-    },
-    
+    /** @deprecated No-op, will be removed in T008/T009 */
+    prefetchBrew: (_profileId: string | null) => {},
+
+    /** @deprecated No-op, will be removed in T008/T009 */
+    prefetchRecipes: (_profileId: string | null) => {},
+
     /** Prefetch profile page data */
     prefetchProfile: (userId: string | null) => {
       if (!userId) return
@@ -710,9 +545,7 @@ export function usePrefetch() {
 
 // ============ Type Exports ============
 
-export type { InventoryItem } from '../inventory'
-export type { UserRecipe } from '../recipes'
-export type { 
+export type {
   BrewedItem,
   LegacyBrewedItem,
   CharacterBrewedItem,

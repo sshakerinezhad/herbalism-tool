@@ -17,10 +17,8 @@ src/lib/
 ├── types.ts                 # TypeScript types
 ├── constants.ts             # App constants
 ├── dice.ts                  # Dice rolling utilities
-├── brewing.ts               # Brewing logic (PARTIAL LEGACY)
-├── inventory.ts             # DEPRECATED - use characterInventory
+├── brewing.ts               # Brewing logic (pair matching, descriptions)
 ├── profiles.ts              # Profile operations
-└── recipes.ts               # DEPRECATED - use characterInventory
 ```
 
 ## Data Architecture
@@ -74,12 +72,7 @@ useCharacterItems(characterId)
 ```
 
 ### Deprecated (Legacy)
-```typescript
-// Profile-based - avoid, migrate away
-useInventory(profileId)      // → useCharacterHerbs
-useBrewedItems(profileId)    // → useCharacterBrewedItems
-useUserRecipes(profileId)    // → useCharacterRecipesNew
-```
+All legacy profile-based hooks have been removed. Use the character-based hooks above.
 
 ## Database Functions
 
@@ -93,12 +86,8 @@ addCharacterBrewedItem(characterId, type, effects, ...)
 useCharacterBrewedItem(brewedId, quantity)
 ```
 
-### Legacy (src/lib/inventory.ts) - DEPRECATED
-```typescript
-getInventory(userId)
-addHerbsToInventory(userId, herbs)
-removeHerbsFromInventory(userId, removals)
-```
+### Legacy
+Legacy modules (`inventory.ts`, `recipes.ts`) have been deleted. All DB operations now go through `characterInventory.ts`.
 
 ## Key Patterns
 

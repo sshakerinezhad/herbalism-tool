@@ -447,6 +447,19 @@ export type CharacterCreationData = {
   // Starting equipment will be separate
 }
 
+/** A character's armor data with joined slot info (used by profile, edit, and diagram views) */
+export type CharacterArmorData = {
+  id: string
+  slot_id: number
+  armor_type: ArmorType
+  custom_name: string | null
+  material: string | null
+  is_magical: boolean
+  properties: Record<string, unknown> | null
+  notes: string | null
+  slot: ArmorSlot
+}
+
 /** Armor preset for character creation */
 export type ArmorPreset = {
   name: string

@@ -126,7 +126,7 @@
 
 - [x] T024 [P] [US3] Create `src/components/character/wizard/types.ts` with `WizardStep`, `WizardData`, `StepProps` types (~30 lines)
   - **Verify**: `bash __verify__/tests/t024_wizard_types.sh`
-- [ ] T025 [P] [US3] Extract `src/components/character/wizard/IdentitySteps.tsx` — StepName, StepRace, StepBackground, StepClass, StepOrder (~350 lines)
+- [x] T025 [P] [US3] Extract `src/components/character/wizard/IdentitySteps.tsx` — StepName, StepRace, StepBackground, StepClass, StepOrder (~350 lines)
   - **Verify**: `bash __verify__/tests/t025_wizard_identitysteps.sh`
 - [x] T026 [P] [US3] Extract `src/components/character/wizard/BuildSteps.tsx` — StepStats, StepSkills, StepVocation (~250 lines)
   - **Verify**: `bash __verify__/tests/t026_wizard_buildsteps.sh`

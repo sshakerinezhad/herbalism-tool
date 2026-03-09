@@ -47,7 +47,7 @@ Pages (src/app/*/page.tsx)
   │     ├── characters.ts    Character CRUD + equipment ops
   │     ├── characterInventory.ts  Herb/brewed/recipe ops
   │     └── biomes.ts        Biome data
-  ├── lib/brewing.ts         Brewing logic (element pools, pairing)
+  ├── lib/brewing.ts         Brewing logic (recipe matching, descriptions)
   ├── lib/dice.ts            Dice utilities
   ├── lib/constants.ts       Game constants
   ├── lib/types.ts           Type definitions
@@ -150,7 +150,7 @@ DB operations for characters live in `src/lib/db/characters.ts` (50+ functions) 
 
 **Phases:** Select herbs → Pair elements → Make choices → Roll → Result
 
-1. **Element pool:** Each herb contributes its elements. Pool tracks element counts.
+1. **Element selection:** Each herb contributes its elements. The brew state hook tracks element counts.
 2. **Pairing:** User pairs elements to match recipes. Order doesn't matter (fire+water = water+fire).
 3. **Potency stacking:** Same pair repeated increases potency. `{n}` in descriptions becomes the potency count.
 4. **Choice variables:** Some recipes have choices like `{fire|cold|lightning}`. UI presents options.

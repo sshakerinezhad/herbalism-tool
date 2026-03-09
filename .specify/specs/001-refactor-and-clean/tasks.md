@@ -52,7 +52,7 @@
 ### Step 2.2: Delete recipes module + deprecated hooks (ATOMIC)
 - [x] T006 Delete `src/lib/recipes.ts` (221 lines) AND simultaneously remove all deprecated exports from `src/lib/hooks/queries.ts`: 5 fetchers, 5+ hooks, 3 invalidation helpers, deprecated query keys (~200 lines)
   - **Verify**: `bash __verify__/tests/t006_recipes_and_deprecated_hooks_deleted.sh`
-- [ ] T007 Verify: `npm run build` passes after atomic removal
+- [x] T007 Verify: `npm run build` passes after atomic removal
   - **Verify**: Manual — Run `npm run build`, must exit 0
 
 ### Step 2.3: Remove legacy prefetch system

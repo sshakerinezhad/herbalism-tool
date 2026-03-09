@@ -12,7 +12,7 @@ export default function Home() {
   const { user, isLoading: authLoading, signOut } = useAuth()
   const router = useRouter()
   const { data: character } = useCharacter(user?.id ?? null)
-  const { prefetchForage, prefetchInventory, prefetchRecipes } = usePrefetch()
+  const { prefetchForage } = usePrefetch()
 
   // Derive herbalist status from character vocation
   const isHerbalist = character?.vocation === 'herbalist'
@@ -28,18 +28,9 @@ export default function Home() {
   // This makes subsequent navigation instant
   useEffect(() => {
     if (isLoaded && profileId) {
-      // Prefetch static data (biomes) immediately
       prefetchForage()
-      
-      // Prefetch user data after a short delay (lower priority)
-      const timer = setTimeout(() => {
-        prefetchInventory(profileId)
-        prefetchRecipes(profileId)
-      }, 1000)
-      
-      return () => clearTimeout(timer)
     }
-  }, [isLoaded, profileId, prefetchForage, prefetchInventory, prefetchRecipes])
+  }, [isLoaded, profileId, prefetchForage])
 
   // Show loading while checking auth
   if (authLoading || !user) {

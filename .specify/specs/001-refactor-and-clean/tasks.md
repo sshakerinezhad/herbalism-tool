@@ -56,7 +56,7 @@
   - **Verify**: Manual — Run `npm run build`, must exit 0
 
 ### Step 2.3: Remove legacy prefetch system
-- [ ] T008 Remove deprecated prefetch calls (`prefetchInventory`, `prefetchBrew`, `prefetchRecipes`) from `src/app/page.tsx`
+- [x] T008 Remove deprecated prefetch calls (`prefetchInventory`, `prefetchBrew`, `prefetchRecipes`) from `src/app/page.tsx`
   - **Verify**: `bash __verify__/tests/t008_legacy_prefetch_removed_page.sh`
 - [ ] T009 Remove legacy prefetch types and deprecated prefetch functions from `src/components/PrefetchLink.tsx` and `src/lib/hooks/queries.ts` — keep only `prefetchForage`, `prefetchProfile`, `prefetchCharacterHerbalism`
   - **Verify**: `bash __verify__/tests/t009_legacy_prefetch_removed_prefetchlink.sh`

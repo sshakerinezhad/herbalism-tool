@@ -37,7 +37,7 @@ import {
   fetchCharacterBrewedItems,
   fetchCharacterRecipes,
 } from '../db/characterInventory'
-import type { Biome, Skill, ArmorSlot, ArmorType, CharacterWeaponSlot, CharacterQuickSlot, CharacterWeapon, CharacterItem } from '../types'
+import type { Biome, Skill, ArmorSlot, ArmorType, CharacterWeaponSlot, CharacterQuickSlot, CharacterWeapon, CharacterItem, CharacterArmorData } from '../types'
 
 // ============ Query Keys ============
 // Centralized query keys for consistency and easy invalidation
@@ -563,15 +563,5 @@ export type CharacterSkillData = {
   is_expertise: boolean
 }
 
-export type CharacterArmorData = {
-  id: string
-  slot_id: number
-  armor_type: ArmorType
-  custom_name: string | null
-  material: string | null
-  is_magical: boolean
-  properties: Record<string, unknown> | null
-  notes: string | null
-  slot: ArmorSlot
-}
+export type { CharacterArmorData } from '../types'
 

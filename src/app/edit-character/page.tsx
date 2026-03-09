@@ -31,20 +31,7 @@ import {
   getAbilityModifier,
   calculateMaxHP,
 } from '@/lib/constants'
-import type { Character, CharacterStats, ArmorSlot, ArmorType } from '@/lib/types'
-
-// Type for character armor data
-type CharacterArmorData = {
-  id: string
-  slot_id: number
-  armor_type: ArmorType
-  custom_name: string | null
-  material: string | null
-  is_magical: boolean
-  properties: Record<string, unknown> | null
-  notes: string | null
-  slot: ArmorSlot
-}
+import type { Character, CharacterStats, ArmorSlot, ArmorType, CharacterArmorData } from '@/lib/types'
 
 type EditableFields = {
   name: string

@@ -85,7 +85,7 @@
 
 - [x] T014 [US1] Move `CharacterArmorData` to `src/lib/types.ts` using the widest definition (with `properties` + `notes` fields)
   - **Verify**: `bash __verify__/tests/t014_armor_type_in_types_ts.sh`
-- [ ] T015 [US1] Update 3 consumers to import from `@/lib/types`: `src/lib/hooks/queries.ts`, `src/app/edit-character/page.tsx`, `src/components/ArmorDiagram.tsx`
+- [x] T015 [US1] Update 3 consumers to import from `@/lib/types`: `src/lib/hooks/queries.ts`, `src/app/edit-character/page.tsx`, `src/components/ArmorDiagram.tsx`
   - **Verify**: `bash __verify__/tests/t015_armor_consumers_updated.sh`
 - [ ] T016 [US1] Audit remaining type re-exports in `src/lib/hooks/queries.ts` — remove any with zero external consumers
   - **Verify**: Manual — For each type re-export at bottom of queries.ts, grep consumers in src/. Remove any with zero external imports.

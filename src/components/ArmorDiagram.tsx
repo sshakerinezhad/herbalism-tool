@@ -2,19 +2,8 @@
 
 import { useState, useCallback } from 'react'
 import Image from 'next/image'
-import type { ArmorSlot, ArmorType } from '@/lib/types'
-
-// ============ Types ============
-
-export type CharacterArmorData = {
-  id: string
-  slot_id: number
-  armor_type: ArmorType
-  custom_name: string | null
-  material: string | null
-  is_magical: boolean
-  slot: ArmorSlot
-}
+import type { ArmorSlot, ArmorType, CharacterArmorData } from '@/lib/types'
+export type { CharacterArmorData }
 
 export type ArmorDiagramProps = {
   armor: CharacterArmorData[]

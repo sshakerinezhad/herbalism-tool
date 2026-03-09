@@ -152,7 +152,7 @@
   - **Verify**: `bash __verify__/tests/t031_claude_gotcha7_removed.sh`
 - [x] T032 Update `docs/QUICKREF.md` — remove references to deleted hooks (`useInventory`, `useBrewedItems`, etc.) and modules (`inventory.ts`, `recipes.ts`)
   - **Verify**: `bash __verify__/tests/t032_quickref_cleaned.sh`
-- [ ] T033 Update `docs/ARCHITECTURE.md` — remove legacy module references
+- [x] T033 Update `docs/ARCHITECTURE.md` — remove legacy module references
   - **Verify**: `bash __verify__/tests/t033_architecture_cleaned.sh`
 - [ ] T034 Update `.claude/scratchpad.md` — reflect completed cleanup with current line counts
   - **Verify**: Manual — Verify scratchpad.md reflects completed cleanup with current line counts

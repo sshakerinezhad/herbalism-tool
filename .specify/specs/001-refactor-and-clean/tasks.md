@@ -72,7 +72,7 @@
 ### Phase 2 Verification
 - [x] T012 Run `npm run build` — must pass. Grep for all deleted identifiers (`inventory.ts`, `recipes.ts`, `useInventory`, `useBrewedItems`, `prefetchInventory`, `prefetchBrew`, `prefetchRecipes`, `fetchCharacterWeaponsClean`) → 0 results each
   - **Checkpoint**: `bash __verify__/checkpoint_1_dead_code.sh` — MUST pass before proceeding to next phase
-- [ ] T013 Commit: `"remove deprecated modules and dead code (~1,200 lines)"`
+- [x] T013 Commit: `"remove deprecated modules and dead code (~1,200 lines)"`
   - **Verify**: Manual — Create commit with message: `remove deprecated modules and dead code (~1,200 lines)`
 
 ---

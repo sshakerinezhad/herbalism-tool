@@ -128,9 +128,9 @@
   - **Verify**: `bash __verify__/tests/t024_wizard_types.sh`
 - [ ] T025 [P] [US3] Extract `src/components/character/wizard/IdentitySteps.tsx` — StepName, StepRace, StepBackground, StepClass, StepOrder (~350 lines)
   - **Verify**: `bash __verify__/tests/t025_wizard_identitysteps.sh`
-- [ ] T026 [P] [US3] Extract `src/components/character/wizard/BuildSteps.tsx` — StepStats, StepSkills, StepVocation (~250 lines)
+- [x] T026 [P] [US3] Extract `src/components/character/wizard/BuildSteps.tsx` — StepStats, StepSkills, StepVocation (~250 lines)
   - **Verify**: `bash __verify__/tests/t026_wizard_buildsteps.sh`
-- [ ] T027 [P] [US3] Extract `src/components/character/wizard/FinalSteps.tsx` — StepEquipment, StepReview (~180 lines)
+- [x] T027 [P] [US3] Extract `src/components/character/wizard/FinalSteps.tsx` — StepEquipment, StepReview (~180 lines)
   - **Verify**: `bash __verify__/tests/t027_wizard_finalsteps.sh`
 - [ ] T028 [US3] Create barrel export `src/components/character/wizard/index.ts`, update `src/app/create-character/page.tsx` to import from new components, verify page retains: auth guard, wizard state, validation, step routing, submission
   - **Verify**: `bash __verify__/tests/t028_wizard_barrel_and_page.sh`

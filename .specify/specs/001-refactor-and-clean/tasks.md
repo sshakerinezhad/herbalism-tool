@@ -30,7 +30,7 @@
 
 - [x] T001 Stage and commit all accumulated `.claude/` and docs changes with message `"clean up .claude tooling and stale docs"`
   - **Verify**: Manual — Run `git status` after commit, verify .claude/ and docs changes are committed
-- [ ] T002 Verify clean working tree with `git status` — only `src/` changes should remain
+- [x] T002 Verify clean working tree with `git status` — only `src/` changes should remain
   - **Verify**: Manual — Run `git status`, only src/ changes should remain in working tree
 
 ---

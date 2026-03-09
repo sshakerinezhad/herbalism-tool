@@ -105,7 +105,7 @@
   - **Verify**: `bash __verify__/tests/t018_forage_types.sh`
 - [x] T019 [P] [US2] Extract `src/components/forage/BiomeCard.tsx` — biome selection card component (~50 lines)
   - **Verify**: `bash __verify__/tests/t019_forage_biomecard.sh`
-- [ ] T020 [P] [US2] Extract `src/components/forage/SetupPhase.tsx` — biome allocation, session display, start button (~170 lines)
+- [x] T020 [P] [US2] Extract `src/components/forage/SetupPhase.tsx` — biome allocation, session display, start button (~170 lines)
   - **Verify**: `bash __verify__/tests/t020_forage_setupphase.sh`
 - [ ] T021 [P] [US2] Extract `src/components/forage/ResultsPhase.tsx` — results display, herb cards, add-to-inventory (~170 lines)
   - **Verify**: `bash __verify__/tests/t021_forage_resultsphase.sh`

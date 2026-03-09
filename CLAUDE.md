@@ -1,14 +1,32 @@
-# CLAUDE.md
+# CLAUDE.md - agent-amogus
 
-D&D homebrew companion app for vocations and character tracking - track character, forage herbs, manage inventory, brew elixirs/bombs/oils, forge weapons, manage martial skill trees.
+Everything should be clean, simple, and scalable. No spaghetti code.
 
 ## Golden Rules
-- all code should be industry standard and scalable
-- simple code is king, scalability is paramount
-- The WHY is as important as the WHAT. When making decisions and creating/modifying documentation, always include the reasoning behind things.
-- when implementing an existing plan, do a second pass and critique it. Does it make sense and what could go wrong?
-- before adding new features or changing existing ones, consider how these changes will interact with the existing system. If it will introduce inefficiencies, scalability issues, or bloat, reassess.
+- Never assume. Read the code, don't guess.
+- Simplest solution wins. If it's a bandaid, re-evaluate.
+- The first solution is rarely the best, be critical and compare every option shrewdly
+- Challenge your own biases, think several layers of abstraction deep
+- The WHY matters as much as the WHAT. Include reasoning in decisions and documentation.
+- Before implementing a plan, critique it. Does it make sense? What could go wrong? What does it interact with?
+- My words are NOT gospel. They are a starting point. Push back.
 
+## Verification
+
+Every change must be verified with irrefutable proof before it is considered done. Run `/verify` against the workplan before implementation begins. It produces the tests in `__verify__/`.
+
+When implementing:
+- After each change, run its corresponding test from `__verify__/tests/`. If it fails, fix the implementation. Do not modify the test. Do not move on.
+- At each breakpoint, run the checkpoint script. If it fails, everything in that block is broken. Fix before proceeding.
+- A step is not complete until its tests and the relevant checkpoint pass.
+
+## File Conventions
+- `masterplan.md` — long-range architecture and goals
+- `workplan.md` — current implementation steps
+- `scratchpad.md` — context for session handoffs
+- `notes.md` — raw backlog (bugs, issues, features)
+- `__verify__/` — generated test scripts (do not modify)
+- `changelog/` — archived masterplans
 
 ## Planning Protocol
 
@@ -22,10 +40,6 @@ When updating plans be sure to include what was done and why in *just* enough de
 Two-Pass Thinking
 When making decision critique your own work. Does this make sense? What could go wrong?
 
-When presenting plans:
-1. Present the full plan, marking major decision points with `[DECISION]`
-2. For each `[DECISION]`: what choice, what alternative, why (1 sentence each)
-3. Ask which decisions I want explained further before proceeding
 4. Do not start implementation until I explicitly confirm
 
 When things break: after fixing, briefly explain why it happened and what I should know to catch it earlier.
@@ -45,7 +59,6 @@ When things break: after fixing, briefly explain why it happened and what I shou
 4. **Auth required:** No guest mode - pages redirect to `/login` if not authenticated
 5. **Data fetching:** Always use React Query hooks from `@/lib/hooks`, not direct Supabase calls in components
 6. **Herbalism is character-based:** All herbalism data (herbs, brewed items, recipes) is tied to `character_id`, not `user_id`. Forage/Brew pages require a character to exist.
-7. **Legacy tables deprecated:** `user_inventory`, `user_brewed`, `user_recipes` still exist but are no longer used. Use `character_herbs`, `character_brewed`, `character_recipes` instead.
 
 ## Key Patterns
 

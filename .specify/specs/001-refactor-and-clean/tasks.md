@@ -46,7 +46,7 @@
   - **Verify**: `bash __verify__/tests/t003_herbselector_import_fixed.sh`
 - [x] T004 Delete `src/lib/inventory.ts` (313 lines)
   - **Verify**: `bash __verify__/tests/t004_inventory_deleted.sh`
-- [ ] T005 Verify: `grep -r "@/lib/inventory" src/` returns 0 results
+- [x] T005 Verify: `grep -r "@/lib/inventory" src/` returns 0 results
   - **Verify**: `bash __verify__/tests/t005_no_inventory_imports.sh`
 
 ### Step 2.2: Delete recipes module + deprecated hooks (ATOMIC)

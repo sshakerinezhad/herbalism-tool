@@ -146,7 +146,7 @@
 **Dependency**: Phases 4 and 5 complete.
 **Maps to**: Spec Scenario 5 (FR-4)
 
-- [ ] T030 Clean barrel exports in `src/lib/db/index.ts` and `src/lib/hooks/index.ts` — remove re-exports of deleted modules
+- [x] T030 Clean barrel exports in `src/lib/db/index.ts` and `src/lib/hooks/index.ts` — remove re-exports of deleted modules
   - **Verify**: `bash __verify__/tests/t030_barrel_exports_cleaned.sh`
 - [ ] T031 Remove CLAUDE.md gotcha #7 ("Legacy tables deprecated" — modules now deleted)
   - **Verify**: `bash __verify__/tests/t031_claude_gotcha7_removed.sh`

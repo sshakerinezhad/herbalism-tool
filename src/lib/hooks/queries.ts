@@ -536,26 +536,6 @@ export function usePrefetch() {
 
 // ============ Type Exports ============
 
-export type {
-  BrewedItem,
-  LegacyBrewedItem,
-  CharacterBrewedItem,
-  CharacterHerb,
-  CharacterRecipe,
-  WeaponSlotNumber,
-  QuickSlotNumber,
-  CharacterWeaponSlot,
-  CharacterQuickSlot,
-  CharacterWeapon,
-  CharacterItem,
-  WeaponTemplate,
-  Material,
-  ItemTemplate,
-  WeaponCategory,
-  DamageType,
-  WeaponProperty,
-} from '../types'
-
 // Re-export for convenience
 export type CharacterSkillData = {
   skill: Skill

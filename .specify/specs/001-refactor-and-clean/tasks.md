@@ -132,7 +132,7 @@
   - **Verify**: `bash __verify__/tests/t026_wizard_buildsteps.sh`
 - [x] T027 [P] [US3] Extract `src/components/character/wizard/FinalSteps.tsx` — StepEquipment, StepReview (~180 lines)
   - **Verify**: `bash __verify__/tests/t027_wizard_finalsteps.sh`
-- [ ] T028 [US3] Create barrel export `src/components/character/wizard/index.ts`, update `src/app/create-character/page.tsx` to import from new components, verify page retains: auth guard, wizard state, validation, step routing, submission
+- [x] T028 [US3] Create barrel export `src/components/character/wizard/index.ts`, update `src/app/create-character/page.tsx` to import from new components, verify page retains: auth guard, wizard state, validation, step routing, submission
   - **Verify**: `bash __verify__/tests/t028_wizard_barrel_and_page.sh`
 - [ ] T029 [US3] Verify: `npm run build` passes. Manual smoke test of character creation flow (all 10 steps → submit). Commit: `"extract create-character wizard steps"`
   - **Checkpoint**: `bash __verify__/checkpoint_4_wizard.sh` — MUST pass before proceeding to next phase

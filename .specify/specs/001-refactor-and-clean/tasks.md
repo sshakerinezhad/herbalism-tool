@@ -124,7 +124,7 @@
 **Maps to**: Spec Scenario 3 (FR-3.2)
 **Note**: Parallelizable with Phase 4 (US2) — different files, no shared dependencies.
 
-- [ ] T024 [P] [US3] Create `src/components/character/wizard/types.ts` with `WizardStep`, `WizardData`, `StepProps` types (~30 lines)
+- [x] T024 [P] [US3] Create `src/components/character/wizard/types.ts` with `WizardStep`, `WizardData`, `StepProps` types (~30 lines)
   - **Verify**: `bash __verify__/tests/t024_wizard_types.sh`
 - [ ] T025 [P] [US3] Extract `src/components/character/wizard/IdentitySteps.tsx` — StepName, StepRace, StepBackground, StepClass, StepOrder (~350 lines)
   - **Verify**: `bash __verify__/tests/t025_wizard_identitysteps.sh`

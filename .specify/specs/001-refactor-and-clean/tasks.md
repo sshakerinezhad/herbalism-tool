@@ -154,7 +154,7 @@
   - **Verify**: `bash __verify__/tests/t032_quickref_cleaned.sh`
 - [x] T033 Update `docs/ARCHITECTURE.md` — remove legacy module references
   - **Verify**: `bash __verify__/tests/t033_architecture_cleaned.sh`
-- [ ] T034 Update `.claude/scratchpad.md` — reflect completed cleanup with current line counts
+- [x] T034 Update `.claude/scratchpad.md` — reflect completed cleanup with current line counts
   - **Verify**: Manual — Verify scratchpad.md reflects completed cleanup with current line counts
 - [ ] T035 Verify: grep for `inventory.ts`, `recipes.ts`, `useInventory`, `useBrewedItems` in `docs/` and `CLAUDE.md` → 0 results. Commit: `"final cleanup and doc updates"`
   - **Verify**: `bash __verify__/tests/t035_no_deleted_refs_in_docs.sh`

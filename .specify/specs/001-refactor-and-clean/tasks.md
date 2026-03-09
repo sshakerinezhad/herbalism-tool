@@ -107,7 +107,7 @@
   - **Verify**: `bash __verify__/tests/t019_forage_biomecard.sh`
 - [x] T020 [P] [US2] Extract `src/components/forage/SetupPhase.tsx` — biome allocation, session display, start button (~170 lines)
   - **Verify**: `bash __verify__/tests/t020_forage_setupphase.sh`
-- [ ] T021 [P] [US2] Extract `src/components/forage/ResultsPhase.tsx` — results display, herb cards, add-to-inventory (~170 lines)
+- [x] T021 [P] [US2] Extract `src/components/forage/ResultsPhase.tsx` — results display, herb cards, add-to-inventory (~170 lines)
   - **Verify**: `bash __verify__/tests/t021_forage_resultsphase.sh`
 - [ ] T022 [US2] Create barrel export `src/components/forage/index.ts`, update `src/app/forage/page.tsx` to import from new components, verify page retains: auth guard, data fetching, state management, phase routing, async mutations
   - **Verify**: `bash __verify__/tests/t022_forage_barrel_and_page.sh`

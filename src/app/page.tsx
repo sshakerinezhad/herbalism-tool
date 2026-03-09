@@ -113,8 +113,6 @@ export default function Home() {
 
           <PrefetchLink
             href="/inventory"
-            prefetch="inventory"
-            profileId={profileId}
             className="block bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 hover:border-blue-600 rounded-lg p-6 transition-colors"
           >
             <h2 className="text-xl font-semibold text-blue-400 mb-2">🎒 Inventory</h2>
@@ -126,8 +124,6 @@ export default function Home() {
           {isHerbalist ? (
             <PrefetchLink
               href="/brew"
-              prefetch="brew"
-              profileId={profileId}
               className="block bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 hover:border-purple-600 rounded-lg p-6 transition-colors"
             >
               <h2 className="text-xl font-semibold text-purple-400 mb-2">⚗️ Brew</h2>
@@ -149,8 +145,6 @@ export default function Home() {
 
           <PrefetchLink
             href="/recipes"
-            prefetch="recipes"
-            profileId={profileId}
             className="block bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 hover:border-amber-600 rounded-lg p-6 transition-colors"
           >
             <h2 className="text-xl font-semibold text-amber-400 mb-2">📖 Recipes</h2>

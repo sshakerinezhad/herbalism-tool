@@ -491,9 +491,6 @@ export function usePrefetch() {
   const queryClient = useQueryClient()
   
   return {
-    /** @deprecated No-op, will be removed in T008/T009 */
-    prefetchInventory: (_profileId: string | null) => {},
-
     /** Prefetch forage page data */
     prefetchForage: () => {
       queryClient.prefetchQuery({
@@ -502,12 +499,6 @@ export function usePrefetch() {
       })
     },
     
-    /** @deprecated No-op, will be removed in T008/T009 */
-    prefetchBrew: (_profileId: string | null) => {},
-
-    /** @deprecated No-op, will be removed in T008/T009 */
-    prefetchRecipes: (_profileId: string | null) => {},
-
     /** Prefetch profile page data */
     prefetchProfile: (userId: string | null) => {
       if (!userId) return

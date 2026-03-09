@@ -8,8 +8,8 @@
  * Vercel, Airbnb, and Discord for snappy UX.
  * 
  * Usage:
- *   <PrefetchLink href="/inventory" prefetch="inventory" profileId={profileId}>
- *     View Inventory
+ *   <PrefetchLink href="/forage" prefetch="forage">
+ *     Forage Herbs
  *   </PrefetchLink>
  */
 
@@ -17,7 +17,7 @@ import Link from 'next/link'
 import { useCallback, useRef, ReactNode } from 'react'
 import { usePrefetch } from '@/lib/hooks'
 
-type PrefetchType = 'inventory' | 'forage' | 'brew' | 'recipes' | 'profile' | 'none'
+type PrefetchType = 'forage' | 'profile' | 'none'
 
 type PrefetchLinkProps = {
   href: string
@@ -39,12 +39,9 @@ export function PrefetchLink({
   className,
   prefetchDelay = 100,
 }: PrefetchLinkProps) {
-  const { 
-    prefetchInventory, 
-    prefetchForage, 
-    prefetchBrew, 
-    prefetchRecipes, 
-    prefetchProfile 
+  const {
+    prefetchForage,
+    prefetchProfile
   } = usePrefetch()
   
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -56,23 +53,14 @@ export function PrefetchLink({
     hasPrefetchedRef.current = true
     
     switch (prefetch) {
-      case 'inventory':
-        prefetchInventory(profileId ?? null)
-        break
       case 'forage':
         prefetchForage()
-        break
-      case 'brew':
-        prefetchBrew(profileId ?? null)
-        break
-      case 'recipes':
-        prefetchRecipes(profileId ?? null)
         break
       case 'profile':
         prefetchProfile(userId ?? null)
         break
     }
-  }, [prefetch, profileId, userId, prefetchInventory, prefetchForage, prefetchBrew, prefetchRecipes, prefetchProfile])
+  }, [prefetch, profileId, userId, prefetchForage, prefetchProfile])
   
   const handleMouseEnter = useCallback(() => {
     // Small delay to avoid prefetching on quick mouse passes

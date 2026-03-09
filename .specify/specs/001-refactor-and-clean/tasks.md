@@ -89,7 +89,7 @@
   - **Verify**: `bash __verify__/tests/t015_armor_consumers_updated.sh`
 - [x] T016 [US1] Audit remaining type re-exports in `src/lib/hooks/queries.ts` — remove any with zero external consumers
   - **Verify**: Manual — For each type re-export at bottom of queries.ts, grep consumers in src/. Remove any with zero external imports.
-- [ ] T017 [US1] Verify: `npm run build` passes. `grep -r "type CharacterArmorData =" src/` returns exactly 1 result. Commit: `"consolidate duplicated types"`
+- [x] T017 [US1] Verify: `npm run build` passes. `grep -r "type CharacterArmorData =" src/` returns exactly 1 result. Commit: `"consolidate duplicated types"`
   - **Checkpoint**: `bash __verify__/checkpoint_2_types.sh` — MUST pass before proceeding to next phase
 
 ---

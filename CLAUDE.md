@@ -59,6 +59,7 @@ When things break: after fixing, briefly explain why it happened and what I shou
 4. **Auth required:** No guest mode - pages redirect to `/login` if not authenticated
 5. **Data fetching:** Always use React Query hooks from `@/lib/hooks`, not direct Supabase calls in components
 6. **Herbalism is character-based:** All herbalism data (herbs, brewed items, recipes) is tied to `character_id`, not `user_id`. Forage/Brew pages require a character to exist.
+7. **React keys on mapped arrays:** Never use `item.id` as key if the same item can appear multiple times. Either deduplicate the array or use index-based keys with stable data.
 
 ## Key Patterns
 

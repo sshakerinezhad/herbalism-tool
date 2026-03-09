@@ -154,9 +154,19 @@ import { HerbRow, BrewedItemCard, ElementSummary } from '@/components/inventory'
 import { WeaponsTab, ItemsTab, EquipmentSection } from '@/components/inventory/equipment'
 import { HerbalismSection } from '@/components/inventory/herbalism'
 
+// Forage
+import { SetupPhase, ResultsPhase, BiomeCard } from '@/components/forage'
+import type { ForagedHerb } from '@/components/forage'
+
 // Character
 import { ArmorDiagram } from '@/components/ArmorDiagram'
 import { CoinPurse, WeaponSlots, QuickSlots, CharacterBanner } from '@/components/character'
+
+// Create-Character Wizard
+import { StepName, StepRace, StepBackground, StepClass, StepOrder } from '@/components/character/wizard'
+import { StepStats, StepSkills, StepVocation } from '@/components/character/wizard'
+import { StepEquipment, StepReview } from '@/components/character/wizard'
+import type { WizardStep, WizardData, StepProps } from '@/components/character/wizard'
 
 // Recipes
 import { RecipeCard } from '@/components/recipes'

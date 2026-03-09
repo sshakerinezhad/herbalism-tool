@@ -1,6 +1,8 @@
 # Changelog
 
-All notable changes to the herbalism-tool project.
+This folder contains lists of sprints and changes made in the past that have since been archived. they contain context on lessons, decisions, etc.
+
+All notable changes to the herbalism-tool project before migrating to the new changelog system
 
 ---
 

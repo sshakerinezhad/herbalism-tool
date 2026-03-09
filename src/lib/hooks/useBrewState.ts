@@ -113,7 +113,7 @@ export function useBrewState({ inventory, characterRecipes }: UseBrewStateParams
     selectedHerbQuantities.forEach((qty, itemId) => {
       const item = inventory.find((i) => i.id === itemId)
       if (item) {
-        for (let i = 0; i < qty; i++) herbs.push(item)
+        herbs.push(item)
       }
     })
     return herbs

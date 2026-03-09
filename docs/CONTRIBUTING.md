@@ -80,7 +80,19 @@ import { ELEMENT_SYMBOLS, FORAGING_DC } from '@/lib/constants'
 src/components/
 ├── brew/              # Brewing flow components
 ├── character/         # Character sheet components
+│   └── wizard/        # Create-character wizard steps
+│       ├── types.ts           # WizardStep, WizardData, StepProps
+│       ├── IdentitySteps.tsx  # Name, Race, Background, Class, Order
+│       ├── BuildSteps.tsx     # Stats, Skills, Vocation
+│       ├── FinalSteps.tsx     # Equipment, Review
+│       └── index.ts
 ├── elements/          # Element display (ElementBadge)
+├── forage/            # Forage page components
+│   ├── types.ts           # ForagedHerb
+│   ├── BiomeCard.tsx      # Biome selection card
+│   ├── SetupPhase.tsx     # Biome allocation + start button
+│   ├── ResultsPhase.tsx   # Results display + add to inventory
+│   └── index.ts
 ├── inventory/         # Inventory display
 │   ├── equipment/     # Weapons & items tabs
 │   ├── herbalism/     # Herbs & brewed tabs

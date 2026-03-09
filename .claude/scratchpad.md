@@ -1,51 +1,37 @@
-# Scorched Earth Cleanup — Complete
+# Post-Cleanup — Ready for PR
 
 **Branch:** `knights-of-belyar`
-**Feature:** `001-refactor-and-clean`
-**Status:** All 6 phases complete (35 tasks across setup, dead code removal, type consolidation, forage extraction, wizard extraction, documentation polish)
+**Status:** All cleanup work done + post-cleanup bug fix applied. Uncommitted changes ready to commit.
+**Last session:** 2026-03-09
 
-## Results Summary
+## This Session
 
-~1,200 lines of dead code removed, ~1,400 lines extracted into focused components. Two deleted modules (`inventory.ts`, `recipes.ts`), deprecated hooks/functions cleaned from `queries.ts`, `brewing.ts`, and `characterInventory.ts`. Two large pages broken into component directories. All documentation updated to reflect current state.
+1. **Fixed duplicate React keys bug** in `src/lib/hooks/useBrewState.ts:116`
+   - Removed `for` loop that pushed same `InventoryItem` multiple times into `selectedHerbs`
+   - Root cause: `key={item.id}` in `SelectedHerbsSummary` collided when qty > 1
+   - Quantity was already tracked by `selectedHerbQuantities` Map — duplication was unnecessary
+   - Build passes clean
 
-## Current Line Counts (post-cleanup)
+2. **Synced masterplan** — marked all phases complete, added Phase 5 for the bug fix
 
-| File | Before | After | Change |
-|------|--------|-------|--------|
-| `src/lib/inventory.ts` | 313 | DELETED | -313 |
-| `src/lib/recipes.ts` | 221 | DELETED | -221 |
-| `src/lib/brewing.ts` | 388 | 152 | -236 |
-| `src/lib/hooks/queries.ts` | 753 | 547 | -206 |
-| `src/lib/db/characterInventory.ts` | 579 | 371 | -208 |
-| `src/app/forage/page.tsx` | 713 | 363 | -350 (extracted to `src/components/forage/`) |
-| `src/app/create-character/page.tsx` | 1,104 | 446 | -658 (extracted to `src/components/character/wizard/`) |
+3. **Added CLAUDE.md gotcha #7** — React keys on mapped arrays
 
-## Extraction Structure
+## Uncommitted Changes
 
-```
-src/components/forage/
-├── types.ts          # ForagedHerb
-├── BiomeCard.tsx     # Biome selection card
-├── SetupPhase.tsx    # Biome allocation, session display, start button
-├── ResultsPhase.tsx  # Results display, herb cards, add-to-inventory
-└── index.ts          # Barrel export
+- `M .claude/scratchpad.md` — this file
+- `M .claude/masterplan.md` — marked complete, added Phase 5
+- `M CLAUDE.md` — added gotcha #7 (React keys)
+- `M docs/CONTRIBUTING.md` — updated component directory docs (from prior session)
+- `M docs/QUICKREF.md` — updated component directory docs (from prior session)
+- `M src/lib/hooks/useBrewState.ts` — the one-line bug fix
+- `D .specify/specs/001-refactor-and-clean/.progress-task-*.md` — stale progress files
+- `?? __verify__/` — generated test scripts
+- `?? bugs.md` — bug tracking notes
+- `?? .specify/memory/` and `.tasks.lock` — spec tooling artifacts
 
-src/components/character/wizard/
-├── types.ts          # WizardStep, WizardData, StepProps
-├── IdentitySteps.tsx # StepName, StepRace, StepBackground, StepClass, StepOrder
-├── BuildSteps.tsx    # StepStats, StepSkills, StepVocation
-├── FinalSteps.tsx    # StepEquipment, StepReview
-└── index.ts          # Barrel export
-```
+## Next Steps
 
-## Key Decisions Made
-
-1. `CharacterArmorData` canonical location: `src/lib/types.ts` (widest definition with `properties` + `notes`)
-2. Wizard steps: 3 themed files (identity/build/final), not 10 individual files
-3. Deprecated prefetches removed entirely (filled wrong caches, zero behavior change)
-
-## Established Patterns
-
-- **Extraction model:** `src/components/<feature>/` with `types.ts`, barrel `index.ts`
-- **Hook model:** `src/lib/hooks/use<Feature>State.ts` for complex state
-- **page.tsx role after extraction:** auth guards, data fetching, async mutations, orchestration/render
+- **Commit** the uncommitted changes
+- **Manual smoke test** brew page: select 2+ of same herb → no console error, quantity shows correctly
+- **PR to main** when ready — branch has ~30 commits of cleanup work
+- **Archive masterplan** to `changelog/` and reset for next feature (optional)

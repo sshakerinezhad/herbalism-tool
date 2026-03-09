@@ -42,7 +42,7 @@
 **Dependency**: Phase 1 complete.
 
 ### Step 2.1: Delete inventory module
-- [ ] T003 Fix stale import in `src/components/brew/HerbSelector.tsx` line 8: change `import { InventoryItem } from '@/lib/inventory'` → `import type { InventoryItem } from './types'`
+- [x] T003 Fix stale import in `src/components/brew/HerbSelector.tsx` line 8: change `import { InventoryItem } from '@/lib/inventory'` → `import type { InventoryItem } from './types'`
   - **Verify**: `bash __verify__/tests/t003_herbselector_import_fixed.sh`
 - [ ] T004 Delete `src/lib/inventory.ts` (313 lines)
   - **Verify**: `bash __verify__/tests/t004_inventory_deleted.sh`

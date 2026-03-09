@@ -5,7 +5,7 @@
  */
 
 import Link from 'next/link'
-import { InventoryItem } from '@/lib/inventory'
+import type { InventoryItem } from './types'
 import { 
   getElementSymbol, 
   getElementColors, 

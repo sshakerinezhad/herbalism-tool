@@ -66,7 +66,7 @@
   - **Verify**: `bash __verify__/tests/t010_brewing_slimmed.sh`
 
 ### Step 2.5: Remove dead DB functions
-- [ ] T011 Delete 4 unused "Clean" functions from `src/lib/db/characterInventory.ts`: `fetchCharacterWeaponsClean` (line 382), `addCharacterWeaponClean` (line 441), `fetchCharacterItemsClean` (line 492), `addCharacterItemClean` (line 537) (~200 lines)
+- [x] T011 Delete 4 unused "Clean" functions from `src/lib/db/characterInventory.ts`: `fetchCharacterWeaponsClean` (line 382), `addCharacterWeaponClean` (line 441), `fetchCharacterItemsClean` (line 492), `addCharacterItemClean` (line 537) (~200 lines)
   - **Verify**: `bash __verify__/tests/t011_dead_clean_functions_removed.sh`
 
 ### Phase 2 Verification

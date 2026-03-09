@@ -17,7 +17,7 @@ One-page cheat sheet for the herbalism-tool codebase.
 | `src/lib/constants.ts` | Shared constants (elements, DCs, classes, races, etc.) |
 | `src/lib/auth.tsx` | Auth context + provider |
 | `src/lib/profile.tsx` | Profile context + provider |
-| `src/lib/brewing.ts` | Brewing logic (element pools, pairing, potency) |
+| `src/lib/brewing.ts` | Brewing logic (pairing, potency, template rendering) |
 | `src/lib/dice.ts` | Dice rolling utilities |
 | `src/lib/database.types.ts` | Auto-generated Supabase types |
 
@@ -69,8 +69,6 @@ One-page cheat sheet for the herbalism-tool codebase.
 | `character_herbs` | Herb inventory (foraging) |
 | `character_brewed` | Crafted elixirs/bombs/oils |
 | `character_recipes` | Known brewing recipes |
-
-**Legacy (DEPRECATED):** `user_inventory`, `user_brewed`, `user_recipes` — do not use.
 
 ---
 
@@ -208,7 +206,6 @@ async function handleAdd() {
 4. **Type casting:** Use `as Type` for Supabase joins. Avoid `as unknown as Type` — it hides bugs (see CLAUDE.md gotcha #3)
 5. **RLS active:** ON for all character tables including herbalism
 6. **Sessions in localStorage:** Foraging sessions scoped to user ID, don't sync across devices
-7. **Legacy tables:** `user_inventory`, `user_brewed`, `user_recipes` are deprecated — use `character_*` tables
 
 ---
 

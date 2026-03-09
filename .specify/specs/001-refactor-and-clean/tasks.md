@@ -101,9 +101,9 @@
 **Maps to**: Spec Scenario 2 (FR-3.1)
 **Note**: Parallelizable with Phase 5 (US3) — different files, no shared dependencies.
 
-- [ ] T018 [P] [US2] Create `src/components/forage/types.ts` with `ForagedHerb` type (~10 lines)
+- [x] T018 [P] [US2] Create `src/components/forage/types.ts` with `ForagedHerb` type (~10 lines)
   - **Verify**: `bash __verify__/tests/t018_forage_types.sh`
-- [ ] T019 [P] [US2] Extract `src/components/forage/BiomeCard.tsx` — biome selection card component (~50 lines)
+- [x] T019 [P] [US2] Extract `src/components/forage/BiomeCard.tsx` — biome selection card component (~50 lines)
   - **Verify**: `bash __verify__/tests/t019_forage_biomecard.sh`
 - [ ] T020 [P] [US2] Extract `src/components/forage/SetupPhase.tsx` — biome allocation, session display, start button (~170 lines)
   - **Verify**: `bash __verify__/tests/t020_forage_setupphase.sh`

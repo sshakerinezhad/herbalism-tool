@@ -62,7 +62,7 @@
   - **Verify**: `bash __verify__/tests/t009_legacy_prefetch_removed_prefetchlink.sh`
 
 ### Step 2.4: Slim brewing module
-- [ ] T010 Remove deprecated functions from `src/lib/brewing.ts` (388 → ~140 lines) — retain ONLY: `PairedEffect`, `findRecipeForPair`, `canCombineEffects`, `parseTemplateVariables`, `fillTemplate`, `computeBrewedDescription`
+- [x] T010 Remove deprecated functions from `src/lib/brewing.ts` (388 → ~140 lines) — retain ONLY: `PairedEffect`, `findRecipeForPair`, `canCombineEffects`, `parseTemplateVariables`, `fillTemplate`, `computeBrewedDescription`
   - **Verify**: `bash __verify__/tests/t010_brewing_slimmed.sh`
 
 ### Step 2.5: Remove dead DB functions

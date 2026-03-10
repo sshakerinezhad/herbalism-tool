@@ -43,7 +43,7 @@ export function canCombineEffects(effects: PairedEffect[]): { valid: boolean; ty
     return {
       valid: false,
       type: null,
-      error: 'Cannot mix elixirs and bombs in one brew'
+      error: 'Cannot mix multiple types in one brew'
     }
   }
 

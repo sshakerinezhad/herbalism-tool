@@ -4,18 +4,25 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useProfile } from '@/lib/profile'
 import { useAuth } from '@/lib/auth'
-import { useCharacter, usePrefetch } from '@/lib/hooks'
+import { useCharacter, useCharacterSkills, usePrefetch } from '@/lib/hooks'
 import { LoadingState, PrefetchLink } from '@/components/ui'
+import { computeForagingModifier, computeBrewingModifier } from '@/lib/characterUtils'
 
 export default function Home() {
   const { profile, profileId, isLoaded } = useProfile()
   const { user, isLoading: authLoading, signOut } = useAuth()
   const router = useRouter()
   const { data: character } = useCharacter(user?.id ?? null)
+  const { data: characterSkills = [] } = useCharacterSkills(character?.id ?? null)
   const { prefetchForage } = usePrefetch()
 
   // Derive herbalist status from character vocation
   const isHerbalist = character?.vocation === 'herbalist'
+
+  // Computed modifiers (replaces stored profile values)
+  const natureSkill = characterSkills.find(s => s.skill.name.toLowerCase() === 'nature') ?? null
+  const foragingMod = character ? computeForagingModifier(character.int, character.level, natureSkill) : 0
+  const brewingMod = character ? computeBrewingModifier(character.int, character.level, isHerbalist) : 0
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -88,11 +95,11 @@ export default function Home() {
                 )}
               </span>
               <span className="text-zinc-400">
-                Foraging: <span className="text-zinc-100">{profile.foragingModifier >= 0 ? '+' : ''}{profile.foragingModifier}</span>
+                Foraging: <span className="text-zinc-100">{foragingMod >= 0 ? '+' : ''}{foragingMod}</span>
               </span>
               {isHerbalist && (
                 <span className="text-zinc-400">
-                  Brewing: <span className="text-zinc-100">{profile.brewingModifier >= 0 ? '+' : ''}{profile.brewingModifier}</span>
+                  Brewing: <span className="text-zinc-100">{brewingMod >= 0 ? '+' : ''}{brewingMod}</span>
                 </span>
               )}
             </div>

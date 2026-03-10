@@ -55,24 +55,12 @@ export type BiomeHerb = {
 
 /**
  * User profile data
- * 
- * NOTE: Field name mapping to database:
- * - name → username
- * - brewingModifier → herbalism_modifier (historical naming)
- * 
- * See src/lib/profiles.ts for the mapping implementation.
+ *
+ * Modifiers (foraging, brewing, max sessions) are now computed from
+ * character stats via characterUtils.ts instead of stored here.
  */
 export type Profile = {
-  /** Character name */
   name: string
-  /** Whether the character has the Herbalist vocation (can brew) */
-  isHerbalist: boolean
-  /** Bonus to foraging checks (Nature/Survival) */
-  foragingModifier: number
-  /** Bonus to brewing checks (maps to herbalism_modifier in DB) */
-  brewingModifier: number
-  /** Max foraging sessions per day (resets on long rest) */
-  maxForagingSessions: number
 }
 
 // ============ Foraging Related ============

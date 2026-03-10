@@ -11,10 +11,6 @@ import { Profile } from './types'
 // Default profile values for new users
 const DEFAULT_PROFILE: Profile = {
   name: '',
-  isHerbalist: false,
-  foragingModifier: 0,
-  brewingModifier: 0,
-  maxForagingSessions: 1,
 }
 
 /**
@@ -68,11 +64,6 @@ async function createProfile(id: string): Promise<{
     .insert({
       id,
       username: DEFAULT_PROFILE.name,
-      is_herbalist: DEFAULT_PROFILE.isHerbalist,
-      foraging_modifier: DEFAULT_PROFILE.foragingModifier,
-      // Note: DB column is "herbalism_modifier" but app uses "brewingModifier"
-      herbalism_modifier: DEFAULT_PROFILE.brewingModifier,
-      max_foraging_sessions: DEFAULT_PROFILE.maxForagingSessions,
     })
 
   if (error) {
@@ -101,13 +92,8 @@ export async function updateProfile(
   updates: Partial<Profile>
 ): Promise<{ error: string | null }> {
   const dbUpdates: Record<string, unknown> = {}
-  
+
   if (updates.name !== undefined) dbUpdates.username = updates.name
-  if (updates.isHerbalist !== undefined) dbUpdates.is_herbalist = updates.isHerbalist
-  if (updates.foragingModifier !== undefined) dbUpdates.foraging_modifier = updates.foragingModifier
-  // Note: DB column is "herbalism_modifier" but app uses "brewingModifier"
-  if (updates.brewingModifier !== undefined) dbUpdates.herbalism_modifier = updates.brewingModifier
-  if (updates.maxForagingSessions !== undefined) dbUpdates.max_foraging_sessions = updates.maxForagingSessions
 
   const { error } = await supabase
     .from('profiles')
@@ -130,17 +116,9 @@ export async function updateProfile(
  */
 function mapDatabaseToProfile(dbRow: {
   username: string
-  is_herbalist: boolean
-  foraging_modifier: number
-  herbalism_modifier: number
-  max_foraging_sessions: number
 }): Profile {
   return {
     name: dbRow.username || '',
-    isHerbalist: dbRow.is_herbalist ?? false,
-    foragingModifier: dbRow.foraging_modifier ?? 0,
-    brewingModifier: dbRow.herbalism_modifier ?? 0,
-    maxForagingSessions: dbRow.max_foraging_sessions ?? 1,
   }
 }
 

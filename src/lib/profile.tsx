@@ -10,10 +10,6 @@ export type { Profile }
 
 const DEFAULT_PROFILE: Profile = {
   name: '',
-  isHerbalist: false,
-  foragingModifier: 0,
-  brewingModifier: 0,
-  maxForagingSessions: 1,
 }
 
 type ProfileContextType = {

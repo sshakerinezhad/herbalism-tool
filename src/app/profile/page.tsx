@@ -46,6 +46,7 @@ import {
   getAbilityModifier,
   calculateMaxHP,
 } from '@/lib/constants'
+import { computeMaxForagingSessions, computeForagingModifier, computeBrewingModifier } from '@/lib/characterUtils'
 import type { Character, ArmorSlot, ArmorType, BrewedItem } from '@/lib/types'
 
 // Types imported from @/lib/hooks:
@@ -109,7 +110,7 @@ function calculateArmorClass(
 }
 
 export default function ProfilePage() {
-  const { profile, updateProfile, isLoaded, loadError, sessionsUsedToday, longRest } = useProfile()
+  const { profile, isLoaded, loadError, sessionsUsedToday, longRest } = useProfile()
   const { user, isLoading: authLoading, signOut } = useAuth()
   const router = useRouter()
   const { invalidateCharacterArmor, invalidateCharacter, invalidateWeaponSlots, invalidateQuickSlots } = useInvalidateQueries()
@@ -235,7 +236,6 @@ export default function ProfilePage() {
         user={user}
         // Herbalism props (only relevant if character is an herbalist)
         profile={profile}
-        updateProfile={updateProfile}
         isProfileLoaded={isLoaded}
         profileLoadError={loadError}
         sessionsUsedToday={sessionsUsedToday}
@@ -334,7 +334,6 @@ function CharacterView({
   onQuickSlotsChanged,
   user,
   profile,
-  updateProfile,
   isProfileLoaded,
   profileLoadError,
   sessionsUsedToday,
@@ -354,14 +353,7 @@ function CharacterView({
   onWeaponSlotsChanged: () => void
   onQuickSlotsChanged: () => void
   user: { email?: string }
-  profile: { 
-    name: string
-    isHerbalist: boolean
-    maxForagingSessions: number
-    foragingModifier: number
-    brewingModifier: number 
-  }
-  updateProfile: (updates: Partial<typeof profile>) => void
+  profile: { name: string }
   isProfileLoaded: boolean
   profileLoadError: string | null
   sessionsUsedToday: number
@@ -493,54 +485,37 @@ function CharacterView({
           )}
 
           <GrimoireCard className="space-y-4">
-            {/* Max Foraging Sessions */}
-            <div>
-              <label className="block text-sm font-medium text-vellum-100 mb-2">
-                Max Foraging Sessions Per Day
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={profile.maxForagingSessions}
-                onChange={(e) => updateProfile({ maxForagingSessions: Math.max(1, parseInt(e.target.value) || 1) })}
-                className="w-24 px-4 py-2 bg-grimoire-850 border border-sepia-700/50 rounded-lg text-vellum-100 focus:outline-none focus:border-emerald-600"
-              />
-              <p className="text-vellum-300 text-xs mt-1">
-                Equal to INT modifier (minimum 1). Resets on long rest.
-              </p>
+            {/* Max Foraging Sessions (computed) */}
+            <div className="flex justify-between items-center">
+              <span className="text-vellum-300">Max Foraging Sessions</span>
+              <span className="text-vellum-100 font-medium">{computeMaxForagingSessions(character.int)}</span>
             </div>
+            <p className="text-vellum-400 text-xs -mt-2">Based on INT modifier (minimum 1)</p>
 
-            {/* Foraging Modifier */}
-            <div>
-              <label className="block text-sm font-medium text-vellum-100 mb-2">
-                Foraging Modifier
-              </label>
-              <input
-                type="number"
-                value={profile.foragingModifier}
-                onChange={(e) => updateProfile({ foragingModifier: parseInt(e.target.value) || 0 })}
-                className="w-24 px-4 py-2 bg-grimoire-850 border border-sepia-700/50 rounded-lg text-vellum-100 focus:outline-none focus:border-emerald-600"
-              />
-              <p className="text-vellum-300 text-xs mt-1">
-                Nature or Survival bonus (whichever is higher)
-              </p>
+            {/* Foraging Modifier (computed) */}
+            <div className="flex justify-between items-center">
+              <span className="text-vellum-300">Foraging Modifier</span>
+              <span className="text-vellum-100 font-medium">
+                {(() => {
+                  const natureSkill = characterSkills.find(s => s.skill.name.toLowerCase() === 'nature') ?? null
+                  const mod = computeForagingModifier(character.int, character.level, natureSkill)
+                  return mod >= 0 ? `+${mod}` : mod
+                })()}
+              </span>
             </div>
+            <p className="text-vellum-400 text-xs -mt-2">INT + Nature proficiency (if any)</p>
 
-            {/* Brewing Modifier */}
-            <div>
-              <label className="block text-sm font-medium text-vellum-100 mb-2">
-                Brewing Modifier
-              </label>
-              <input
-                type="number"
-                value={profile.brewingModifier}
-                onChange={(e) => updateProfile({ brewingModifier: parseInt(e.target.value) || 0 })}
-                className="w-24 px-4 py-2 bg-grimoire-850 border border-sepia-700/50 rounded-lg text-vellum-100 focus:outline-none focus:border-emerald-600"
-              />
-              <p className="text-vellum-300 text-xs mt-1">
-                Herbalism check bonus for brewing
-              </p>
+            {/* Brewing Modifier (computed) */}
+            <div className="flex justify-between items-center">
+              <span className="text-vellum-300">Brewing Modifier</span>
+              <span className="text-vellum-100 font-medium">
+                {(() => {
+                  const mod = computeBrewingModifier(character.int, character.level, true)
+                  return mod >= 0 ? `+${mod}` : mod
+                })()}
+              </span>
             </div>
+            <p className="text-vellum-400 text-xs -mt-2">INT + proficiency bonus (Herbalist vocation)</p>
 
             {/* Long Rest */}
             {sessionsUsedToday > 0 && (

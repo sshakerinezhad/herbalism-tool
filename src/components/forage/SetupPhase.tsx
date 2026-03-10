@@ -13,7 +13,8 @@ import { Biome } from '@/lib/types'
 // ============ Types ============
 
 export type SetupPhaseProps = {
-  profile: { name: string; maxForagingSessions: number }
+  profile: { name: string }
+  maxForagingSessions: number
   biomes: Biome[]
   biomeAllocations: Record<number, number>
   sessionsRemaining: number
@@ -32,6 +33,7 @@ export type SetupPhaseProps = {
 export default function SetupPhase(props: SetupPhaseProps) {
   const {
     profile,
+    maxForagingSessions,
     biomes,
     biomeAllocations,
     sessionsRemaining,
@@ -66,7 +68,7 @@ export default function SetupPhase(props: SetupPhaseProps) {
                 <span className={sessionsRemaining === 0 ? 'text-red-400' : 'text-green-400'}>
                   {sessionsRemaining}
                 </span>
-                <span className="text-zinc-500">/{profile.maxForagingSessions}</span>
+                <span className="text-zinc-500">/{maxForagingSessions}</span>
               </div>
               <span className="text-zinc-500 text-sm">remaining today</span>
             </div>

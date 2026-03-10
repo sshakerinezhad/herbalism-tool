@@ -18,6 +18,7 @@ import { Herb, SessionResult, ForageState } from '@/lib/types'
 import { addCharacterHerbs, removeCharacterHerbs } from '@/lib/db/characterInventory'
 import { fetchBiomeHerbs } from '@/lib/db/biomes'
 import { FORAGING_DC } from '@/lib/constants'
+import { computeMaxForagingSessions } from '@/lib/characterUtils'
 import { PageLayout, ErrorDisplay, ForageSkeleton } from '@/components/ui'
 import { SetupPhase, ResultsPhase } from '@/components/forage'
 import type { ForagedHerb } from '@/components/forage'
@@ -56,7 +57,8 @@ export default function ForagePage() {
   const [removingAll, setRemovingAll] = useState(false)
 
   // Computed values
-  const sessionsRemaining = Math.max(0, profile.maxForagingSessions - sessionsUsedToday)
+  const maxForagingSessions = character ? computeMaxForagingSessions(character.int) : 1
+  const sessionsRemaining = Math.max(0, maxForagingSessions - sessionsUsedToday)
   const foragingMod = profile.foragingModifier
   const totalAllocated = Object.values(biomeAllocations).reduce((sum, n) => sum + n, 0)
   const canAllocateMore = totalAllocated < sessionsRemaining
@@ -317,6 +319,7 @@ export default function ForagePage() {
       {state.phase === 'setup' && (
         <SetupPhase
           profile={profile}
+          maxForagingSessions={maxForagingSessions}
           biomes={biomes}
           biomeAllocations={biomeAllocations}
           sessionsRemaining={sessionsRemaining}

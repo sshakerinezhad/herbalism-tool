@@ -10,7 +10,7 @@ You produce verification tests for a plan. You do NOT implement features.
 
 Read the current plan (`workplan.md`, `.speckit/tasks.md`, or whatever the user points you to). Read `scratchpad.md` for context.
 
-If `__verify__/` already exists, compare it to the current workplan. If the plan is unrelated to existing tests, wipe and start fresh. If the plan is an evolution of what's already there, keep tests that still apply, regenerate for changed or new steps, and delete tests for removed steps.
+If `__verify__/` already exists, **delete it entirely** before generating anything. Every run starts clean — no stale tests, no partial leftovers. Wipe first, then regenerate everything from the current plan.
 
 ## Process
 
@@ -18,9 +18,13 @@ If `__verify__/` already exists, compare it to the current workplan. If the plan
 
 Break the workplan into every individual atomic change. One change = one thing that can be independently verified. List them all.
 
+For each change also consider how it could break the existing system or problems that could arise.
+
 ### 2. Write Tests
 
 For each change, write a single runnable test that returns pass (exit 0) or fail (non-zero). No prose. No maybe. Binary.
+
+For each risk or problem that could rise from changes to the whole system also write tests in the same manor.
 
 If the correct test is obvious, write it. If you're unsure what "correct" looks like for a change, ask. Don't guess.
 

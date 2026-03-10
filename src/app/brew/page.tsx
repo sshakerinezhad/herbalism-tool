@@ -35,6 +35,7 @@ import type { CharacterHerb, CharacterRecipe } from '@/lib/types'
 import { Recipe } from '@/lib/types'
 import { rollD20 } from '@/lib/dice'
 import { BREWING_DC, MAX_HERBS_PER_BREW } from '@/lib/constants'
+import { computeBrewingModifier } from '@/lib/characterUtils'
 import { PageLayout, ErrorDisplay, BrewSkeleton } from '@/components/ui'
 import {
   HerbSelector,
@@ -155,7 +156,7 @@ export default function BrewPage() {
     if (!characterId) return
 
     const roll = rollD20()
-    const total = roll + profile.brewingModifier
+    const total = roll + brewingMod
     const success = total >= BREWING_DC
     const successCount = success ? 1 : 0
 
@@ -230,7 +231,7 @@ export default function BrewPage() {
     if (batch === 1) {
       // Single brew: roll dice, then atomically brew
       const roll = rollD20()
-      const total = roll + profile.brewingModifier
+      const total = roll + brewingMod
       const success = total >= BREWING_DC
       const successCount = success ? 1 : 0
 
@@ -265,7 +266,7 @@ export default function BrewPage() {
 
     for (let i = 0; i < batch; i++) {
       const roll = rollD20()
-      const total = roll + profile.brewingModifier
+      const total = roll + brewingMod
       const success = total >= BREWING_DC
 
       results.push({ success, roll, total })
@@ -343,11 +344,14 @@ export default function BrewPage() {
     )
   }
 
+  // Computed brewing modifier (character is guaranteed non-null and herbalist here)
+  const brewingMod = computeBrewingModifier(character.int, character.level, true)
+
   return (
     <PageLayout maxWidth="max-w-3xl">
       <h1 className="text-3xl font-bold mb-1">⚗️ Brew</h1>
       <p className="text-zinc-500 text-sm mb-4">
-        Brewing modifier: {profile.brewingModifier >= 0 ? '+' : ''}{profile.brewingModifier}
+        Brewing modifier: {brewingMod >= 0 ? '+' : ''}{brewingMod}
       </p>
 
       {/* Mode Toggle */}
@@ -536,7 +540,7 @@ export default function BrewPage() {
           success={phase.success}
           roll={phase.roll}
           total={phase.total}
-          brewingMod={profile.brewingModifier}
+          brewingMod={brewingMod}
           type={phase.type}
           description={phase.description}
           onReset={reset}
@@ -547,7 +551,7 @@ export default function BrewPage() {
       {phase.phase === 'batch-result' && (
         <BatchResultPhase
           results={phase.results}
-          brewingMod={profile.brewingModifier}
+          brewingMod={brewingMod}
           type={phase.type}
           description={phase.description}
           successCount={phase.successCount}

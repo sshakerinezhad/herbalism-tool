@@ -12,13 +12,13 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useProfile } from '@/lib/profile'
 import { useAuth } from '@/lib/auth'
-import { useBiomes, useInvalidateQueries, useCharacter } from '@/lib/hooks'
+import { useBiomes, useInvalidateQueries, useCharacter, useCharacterSkills } from '@/lib/hooks'
 import { rollD20, rollHerbQuantity, weightedRandomSelect } from '@/lib/dice'
 import { Herb, SessionResult, ForageState } from '@/lib/types'
 import { addCharacterHerbs, removeCharacterHerbs } from '@/lib/db/characterInventory'
 import { fetchBiomeHerbs } from '@/lib/db/biomes'
 import { FORAGING_DC } from '@/lib/constants'
-import { computeMaxForagingSessions } from '@/lib/characterUtils'
+import { computeMaxForagingSessions, computeForagingModifier } from '@/lib/characterUtils'
 import { PageLayout, ErrorDisplay, ForageSkeleton } from '@/components/ui'
 import { SetupPhase, ResultsPhase } from '@/components/forage'
 import type { ForagedHerb } from '@/components/forage'
@@ -41,6 +41,9 @@ export default function ForagePage() {
   const { data: character, isLoading: characterLoading } = useCharacter(user?.id ?? null)
   const characterId = character?.id ?? null
   
+  // Character skills (for computing foraging modifier from Nature proficiency)
+  const { data: characterSkills = [], isLoading: skillsLoading } = useCharacterSkills(character?.id ?? null)
+
   // React Query handles biome data fetching and caching
   const { data: biomes = [], isLoading: biomesLoading, error: biomesError } = useBiomes()
   
@@ -59,7 +62,8 @@ export default function ForagePage() {
   // Computed values
   const maxForagingSessions = character ? computeMaxForagingSessions(character.int) : 1
   const sessionsRemaining = Math.max(0, maxForagingSessions - sessionsUsedToday)
-  const foragingMod = profile.foragingModifier
+  const natureSkill = characterSkills.find(s => s.skill.name.toLowerCase() === 'nature') ?? null
+  const foragingMod = character ? computeForagingModifier(character.int, character.level, natureSkill) : 0
   const totalAllocated = Object.values(biomeAllocations).reduce((sum, n) => sum + n, 0)
   const canAllocateMore = totalAllocated < sessionsRemaining
   const error = biomesError?.message || mutationError
@@ -280,7 +284,7 @@ export default function ForagePage() {
   const remainingHerbs = foragedHerbs.filter(h => !h.removed)
   const removedCount = foragedHerbs.filter(h => h.removed).length
 
-  if (biomesLoading || !profileLoaded || authLoading || characterLoading) {
+  if (biomesLoading || !profileLoaded || authLoading || characterLoading || skillsLoading) {
     return <ForageSkeleton />
   }
 

@@ -9,11 +9,13 @@
  */
 
 import { useState, useMemo } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import type { CharacterHerb, CharacterBrewedItem } from '@/lib/types'
 import {
   removeCharacterHerbs,
   consumeCharacterBrewedItem,
 } from '@/lib/db/characterInventory'
+import { queryKeys } from '@/lib/hooks/queries'
 import { getPrimaryElement, ELEMENT_ORDER, RARITY_ORDER } from '@/lib/constants'
 import { ElementSummary } from '@/components/inventory'
 import type { ViewTab, SortMode, BrewedTypeFilter } from '@/components/inventory/types'
@@ -39,6 +41,8 @@ export function HerbalismSection({
   onBrewedChanged,
   setError,
 }: HerbalismSectionProps) {
+  const queryClient = useQueryClient()
+
   // View state
   const [viewTab, setViewTab] = useState<ViewTab>('herbs')
   const [sortMode, setSortMode] = useState<SortMode>('element')
@@ -75,6 +79,17 @@ export function HerbalismSection({
     if (removeError) {
       setError(removeError)
     } else {
+      if (characterId) {
+        queryClient.setQueryData(
+          queryKeys.characterHerbs(characterId),
+          (old: CharacterHerb[] | undefined) => {
+            if (!old) return old
+            return old
+              .map(h => h.herb_id === herbId ? { ...h, quantity: h.quantity - 1 } : h)
+              .filter(h => h.quantity > 0)
+          }
+        )
+      }
       onHerbsChanged()
     }
   }
@@ -93,6 +108,15 @@ export function HerbalismSection({
     if (removeError) {
       setError(removeError)
     } else {
+      if (characterId) {
+        queryClient.setQueryData(
+          queryKeys.characterHerbs(characterId),
+          (old: CharacterHerb[] | undefined) => {
+            if (!old) return old
+            return old.filter(h => h.herb_id !== herbId)
+          }
+        )
+      }
       onHerbsChanged()
     }
   }

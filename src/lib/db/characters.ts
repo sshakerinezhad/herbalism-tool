@@ -1053,6 +1053,10 @@ export async function addWeaponFromTemplate(
       weapon_type: template.category,
       damage_dice: template.damage_dice,
       damage_type: template.damage_type,
+      properties: template.properties || [],
+      range_normal: template.range_normal || null,
+      range_long: template.range_long || null,
+      versatile_dice: template.versatile_dice || null,
       is_magical: options?.isMagical || false,
       is_two_handed: template.properties?.includes('two-handed') || false,
       notes: options?.notes || template.description,
@@ -1130,6 +1134,33 @@ export async function deleteCharacterWeapon(weaponId: string): Promise<{
     return { error: error.message }
   }
 
+  return { error: null }
+}
+
+/**
+ * Update a character weapon's fields
+ */
+export async function updateCharacterWeapon(
+  weaponId: string,
+  updates: {
+    name?: string
+    damage_dice?: string | null
+    damage_type?: string | null
+    weapon_type?: string | null
+    properties?: string[]
+    range_normal?: number | null
+    range_long?: number | null
+    is_two_handed?: boolean
+    is_magical?: boolean
+    notes?: string | null
+  }
+): Promise<{ error: string | null }> {
+  const { error } = await supabase
+    .from('character_weapons')
+    .update(updates)
+    .eq('id', weaponId)
+
+  if (error) return { error: error.message }
   return { error: null }
 }
 

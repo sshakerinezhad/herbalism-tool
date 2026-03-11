@@ -203,7 +203,7 @@ export function WeaponSlotCard({
         isMagical: weapon.is_magical,
         isTwoHanded: weapon.is_two_handed,
         notes: weapon.notes ?? undefined,
-        properties: weapon.properties ?? undefined,
+        properties: (weapon.properties as string[] | Record<string, unknown>) ?? undefined,
         category: weapon.weapon_type ?? 'weapon',
       }}
       clickOnly={editMode}

@@ -240,12 +240,15 @@ export type CharacterWeapon = {
   material: string
   damage_dice: string | null
   damage_type: string | null
-  properties: Record<string, unknown> | null
+  properties: string[] | null
   attachments: Record<string, unknown> | null
   is_magical: boolean
   is_equipped: boolean
   is_two_handed: boolean
   notes: string | null
+  range_normal: number | null
+  range_long: number | null
+  versatile_dice: string | null
   // Template references (new architecture)
   template_id: number | null
   material_id: number | null

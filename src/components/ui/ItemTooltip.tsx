@@ -32,7 +32,7 @@ interface ItemDetails {
   ammoType?: string
   notes?: string
   description?: string
-  properties?: Record<string, unknown>
+  properties?: Record<string, unknown> | string[]
 }
 
 interface ItemTooltipProps {
@@ -293,18 +293,28 @@ function DetailModal({ name, icon, details, onClose }: DetailModalProps) {
           )}
 
           {/* Properties */}
-          {details.properties && Object.keys(details.properties).length > 0 && (
+          {details.properties && (Array.isArray(details.properties) ? details.properties.length > 0 : Object.keys(details.properties).length > 0) && (
             <div>
               <h4 className="text-xs font-medium text-vellum-400 uppercase tracking-wide mb-2">
                 Properties
               </h4>
               <div className="bg-grimoire-900 rounded-lg p-3 text-sm border border-sepia-800">
-                {Object.entries(details.properties).map(([key, value]) => (
-                  <div key={key} className="flex justify-between py-1">
-                    <span className="text-vellum-400 capitalize">{key.replace(/_/g, ' ')}</span>
-                    <span className="text-vellum-200">{String(value)}</span>
+                {Array.isArray(details.properties) ? (
+                  <div className="flex flex-wrap gap-2">
+                    {details.properties.map((prop, i) => (
+                      <span key={i} className="text-vellum-200 capitalize bg-grimoire-800 px-2 py-0.5 rounded">
+                        {prop}
+                      </span>
+                    ))}
                   </div>
-                ))}
+                ) : (
+                  Object.entries(details.properties).map(([key, value]) => (
+                    <div key={key} className="flex justify-between py-1">
+                      <span className="text-vellum-400 capitalize">{key.replace(/_/g, ' ')}</span>
+                      <span className="text-vellum-200">{String(value)}</span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}

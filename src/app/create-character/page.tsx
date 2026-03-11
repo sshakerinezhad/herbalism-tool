@@ -12,7 +12,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
-import { useArmorSlots, useSkills } from '@/lib/hooks'
+import { useArmorSlots, useSkills, useInvalidateQueries } from '@/lib/hooks'
 import { LoadingState, WarningDisplay } from '@/components/ui'
 import {
   createCharacter,
@@ -66,6 +66,7 @@ const DEFAULT_STATS: CharacterStats = {
 export default function CreateCharacterPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
+  const { invalidateCharacter } = useInvalidateQueries()
 
   // Reference data
   const { data: skills = [], isLoading: skillsLoading } = useSkills()
@@ -262,6 +263,7 @@ export default function CreateCharacterPage() {
     }
 
     // Success! Redirect to profile to see the new character
+    invalidateCharacter(user.id)
     router.push('/profile')
   }
 
@@ -431,6 +433,7 @@ export default function CreateCharacterPage() {
               <button
                 onClick={() => {
                   setWarnings([])
+                  invalidateCharacter(user!.id)
                   router.push('/profile')
                 }}
                 className="px-6 py-3 bg-emerald-700 hover:bg-emerald-600 rounded-lg font-medium transition-colors"

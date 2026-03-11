@@ -60,6 +60,7 @@ When things break: after fixing, briefly explain why it happened and what I shou
 5. **Data fetching:** Always use React Query hooks from `@/lib/hooks`, not direct Supabase calls in components
 6. **Herbalism is character-based:** All herbalism data (herbs, brewed items, recipes) is tied to `character_id`, not `user_id`. Forage/Brew pages require a character to exist.
 7. **React keys on mapped arrays:** Never use `item.id` as key if the same item can appear multiple times. Either deduplicate the array or use index-based keys with stable data.
+8. **Supabase is linked locally:** `npx supabase db push` and `npm run db:types` both work. Always regenerate types after pushing migrations (`npm run db:types`).
 
 ## Key Patterns
 

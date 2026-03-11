@@ -40,16 +40,22 @@ User manually tested and found 4 issues. All triaged — **no regressions from G
 - Task 17: `WeaponCard` now reads `weapon.properties` directly (not `weapon.template?.properties`), shows range display, has edit button with `onEdit` prop. Added range helper text to `AddWeaponModal`.
 - Task 18: Created `EditWeaponModal` — pre-filled form for all weapon fields, comma-separated properties editing, calls `updateCharacterWeapon()`. Exported from barrel. Wired into `WeaponsTab` with `editingWeapon` state.
 
+### Post-Wave 1 Fix Session (2026-03-10)
+- Linked Supabase project locally (`supabase link`)
+- Pushed migration 011 (`db:push`) — `range_normal`, `range_long`, `versatile_dice` columns now live
+- Regenerated `database.types.ts` from live schema (replaces manual edits)
+- Wired up `versatile_dice` fully: `addCustomWeapon()`, `updateCharacterWeapon()`, `EditWeaponModal`, `AddWeaponModal` custom mode, `WeaponCard` display
+- User confirmed weapon adding works
+
 ## Current state
 
-- **ALL GROUPS COMPLETE** (A through E) — Wave 1 fully implemented
-- **All 18 tests pass, all 5 checkpoints pass**
+- **Wave 1 fully complete and deployed** — all 13 bugs fixed, weapon editing added, migration live
 - Build passes cleanly, no type errors
 
 ## Key context for next agent
 
-- **Wave 1 is done.** All 13 bugs fixed + weapon editing feature added.
-- **Migration 011 needs `db:push`** on deploy — Supabase wasn't linked locally, so types were manually updated
+- **Wave 1 is done.** Ready for Wave 2 (design system + system overhauls).
+- **Supabase is linked locally** — `db:push` and `db:types` both work
 - **Profile type is `{ name: string }`** — all modifiers computed from `characterUtils.ts`
 - **Weapons are now self-contained** — template data copied at creation time, no joins needed for display
 - **`updateCharacterWeapon()`** exists in `src/lib/db/characters.ts` for editing weapons
@@ -58,6 +64,5 @@ User manually tested and found 4 issues. All triaged — **no regressions from G
 
 ## Next steps
 
-1. Deploy migration 011 (`npm run db:push` on linked environment)
-2. User testing of Groups C-E
-3. Brainstorm Wave 2 (design system)
+1. User testing of Groups C-E
+2. Brainstorm Wave 2 (design system)

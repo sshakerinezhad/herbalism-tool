@@ -29,13 +29,11 @@ The codebase just completed a major cleanup ("Scorched Earth") and is structural
 
 ---
 
-## Wave 1: Stabilization (Bug Fixes)
+## Wave 1: Stabilization (Bug Fixes) ✅ COMPLETE
 
-**Goal:** Make everything that exists work correctly. No visual changes — just fix broken behavior.
+**Completed 2026-03-10.** All 13 bugs fixed + weapon editing feature. Migration 011 pushed. Supabase project linked locally. Deferred: Brewing modifier should check Herbalist Tools proficiency, not vocation.
 
-Each bug gets its own workplan step with verification.
-
-### Herbalism Cluster
+### Herbalism Cluster ✅
 | # | Bug | Key Files |
 |---|-----|-----------|
 | 1 | Brew option not available for herbalists | `src/app/brew/page.tsx`, profile/vocation checks |
@@ -46,7 +44,7 @@ Each bug gets its own workplan step with verification.
 | 6 | Max foraging sessions → should equal INT modifier (min 1) | Foraging session logic, profile settings |
 | 7 | Add herbs without foraging (DM awards, trades, purchases) | New UI + `addCharacterHerbs()` integration |
 
-### Character Cluster
+### Character Cluster ✅
 | # | Bug | Key Files |
 |---|-----|-----------|
 | 8 | Fresh profile says "make new knight" (stale state) | `src/app/page.tsx` or profile page, cache/state check |
@@ -54,7 +52,7 @@ Each bug gets its own workplan step with verification.
 | 10 | Edit profile save → should navigate back to profile | `src/app/edit-character/page.tsx`, router.push |
 | 11 | Character identity formatting (like_native_Knight) | Display formatting in profile/character components |
 
-### Weapon Cluster
+### Weapon Cluster ✅
 | # | Bug | Key Files |
 |---|-----|-----------|
 | 12 | Custom weapon: `range_long` column missing from schema | DB migration or schema, `character_weapons` table |

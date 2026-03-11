@@ -138,6 +138,23 @@ export default function EditCharacterPage() {
     }
   }, [authLoading, user, router])
 
+  // Helper: adjust HP when max HP changes (CON or custom modifier)
+  function adjustHpForMaxChange(
+    currentForm: EditableFields,
+    newConScore: number,
+    newCustomMod: number
+  ): number {
+    const oldMax = calculateMaxHP(currentForm.stats.con, currentForm.hp_custom_modifier)
+    const newMax = calculateMaxHP(newConScore, newCustomMod)
+
+    if (newMax > oldMax) {
+      return newMax
+    } else if (currentForm.hp_current > newMax) {
+      return newMax
+    }
+    return currentForm.hp_current
+  }
+
   // Update form field
   function updateField<K extends keyof EditableFields>(
     field: K,
@@ -147,16 +164,31 @@ export default function EditCharacterPage() {
     setForm({ ...form, [field]: value })
   }
 
-  // Update stat
+  // Update stat (CON changes also adjust HP)
   function updateStat(stat: keyof CharacterStats, value: number) {
     if (!form) return
-    setForm({
-      ...form,
-      stats: {
-        ...form.stats,
-        [stat]: Math.max(1, Math.min(30, value)),
-      },
-    })
+    const clamped = Math.max(1, Math.min(30, value))
+
+    if (stat === 'con') {
+      const newHp = adjustHpForMaxChange(form, clamped, form.hp_custom_modifier)
+      setForm({
+        ...form,
+        stats: { ...form.stats, con: clamped },
+        hp_current: newHp,
+      })
+    } else {
+      setForm({
+        ...form,
+        stats: { ...form.stats, [stat]: clamped },
+      })
+    }
+  }
+
+  // Update HP custom modifier (also adjusts current HP)
+  function updateHpCustomModifier(value: number) {
+    if (!form) return
+    const newHp = adjustHpForMaxChange(form, form.stats.con, value)
+    setForm({ ...form, hp_custom_modifier: value, hp_current: newHp })
   }
 
   // Set armor for a slot
@@ -205,7 +237,7 @@ export default function EditCharacterPage() {
 
   // Save changes
   async function handleSave() {
-    if (!character || !form) return
+    if (!character || !form || !user) return
 
     setSaving(true)
     setSaveError(null)
@@ -451,7 +483,7 @@ export default function EditCharacterPage() {
                 <input
                   type="number"
                   value={form.hp_custom_modifier}
-                  onChange={(e) => updateField('hp_custom_modifier', parseInt(e.target.value) || 0)}
+                  onChange={(e) => updateHpCustomModifier(parseInt(e.target.value) || 0)}
                   className="w-24 px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-zinc-100 text-center focus:outline-none focus:border-emerald-600"
                 />
                 <p className="text-xs text-zinc-500 mt-1">

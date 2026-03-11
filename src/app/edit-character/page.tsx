@@ -30,13 +30,15 @@ import {
   ABILITY_NAMES,
   getAbilityModifier,
   calculateMaxHP,
+  VOCATIONS,
 } from '@/lib/constants'
-import type { Character, CharacterStats, ArmorSlot, ArmorType, CharacterArmorData } from '@/lib/types'
+import type { Character, CharacterStats, ArmorSlot, ArmorType, CharacterArmorData, Vocation } from '@/lib/types'
 
 type EditableFields = {
   name: string
   appearance: string
   level: number
+  vocation: Vocation | null
   stats: CharacterStats
   hp_current: number
   hp_custom_modifier: number
@@ -99,6 +101,7 @@ export default function EditCharacterPage() {
         name: data.name,
         appearance: data.appearance || '',
         level: data.level,
+        vocation: data.vocation,
         stats: {
           str: data.str,
           dex: data.dex,
@@ -211,6 +214,7 @@ export default function EditCharacterPage() {
       name: form.name,
       appearance: form.appearance || null,
       level: form.level,
+      vocation: form.vocation,
       str: form.stats.str,
       dex: form.stats.dex,
       con: form.stats.con,
@@ -339,6 +343,21 @@ export default function EditCharacterPage() {
                   onChange={(e) => updateField('level', parseInt(e.target.value) || 1)}
                   className="w-24 px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-zinc-100 text-center focus:outline-none focus:border-emerald-600"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-2">Vocation</label>
+                <select
+                  value={form.vocation || ''}
+                  onChange={(e) => updateField('vocation', (e.target.value || null) as Vocation | null)}
+                  className="w-full max-w-md px-4 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-zinc-100 focus:outline-none focus:border-emerald-600"
+                >
+                  <option value="">None</option>
+                  {Object.entries(VOCATIONS).map(([key, voc]) => (
+                    <option key={key} value={key}>{voc.name}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-zinc-500 mt-1">Herbalist vocation enables brewing.</p>
               </div>
 
               <div>
@@ -608,10 +627,6 @@ export default function EditCharacterPage() {
               <div>
                 <span className="text-zinc-500">Order:</span>{' '}
                 <span className="text-zinc-300">{character.knight_order}</span>
-              </div>
-              <div>
-                <span className="text-zinc-500">Vocation:</span>{' '}
-                <span className="text-zinc-300">{character.vocation || character.feat}</span>
               </div>
             </div>
           </section>

@@ -33,7 +33,7 @@ import { calculateMaxHP, calculateMaxHitDice } from '../constants'
  * Aligned with types.ts Character (line 373) and edit-character/page.tsx payload (line 229)
  */
 type CharacterUpdate = Partial<Pick<Character,
-  | 'name' | 'appearance' | 'level'
+  | 'name' | 'appearance' | 'level' | 'vocation'
   | 'str' | 'dex' | 'con' | 'int' | 'wis' | 'cha' | 'hon'  // Stats
   | 'hp_current' | 'hp_custom_modifier'                     // HP
   | 'platinum' | 'gold' | 'silver' | 'copper'               // Money

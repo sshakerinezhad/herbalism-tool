@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { deleteCharacterWeapon } from '@/lib/db/characters'
 import type { CharacterWeapon } from '@/lib/types'
 import { WeaponCard } from './WeaponCard'
+import { EditWeaponModal } from '../modals'
 
 interface WeaponsTabProps {
   weapons: CharacterWeapon[]
@@ -98,6 +99,17 @@ export function WeaponsTab({
             <p className="text-center text-zinc-500 py-4">No weapons match your search</p>
           )}
         </>
+      )}
+      {editingWeapon && (
+        <EditWeaponModal
+          weapon={editingWeapon}
+          onClose={() => setEditingWeapon(null)}
+          onSuccess={() => {
+            setEditingWeapon(null)
+            onWeaponDeleted()
+          }}
+          setError={setError}
+        />
       )}
     </div>
   )

@@ -7,3 +7,6 @@ export type { AddWeaponModalProps } from './AddWeaponModal'
 
 export { AddItemModal } from './AddItemModal'
 export type { AddItemModalProps } from './AddItemModal'
+
+export { EditWeaponModal } from './EditWeaponModal'
+export type { EditWeaponModalProps } from './EditWeaponModal'

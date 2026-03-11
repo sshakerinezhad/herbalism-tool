@@ -4,7 +4,7 @@
  * Allows users to pair elements to create effects.
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Recipe } from '@/lib/types'
 import { PairedEffect, findRecipeForPair } from '@/lib/brewing'
 import { getElementSymbol } from '@/lib/constants'
@@ -33,17 +33,22 @@ export function PairingPhase({
   onProceed,
   onBack
 }: PairingPhaseProps) {
-  const [selectedFirst, setSelectedFirst] = useState<string | null>(null)
+  const [selectedFirstIdx, setSelectedFirstIdx] = useState<number | null>(null)
 
   const remainingArray = Array.from(remainingElements.entries())
     .flatMap(([el, count]) => Array(count).fill(el))
 
-  function handleElementClick(element: string) {
-    if (selectedFirst === null) {
-      setSelectedFirst(element)
+  // Reset selection when elements change (prevents stale index after pair add/remove)
+  useEffect(() => { setSelectedFirstIdx(null) }, [remainingElements])
+
+  function handleElementClick(idx: number) {
+    if (selectedFirstIdx === null) {
+      setSelectedFirstIdx(idx)
+    } else if (selectedFirstIdx === idx) {
+      setSelectedFirstIdx(null)  // deselect
     } else {
-      onAddPair(selectedFirst, element)
-      setSelectedFirst(null)
+      onAddPair(remainingArray[selectedFirstIdx], remainingArray[idx])
+      setSelectedFirstIdx(null)
     }
   }
 
@@ -109,9 +114,9 @@ export function PairingPhase({
       <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
         <h2 className="font-semibold mb-3">
           Available Elements
-          {selectedFirst && (
+          {selectedFirstIdx !== null && (
             <span className="text-purple-400 font-normal ml-2">
-              — Select second element for {getElementSymbol(selectedFirst)}
+              — Select second element for {getElementSymbol(remainingArray[selectedFirstIdx])}
             </span>
           )}
         </h2>
@@ -122,18 +127,18 @@ export function PairingPhase({
           <div className="flex flex-wrap gap-2">
             {remainingArray.map((el, idx) => {
               let previewRecipe: Recipe | null = null
-              if (selectedFirst) {
-                previewRecipe = findRecipeForPair(recipes, selectedFirst, el)
+              if (selectedFirstIdx !== null) {
+                previewRecipe = findRecipeForPair(recipes, remainingArray[selectedFirstIdx], el)
               }
-              
+
               return (
                 <button
                   key={idx}
-                  onClick={() => handleElementClick(el)}
+                  onClick={() => handleElementClick(idx)}
                   className={`w-12 h-12 rounded-lg text-2xl flex items-center justify-center transition-all ${
-                    selectedFirst === el && idx === remainingArray.indexOf(selectedFirst)
+                    selectedFirstIdx === idx
                       ? 'bg-purple-700 ring-2 ring-purple-400'
-                      : selectedFirst
+                      : selectedFirstIdx !== null
                         ? 'bg-zinc-700 hover:bg-purple-700/50'
                         : 'bg-zinc-700 hover:bg-zinc-600'
                   }`}
@@ -146,9 +151,9 @@ export function PairingPhase({
           </div>
         )}
         
-        {selectedFirst && (
+        {selectedFirstIdx !== null && (
           <button
-            onClick={() => setSelectedFirst(null)}
+            onClick={() => setSelectedFirstIdx(null)}
             className="mt-3 text-zinc-400 hover:text-zinc-200 text-sm"
           >
             Cancel selection

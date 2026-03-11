@@ -536,8 +536,11 @@ export type Database = {
           name: string
           notes: string | null
           properties: Json | null
+          range_long: number | null
+          range_normal: number | null
           template_id: number | null
           updated_at: string | null
+          versatile_dice: string | null
           weapon_type: string | null
         }
         Insert: {
@@ -555,8 +558,11 @@ export type Database = {
           name: string
           notes?: string | null
           properties?: Json | null
+          range_long?: number | null
+          range_normal?: number | null
           template_id?: number | null
           updated_at?: string | null
+          versatile_dice?: string | null
           weapon_type?: string | null
         }
         Update: {
@@ -574,8 +580,11 @@ export type Database = {
           name?: string
           notes?: string | null
           properties?: Json | null
+          range_long?: number | null
+          range_normal?: number | null
           template_id?: number | null
           updated_at?: string | null
+          versatile_dice?: string | null
           weapon_type?: string | null
         }
         Relationships: [

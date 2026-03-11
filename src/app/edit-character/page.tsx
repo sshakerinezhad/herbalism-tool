@@ -17,7 +17,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
-import { useArmorSlots } from '@/lib/hooks'
+import { useArmorSlots, useInvalidateQueries } from '@/lib/hooks'
 import { LoadingState, ErrorDisplay } from '@/components/ui'
 import {
   fetchCharacter,
@@ -55,13 +55,13 @@ type EditableFields = {
 export default function EditCharacterPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
+  const { invalidateCharacter } = useInvalidateQueries()
 
   const [character, setCharacter] = useState<Character | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
-  const [saveSuccess, setSaveSuccess] = useState(false)
 
   // Editable form state
   const [form, setForm] = useState<EditableFields | null>(null)
@@ -145,7 +145,6 @@ export default function EditCharacterPage() {
   ) {
     if (!form) return
     setForm({ ...form, [field]: value })
-    setSaveSuccess(false)
   }
 
   // Update stat
@@ -158,7 +157,6 @@ export default function EditCharacterPage() {
         [stat]: Math.max(1, Math.min(30, value)),
       },
     })
-    setSaveSuccess(false)
   }
 
   // Set armor for a slot
@@ -211,7 +209,6 @@ export default function EditCharacterPage() {
 
     setSaving(true)
     setSaveError(null)
-    setSaveSuccess(false)
 
     // Build update object for the character table
     const updates = {
@@ -242,10 +239,8 @@ export default function EditCharacterPage() {
       return
     }
 
-    // Update local state
-    setCharacter({ ...character, ...updates })
-    setSaveSuccess(true)
-    setSaving(false)
+    invalidateCharacter(user.id)
+    router.push('/profile')
   }
 
   // Loading states
@@ -308,12 +303,6 @@ export default function EditCharacterPage() {
         {saveError && (
           <div className="mb-6">
             <ErrorDisplay message={saveError} />
-          </div>
-        )}
-
-        {saveSuccess && (
-          <div className="mb-6 p-4 bg-emerald-900/30 border border-emerald-700 rounded-lg">
-            <p className="text-emerald-300">✓ Changes saved successfully!</p>
           </div>
         )}
 

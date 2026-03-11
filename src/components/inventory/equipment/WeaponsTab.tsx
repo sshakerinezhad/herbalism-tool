@@ -22,6 +22,7 @@ export function WeaponsTab({
 }: WeaponsTabProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [editingWeapon, setEditingWeapon] = useState<CharacterWeapon | null>(null)
 
   const filteredWeapons = useMemo(() => {
     if (!searchQuery.trim()) return weapons
@@ -87,6 +88,7 @@ export function WeaponsTab({
                 key={weapon.id}
                 weapon={weapon}
                 isDeleting={deletingId === weapon.id}
+                onEdit={() => setEditingWeapon(weapon)}
                 onDelete={() => handleDelete(weapon.id)}
               />
             ))}

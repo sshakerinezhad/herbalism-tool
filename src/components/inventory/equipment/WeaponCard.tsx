@@ -7,10 +7,11 @@ import { getCategoryIcon } from '../types'
 interface WeaponCardProps {
   weapon: CharacterWeapon
   isDeleting: boolean
+  onEdit: () => void
   onDelete: () => void
 }
 
-export function WeaponCard({ weapon, isDeleting, onDelete }: WeaponCardProps) {
+export function WeaponCard({ weapon, isDeleting, onEdit, onDelete }: WeaponCardProps) {
   const [showConfirm, setShowConfirm] = useState(false)
 
   const materialName = weapon.material_ref?.name || weapon.material || 'Unknown'
@@ -47,9 +48,14 @@ export function WeaponCard({ weapon, isDeleting, onDelete }: WeaponCardProps) {
             {weapon.damage_type && (
               <span className="ml-2">{weapon.damage_type}</span>
             )}
-            {weapon.template?.properties && weapon.template.properties.length > 0 && (
+            {weapon.properties && weapon.properties.length > 0 && (
               <span className="ml-2 text-zinc-500">
-                • {weapon.template.properties.join(', ')}
+                • {weapon.properties.join(', ')}
+              </span>
+            )}
+            {weapon.range_normal && (
+              <span className="ml-2 text-zinc-500">
+                — {weapon.range_normal}/{weapon.range_long || '—'} ft
               </span>
             )}
           </div>
@@ -58,9 +64,16 @@ export function WeaponCard({ weapon, isDeleting, onDelete }: WeaponCardProps) {
           )}
         </div>
 
-        <div className="flex items-center gap-2 ml-4">
+        <div className="flex flex-col items-end gap-1 ml-4">
+          <button
+            onClick={onEdit}
+            className="text-xs px-2 py-1 text-zinc-400 hover:text-blue-400 transition-colors"
+            title="Edit weapon"
+          >
+            ✏️
+          </button>
           {showConfirm ? (
-            <>
+            <div className="flex items-center gap-2">
               <button
                 onClick={onDelete}
                 disabled={isDeleting}
@@ -74,7 +87,7 @@ export function WeaponCard({ weapon, isDeleting, onDelete }: WeaponCardProps) {
               >
                 Cancel
               </button>
-            </>
+            </div>
           ) : (
             <button
               onClick={() => setShowConfirm(true)}

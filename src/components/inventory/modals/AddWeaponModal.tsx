@@ -418,6 +418,9 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                     />
                   </div>
                 </div>
+                <p className="text-xs text-zinc-500 -mt-1">
+                  For ranged or thrown weapons. Leave blank for melee-only.
+                </p>
 
                 {/* Flags */}
                 <div className="flex gap-6">

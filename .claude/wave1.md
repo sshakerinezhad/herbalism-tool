@@ -1,6 +1,6 @@
-# Wave 1: Herbalism + Character + Weapon Clusters (Bugs 1-13) Implementation Plan
+# Wave 1: Herbalism + Character + Weapon Clusters (Bugs 1-13) Implementation Plan ✅ COMPLETE
 
-> **For agentic workers:** Execute each group sequentially with a single agent per group. Build-verify after every task. Before starting a group, read all target files to confirm line numbers and assumptions still hold.
+> **Completed 2026-03-10.** All 18 tasks done, all 5 checkpoints passed, build clean. Migration 011 pushed to Supabase. `versatile_dice` fully wired up in post-completion fix session (2026-03-11).
 
 **Goal:** Fix 7 herbalism bugs, migrate profile modifiers to computed values, fix 4 character management bugs, and fix weapon schema + add weapon editing.
 
@@ -15,10 +15,10 @@
 | Group | Tasks | What | Why grouped |
 |-------|-------|------|-------------|
 | **A** | 1-2 | Foundation + trivial fix | ✅ COMPLETE — Checkpoint A passed |
-| **B** | 3-6 | Modifier migration | Cascading architectural change — context continuity critical. Task 6 has type cascade that needs live debugging |
-| **C** | 7-10 | Bug fixes + Add Herbs | Independent fixes on different files. Sequential within group but no shared-file dependencies |
-| **D** | 11-14 | Character management | All hit `edit-character/page.tsx`. Task ordering is load-bearing (12 removes state that 14 rewrites) |
-| **E** | 15-18 | Weapon system | Self-contained. Task 15 (migration) must complete before 16. Tasks 17-18 depend on 16's type changes |
+| **B** | 3-6 | Modifier migration | ✅ COMPLETE — Checkpoint B passed |
+| **C** | 7-10 | Bug fixes + Add Herbs | ✅ COMPLETE — Checkpoint C passed |
+| **D** | 11-14 | Character management | ✅ COMPLETE — Checkpoint D passed |
+| **E** | 15-18 | Weapon system | ✅ COMPLETE — Checkpoint E passed |
 
 **Execute in order: A → B → C → D → E.** Build-verify between groups. If a group fails, fix before moving on.
 
@@ -157,7 +157,7 @@ Run: `npm run build`
 
 ---
 
-## Chunk 2: Modifier Migration (Tasks 3-6)
+## Chunk 2: Modifier Migration (Tasks 3-6) ✅ COMPLETE
 
 The core architectural change. Bugs 5 and 6 are fixed as part of this.
 
@@ -317,7 +317,7 @@ Expected: PASS with zero type errors
 
 ---
 
-## Chunk 3: Isolated Bug Fixes (Tasks 7-9)
+## Chunk 3: Isolated Bug Fixes (Tasks 7-9) ✅ COMPLETE
 
 ### Task 7: Bug 1 — Vocation editing
 
@@ -450,7 +450,7 @@ Run: `npm run build`
 
 ---
 
-## Chunk 4: Add Herbs Feature (Task 10)
+## Chunk 4: Add Herbs Feature (Task 10) ✅ COMPLETE
 
 ### Task 10: Bug 7 — Add herbs without foraging
 
@@ -510,7 +510,7 @@ Run: `npm run build`
 
 ---
 
-## Chunk 5: Character Management Fixes (Tasks 11-14)
+## Chunk 5: Character Management Fixes (Tasks 11-14) ✅ COMPLETE
 
 **Prerequisite:** Tasks 1-10 complete. Task 7 adds `VOCATIONS` import and vocation dropdown to `edit-character/page.tsx`, removing vocation from the identity display section.
 
@@ -778,7 +778,7 @@ git commit -m "fix: adjust current HP when CON or HP modifier changes"
 
 ---
 
-## Chunk 6: Weapon System Fixes (Tasks 15-18)
+## Chunk 6: Weapon System Fixes (Tasks 15-18) ✅ COMPLETE
 
 **Prerequisite:** Tasks 1-14 complete (or at minimum, no conflicting changes to weapon files).
 

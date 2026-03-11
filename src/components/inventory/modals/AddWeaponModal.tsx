@@ -37,6 +37,7 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
   const [customProperties, setCustomProperties] = useState('')
   const [customRangeNormal, setCustomRangeNormal] = useState('')
   const [customRangeLong, setCustomRangeLong] = useState('')
+  const [customVersatileDice, setCustomVersatileDice] = useState('')
   const [customIsTwoHanded, setCustomIsTwoHanded] = useState(false)
   const [customIsMagical, setCustomIsMagical] = useState(false)
   const [customNotes, setCustomNotes] = useState('')
@@ -116,6 +117,7 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
         properties,
         range_normal: customRangeNormal ? parseInt(customRangeNormal, 10) : undefined,
         range_long: customRangeLong ? parseInt(customRangeLong, 10) : undefined,
+        versatile_dice: customVersatileDice.trim() || undefined,
         is_two_handed: customIsTwoHanded,
         is_magical: customIsMagical,
         notes: customNotes.trim() || undefined,
@@ -392,6 +394,21 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                   />
                   <p className="text-xs text-zinc-500 mt-1">
                     Common: finesse, versatile, light, heavy, two-handed, thrown, reach, loading
+                  </p>
+                </div>
+
+                {/* Versatile Dice */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Versatile Dice</label>
+                  <input
+                    type="text"
+                    value={customVersatileDice}
+                    onChange={(e) => setCustomVersatileDice(e.target.value)}
+                    placeholder="e.g., 1d10 (two-handed damage)"
+                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                  />
+                  <p className="text-xs text-zinc-500 mt-1">
+                    For versatile weapons — the damage die when wielded two-handed.
                   </p>
                 </div>
 

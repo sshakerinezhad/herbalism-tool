@@ -11,8 +11,8 @@ Capture current session context for the next session.
    - Any blockers or pending items
    - Key decisions made
    - Next steps
-3. If the existing scratchpad content is relevant to current work, merge the new context with it
-4. If the existing scratchpad content is stale/unrelated, replace it with the new context
+3. If the existing scratchpad content is relevant to current or adjacent work, merge the new context with it
+4. If the existing scratchpad content is completely stale (be careful not to overwrite context that is important to sessions being run in parallel), replace it with the new context
 5. Write the updated scratchpad
 
 Keep the scratchpad concise but complete enough for a fresh session to pick up where this one left off.

@@ -779,6 +779,7 @@ export async function addCustomWeapon(
     properties?: string[]
     range_normal?: number
     range_long?: number
+    versatile_dice?: string
     is_two_handed?: boolean
     is_magical?: boolean
     notes?: string
@@ -797,6 +798,7 @@ export async function addCustomWeapon(
       properties: weaponData.properties || [],
       range_normal: weaponData.range_normal || null,
       range_long: weaponData.range_long || null,
+      versatile_dice: weaponData.versatile_dice || null,
       is_two_handed: weaponData.is_two_handed || false,
       is_magical: weaponData.is_magical || false,
       notes: weaponData.notes || null,
@@ -1150,6 +1152,7 @@ export async function updateCharacterWeapon(
     properties?: string[]
     range_normal?: number | null
     range_long?: number | null
+    versatile_dice?: string | null
     is_two_handed?: boolean
     is_magical?: boolean
     notes?: string | null

@@ -36,3 +36,5 @@
 * Need to add archemancy
 * Need to add martial mastery
 * Need to add spellcasting expansion
+* need to be able to add herbs to inventory without foraging (for cases where e.g. dm awards herbs, another player gives them, you buy them, etc.)
+* inventory system is a bit allover the place rn too, style and function

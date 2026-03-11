@@ -1,115 +1,56 @@
 #!/bin/bash
-# Master verification runner — runs all tests in order, stops on first failure
-# Usage: bash __verify__/run_all.sh [checkpoint_number]
-#   No args: run everything
-#   1-5: run only up to that checkpoint
+# Run all verification tests and checkpoints in order
+# Stops on first failure
 set -e
 
-cd "$(dirname "$0")/.."
-
-MAX_CHECKPOINT=${1:-5}
-PASS=0
-FAIL=0
-
-run_test() {
-  local test_file="$1"
-  local test_name=$(basename "$test_file" .sh)
-
-  if bash "$test_file" > /dev/null 2>&1; then
-    echo "  PASS  $test_name"
-    PASS=$((PASS + 1))
-  else
-    echo "  FAIL  $test_name"
-    echo ""
-    echo "--- Failure details ---"
-    bash "$test_file" 2>&1 || true
-    echo "---"
-    FAIL=$((FAIL + 1))
-    return 1
-  fi
-}
-
-run_checkpoint() {
-  local cp_file="$1"
-  local cp_name=$(basename "$cp_file" .sh)
-  echo ""
-  echo "Running $cp_name..."
-  if bash "$cp_file"; then
-    echo ""
-  else
-    echo ""
-    echo "STOPPED: $cp_name failed. Fix issues before continuing."
-    exit 1
-  fi
-}
-
-echo "======================================="
-echo "  Verification Suite: Scorched Earth"
-echo "  Codebase Cleanup"
-echo "======================================="
-
-# Phase 2: Dead Code Removal
+echo "======================================"
+echo "  Wave 1 Verification Suite"
+echo "======================================"
 echo ""
-echo "--- Phase 2: Dead Code Removal ---"
-run_test __verify__/tests/t003_herbselector_import_fixed.sh || exit 1
-run_test __verify__/tests/t004_inventory_deleted.sh || exit 1
-run_test __verify__/tests/t005_no_inventory_imports.sh || exit 1
-run_test __verify__/tests/t006_recipes_and_deprecated_hooks_deleted.sh || exit 1
-run_test __verify__/tests/t008_legacy_prefetch_removed_page.sh || exit 1
-run_test __verify__/tests/t009_legacy_prefetch_removed_prefetchlink.sh || exit 1
-run_test __verify__/tests/t010_brewing_slimmed.sh || exit 1
-run_test __verify__/tests/t011_dead_clean_functions_removed.sh || exit 1
 
-if [ "$MAX_CHECKPOINT" -ge 1 ]; then
-  run_checkpoint __verify__/checkpoint_1_dead_code.sh
-fi
-
-# Phase 3: Type Consolidation
-echo "--- Phase 3: Type Consolidation ---"
-run_test __verify__/tests/t014_armor_type_in_types_ts.sh || exit 1
-run_test __verify__/tests/t015_armor_consumers_updated.sh || exit 1
-
-if [ "$MAX_CHECKPOINT" -ge 2 ]; then
-  run_checkpoint __verify__/checkpoint_2_types.sh
-fi
-
-# Phase 4: Forage Extraction
-echo "--- Phase 4: Forage Extraction ---"
-run_test __verify__/tests/t018_forage_types.sh || exit 1
-run_test __verify__/tests/t019_forage_biomecard.sh || exit 1
-run_test __verify__/tests/t020_forage_setupphase.sh || exit 1
-run_test __verify__/tests/t021_forage_resultsphase.sh || exit 1
-run_test __verify__/tests/t022_forage_barrel_and_page.sh || exit 1
-
-if [ "$MAX_CHECKPOINT" -ge 3 ]; then
-  run_checkpoint __verify__/checkpoint_3_forage.sh
-fi
-
-# Phase 5: Wizard Extraction
-echo "--- Phase 5: Wizard Extraction ---"
-run_test __verify__/tests/t024_wizard_types.sh || exit 1
-run_test __verify__/tests/t025_wizard_identitysteps.sh || exit 1
-run_test __verify__/tests/t026_wizard_buildsteps.sh || exit 1
-run_test __verify__/tests/t027_wizard_finalsteps.sh || exit 1
-run_test __verify__/tests/t028_wizard_barrel_and_page.sh || exit 1
-
-if [ "$MAX_CHECKPOINT" -ge 4 ]; then
-  run_checkpoint __verify__/checkpoint_4_wizard.sh
-fi
-
-# Phase 6: Polish
-echo "--- Phase 6: Polish ---"
-run_test __verify__/tests/t030_barrel_exports_cleaned.sh || exit 1
-run_test __verify__/tests/t031_claude_gotcha7_removed.sh || exit 1
-run_test __verify__/tests/t032_quickref_cleaned.sh || exit 1
-run_test __verify__/tests/t033_architecture_cleaned.sh || exit 1
-run_test __verify__/tests/t035_no_deleted_refs_in_docs.sh || exit 1
-
-if [ "$MAX_CHECKPOINT" -ge 5 ]; then
-  run_checkpoint __verify__/checkpoint_5_final.sh
-fi
-
+# --- Group A: Foundation (Tasks 1-2) ---
+echo ">> Group A: Foundation"
+bash __verify__/tests/01_char_utils_created.sh
+bash __verify__/tests/02_brew_error_message.sh
+bash __verify__/checkpoint_A.sh
 echo ""
-echo "======================================="
-echo "  Results: $PASS passed, $FAIL failed"
-echo "======================================="
+
+# --- Group B: Modifier Migration (Tasks 3-6) ---
+echo ">> Group B: Modifier Migration"
+bash __verify__/tests/03_forage_sessions_computed.sh
+bash __verify__/tests/04_forage_modifier_computed.sh
+bash __verify__/tests/05_brew_modifier_computed.sh
+bash __verify__/tests/06_profile_stripped.sh
+bash __verify__/checkpoint_B.sh
+echo ""
+
+# --- Group C: Bug Fixes + Add Herbs (Tasks 7-10) ---
+echo ">> Group C: Bug Fixes + Add Herbs"
+bash __verify__/tests/07_vocation_editing.sh
+bash __verify__/tests/08_pairing_index_selection.sh
+bash __verify__/tests/09_herb_optimistic_delete.sh
+bash __verify__/tests/10_add_herb_feature.sh
+bash __verify__/checkpoint_C.sh
+echo ""
+
+# --- Group D: Character Management (Tasks 11-14) ---
+echo ">> Group D: Character Management"
+bash __verify__/tests/11_identity_formatting.sh
+bash __verify__/tests/12_edit_save_navigation.sh
+bash __verify__/tests/13_create_char_cache.sh
+bash __verify__/tests/14_con_hp_adjustment.sh
+bash __verify__/checkpoint_D.sh
+echo ""
+
+# --- Group E: Weapon System (Tasks 15-18) ---
+echo ">> Group E: Weapon System"
+bash __verify__/tests/15_migration_file.sh
+bash __verify__/tests/16_weapon_types_and_functions.sh
+bash __verify__/tests/17_weapon_card_fixes.sh
+bash __verify__/tests/18_edit_weapon_modal.sh
+bash __verify__/checkpoint_E.sh
+echo ""
+
+echo "======================================"
+echo "  ALL TESTS AND CHECKPOINTS PASSED"
+echo "======================================"

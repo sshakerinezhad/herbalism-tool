@@ -25,7 +25,9 @@
       "Bash(npm run:*)",
       "Bash(wc:*)",
       "Bash(find:*)",
-      "Bash(npm list:*)"
+      "Bash(npm list:*)",
+      "Bash(cd \"C:\\\\Users\\\\User\\\\Desktop\\\\herbalism-tool\" && bash __verify__/checkpoint_A.sh)",
+      "Bash(npx supabase:*)"
     ]
   }
 }

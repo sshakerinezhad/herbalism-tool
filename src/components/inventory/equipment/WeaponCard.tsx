@@ -53,6 +53,9 @@ export function WeaponCard({ weapon, isDeleting, onEdit, onDelete }: WeaponCardP
                 • {weapon.properties.join(', ')}
               </span>
             )}
+            {weapon.versatile_dice && (
+              <span className="ml-2 text-amber-400 font-mono">/ {weapon.versatile_dice}</span>
+            )}
             {weapon.range_normal && (
               <span className="ml-2 text-zinc-500">
                 — {weapon.range_normal}/{weapon.range_long || '—'} ft

@@ -20,6 +20,7 @@ export function EditWeaponModal({ weapon, onClose, onSuccess, setError }: EditWe
   const [properties, setProperties] = useState(weapon.properties?.join(', ') || '')
   const [rangeNormal, setRangeNormal] = useState(weapon.range_normal?.toString() || '')
   const [rangeLong, setRangeLong] = useState(weapon.range_long?.toString() || '')
+  const [versatileDice, setVersatileDice] = useState(weapon.versatile_dice || '')
   const [isTwoHanded, setIsTwoHanded] = useState(weapon.is_two_handed)
   const [isMagical, setIsMagical] = useState(weapon.is_magical)
   const [notes, setNotes] = useState(weapon.notes || '')
@@ -44,6 +45,7 @@ export function EditWeaponModal({ weapon, onClose, onSuccess, setError }: EditWe
       properties: parsedProperties,
       range_normal: rangeNormal ? parseInt(rangeNormal) : null,
       range_long: rangeLong ? parseInt(rangeLong) : null,
+      versatile_dice: versatileDice.trim() || null,
       is_two_handed: isTwoHanded,
       is_magical: isMagical,
       notes: notes.trim() || null,
@@ -130,6 +132,17 @@ export function EditWeaponModal({ weapon, onClose, onSuccess, setError }: EditWe
               className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500" />
             <p className="text-xs text-zinc-500 mt-1">
               Common: finesse, versatile, light, heavy, two-handed, thrown, reach, loading
+            </p>
+          </div>
+
+          {/* Versatile Dice */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Versatile Dice</label>
+            <input type="text" value={versatileDice} onChange={e => setVersatileDice(e.target.value)}
+              placeholder="e.g., 1d10 (two-handed damage)"
+              className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500" />
+            <p className="text-xs text-zinc-500 mt-1">
+              For versatile weapons — the damage die when wielded two-handed.
             </p>
           </div>
 

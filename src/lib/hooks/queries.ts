@@ -36,6 +36,7 @@ import {
   fetchCharacterHerbs,
   fetchCharacterBrewedItems,
   fetchCharacterRecipes,
+  fetchAllHerbs,
 } from '../db/characterInventory'
 import type { Biome, Skill, ArmorSlot, ArmorType, CharacterWeaponSlot, CharacterQuickSlot, CharacterWeapon, CharacterItem, CharacterArmorData } from '../types'
 
@@ -55,6 +56,7 @@ export const queryKeys = {
   characterItems: (characterId: string) => ['characterItems', characterId] as const,
 
   // Reference data (static, rarely changes)
+  allHerbs: ['allHerbs'] as const,
   armorSlots: ['armorSlots'] as const,
   skills: ['skills'] as const,
   weaponTemplates: ['weaponTemplates'] as const,
@@ -100,6 +102,12 @@ const fetchers = {
     return result.data || []
   },
   
+  allHerbs: async () => {
+    const result = await fetchAllHerbs()
+    if (result.error) throw new Error(result.error)
+    return result.data || []
+  },
+
   armorSlots: async () => {
     const result = await fetchArmorSlots()
     if (result.error) throw new Error(result.error)
@@ -251,6 +259,17 @@ export function useCharacterArmor(characterId: string | null) {
 }
 
 // ============ Reference Data Hooks ============
+
+/**
+ * Fetch all herbs (reference data, rarely changes)
+ */
+export function useAllHerbs() {
+  return useQuery({
+    queryKey: queryKeys.allHerbs,
+    queryFn: fetchers.allHerbs,
+    staleTime: 30 * 60 * 1000, // 30 minutes
+  })
+}
 
 /**
  * Fetch all armor slots (static reference data)

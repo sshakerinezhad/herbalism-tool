@@ -21,6 +21,7 @@ import { ElementSummary } from '@/components/inventory'
 import type { ViewTab, SortMode, BrewedTypeFilter } from '@/components/inventory/types'
 import { HerbsTabContent } from './HerbsTabContent'
 import { BrewedTabContent } from './BrewedTabContent'
+import { AddHerbModal } from './AddHerbModal'
 
 interface HerbalismSectionProps {
   characterHerbs: CharacterHerb[]
@@ -42,6 +43,9 @@ export function HerbalismSection({
   setError,
 }: HerbalismSectionProps) {
   const queryClient = useQueryClient()
+
+  // Add herb modal state
+  const [showAddHerb, setShowAddHerb] = useState(false)
 
   // View state
   const [viewTab, setViewTab] = useState<ViewTab>('herbs')
@@ -307,6 +311,14 @@ export function HerbalismSection({
           🌿 Herbs
           <span className="ml-2 text-xs opacity-70">({totalHerbs})</span>
         </button>
+        {viewTab === 'herbs' && characterId && (
+          <button
+            onClick={() => setShowAddHerb(true)}
+            className="px-3 py-2 rounded-lg text-sm font-medium bg-zinc-800 text-emerald-400 hover:bg-zinc-700 transition-colors"
+          >
+            + Add Herbs
+          </button>
+        )}
         {isHerbalist && (
           <button
             onClick={() => setViewTab('brewed')}
@@ -376,6 +388,15 @@ export function HerbalismSection({
       {/* Element Summary */}
       {viewTab === 'herbs' && characterHerbs.length > 0 && (
         <ElementSummary characterHerbs={characterHerbs} />
+      )}
+
+      {/* Add Herb Modal */}
+      {showAddHerb && characterId && (
+        <AddHerbModal
+          characterId={characterId}
+          onClose={() => setShowAddHerb(false)}
+          onSuccess={() => onHerbsChanged()}
+        />
       )}
     </>
   )

@@ -108,6 +108,17 @@ export async function removeCharacterHerbs(
   return { error: null }
 }
 
+// ============ All Herbs (Reference Data) ============
+
+/**
+ * Fetch all herbs from the reference table
+ */
+export async function fetchAllHerbs(): Promise<{ data: Herb[] | null; error: string | null }> {
+  const { data, error } = await supabase.from('herbs').select('*').order('name')
+  if (error) return { data: null, error: error.message }
+  return { data: data as Herb[], error: null }
+}
+
 // ============ Character Brewed Items ============
 
 /**

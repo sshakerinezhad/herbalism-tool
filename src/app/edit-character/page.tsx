@@ -31,6 +31,10 @@ import {
   getAbilityModifier,
   calculateMaxHP,
   VOCATIONS,
+  RACES,
+  CLASSES,
+  BACKGROUNDS,
+  KNIGHT_ORDERS,
 } from '@/lib/constants'
 import type { Character, CharacterStats, ArmorSlot, ArmorType, CharacterArmorData, Vocation } from '@/lib/types'
 
@@ -614,19 +618,27 @@ export default function EditCharacterPage() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
               <div>
                 <span className="text-zinc-500">Race:</span>{' '}
-                <span className="text-zinc-300">{character.race}</span>
+                <span className="text-zinc-300">
+                  {RACES[character.race as keyof typeof RACES]?.name ?? character.race}
+                </span>
               </div>
               <div>
                 <span className="text-zinc-500">Class:</span>{' '}
-                <span className="text-zinc-300">{character.class}</span>
+                <span className="text-zinc-300">
+                  {CLASSES[character.class as keyof typeof CLASSES]?.name ?? character.class}
+                </span>
               </div>
               <div>
                 <span className="text-zinc-500">Background:</span>{' '}
-                <span className="text-zinc-300">{character.background}</span>
+                <span className="text-zinc-300">
+                  {BACKGROUNDS[character.background as keyof typeof BACKGROUNDS]?.name ?? character.background}
+                </span>
               </div>
               <div>
                 <span className="text-zinc-500">Order:</span>{' '}
-                <span className="text-zinc-300">{character.knight_order}</span>
+                <span className="text-zinc-300">
+                  {KNIGHT_ORDERS[character.knight_order as keyof typeof KNIGHT_ORDERS]?.name ?? character.knight_order}
+                </span>
               </div>
             </div>
           </section>

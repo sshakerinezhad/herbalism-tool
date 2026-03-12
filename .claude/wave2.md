@@ -35,9 +35,9 @@ Evolved the grimoire-themed foundation into a polished dark fantasy design syste
 
 **Plan:** `.claude/work-plan.md` | **Spec:** `docs/superpowers/specs/2026-03-11-design-system-evolution.md`
 
-### 2A — Profile & Navigation Restructure ✓ COMPLETE
+### 2A — Profile & Navigation Restructure (PARTIAL — navigation done, visual pass deferred)
 
-Replaced hub-and-spoke navigation with persistent Ember & Silence nav bar and profile-as-home.
+Replaced hub-and-spoke navigation with persistent Ember & Silence nav bar and profile-as-home. The structural/routing work is done but several originally-scoped items were deferred during brainstorm.
 
 **What shipped:**
 - **NavBar:** Persistent Ember & Silence nav bar with bonfire active indicators (bronze for Profile, green for Herbalism), locked tab tooltips, HP breathing dot, gear icon → settings
@@ -49,11 +49,11 @@ Replaced hub-and-spoke navigation with persistent Ember & Silence nav bar and pr
 - **Forage/Brew:** Moved into route group (auth guards stripped, nav bar inherited)
 - **Link cleanup:** All stale route references updated (/profile→/, /inventory→/, /recipes→/, /edit-character→/settings)
 
-**Deferred (brainstorm separately):**
+**Still in 2A scope but deferred (needs separate brainstorm):**
 - Character bar improvements (trait modals, skill proficiencies)
 - Mobile responsive nav collapse
 - Character creation wizard restyling
-- Design system application to existing page content
+- Design system application to profile/settings/character creation page content (pages moved as-is, no visual polish yet)
 
 **Plan:** `.claude/work-plan.md` | **Spec:** `docs/superpowers/specs/2026-03-12-profile-navigation-restructure.md` | **Nav mockup:** `.claude/ember-refined-v3.html`
 

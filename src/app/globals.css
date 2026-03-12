@@ -466,3 +466,470 @@ html {
 .tab-inactive:hover {
   color: #8b7355;
 }
+
+/* ============================================
+   EMBER & SILENCE V3
+   Nav bar palette, bonfire keyframes, sub-tabs.
+   Values from ember-refined-v3.html mockup.
+   ============================================ */
+
+/* === V3 Palette Tokens === */
+:root {
+  --void: #181614;
+  --ink: #1e1b18;
+  --char: #24211c;
+  --soot: #38322a;
+  --deep-ash: #5c5347;
+  --ash: #877b6e;
+  --ash-light: #a49888;
+  --warm-white: #ede4d3;
+  --warm-mid: #c4b8a4;
+  --ember: #c9a96e;
+  --ember-bright: #e2c792;
+  --ember-hot: #dbb87a;
+  --ember-dim: #8a7548;
+  --ember-deep: #a38555;
+  --bonfire-core: #e8b44c;
+  --bonfire-mid: rgba(219,184,122,0.45);
+  --bonfire-outer: rgba(201,169,110,0.18);
+  --bonfire-whisper: rgba(201,169,110,0.06);
+  --emerald: #22c55e;
+}
+
+/* === Bonfire Keyframes === */
+@keyframes warmth {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+@keyframes pool-breathe {
+  0%, 100% {
+    opacity: 0.8;
+    transform: translateX(-50%) scaleX(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scaleX(1.05);
+  }
+}
+
+@keyframes ember-core {
+  0%, 100% {
+    width: 24px;
+    box-shadow:
+      0 0 6px rgba(232,180,76,0.6),
+      0 0 14px rgba(219,184,122,0.35),
+      0 0 30px rgba(201,169,110,0.15),
+      0 1px 4px rgba(232,180,76,0.4);
+  }
+  33% {
+    width: 28px;
+    box-shadow:
+      0 0 8px rgba(232,180,76,0.7),
+      0 0 18px rgba(219,184,122,0.4),
+      0 0 36px rgba(201,169,110,0.2),
+      0 1px 5px rgba(232,180,76,0.5);
+  }
+  66% {
+    width: 22px;
+    box-shadow:
+      0 0 5px rgba(232,180,76,0.55),
+      0 0 12px rgba(219,184,122,0.3),
+      0 0 28px rgba(201,169,110,0.12),
+      0 1px 3px rgba(232,180,76,0.35);
+  }
+}
+
+@keyframes hp-breathe {
+  0%, 100% {
+    opacity: 0.7;
+    box-shadow: 0 0 4px rgba(34,197,94,0.5), 0 0 12px rgba(34,197,94,0.2);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 6px rgba(34,197,94,0.6), 0 0 16px rgba(34,197,94,0.25);
+  }
+}
+
+@keyframes text-breathe {
+  0%, 100% {
+    text-shadow:
+      0 0 8px rgba(226,199,146,0.35),
+      0 0 20px rgba(201,169,110,0.15);
+  }
+  50% {
+    text-shadow:
+      0 0 10px rgba(226,199,146,0.45),
+      0 0 25px rgba(201,169,110,0.2),
+      0 0 40px rgba(201,169,110,0.08);
+  }
+}
+
+@keyframes herb-text-breathe {
+  0%, 100% {
+    text-shadow:
+      0 0 8px rgba(168,201,154,0.35),
+      0 0 20px rgba(109,155,90,0.15);
+  }
+  50% {
+    text-shadow:
+      0 0 10px rgba(168,201,154,0.45),
+      0 0 25px rgba(109,155,90,0.2),
+      0 0 40px rgba(109,155,90,0.08);
+  }
+}
+
+@keyframes herb-ember-core {
+  0%, 100% {
+    width: 24px;
+    box-shadow:
+      0 0 6px rgba(109,155,90,0.6),
+      0 0 14px rgba(109,155,90,0.35),
+      0 0 30px rgba(109,155,90,0.15),
+      0 1px 4px rgba(109,155,90,0.4);
+  }
+  33% {
+    width: 28px;
+    box-shadow:
+      0 0 8px rgba(109,155,90,0.7),
+      0 0 18px rgba(109,155,90,0.4),
+      0 0 36px rgba(109,155,90,0.2),
+      0 1px 5px rgba(109,155,90,0.5);
+  }
+  66% {
+    width: 22px;
+    box-shadow:
+      0 0 5px rgba(109,155,90,0.55),
+      0 0 12px rgba(109,155,90,0.3),
+      0 0 28px rgba(109,155,90,0.12),
+      0 1px 3px rgba(109,155,90,0.35);
+  }
+}
+
+/* === NavBar Structure === */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 20px;
+  position: relative;
+}
+
+.nav-bar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    var(--ember) 0%,
+    rgba(201,169,110,0.5) 8%,
+    rgba(201,169,110,0.18) 30%,
+    rgba(201,169,110,0.08) 55%,
+    rgba(201,169,110,0.03) 80%,
+    rgba(201,169,110,0.01) 100%
+  );
+}
+
+/* Character Presence */
+.presence {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 28px 0 12px;
+  position: relative;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.presence::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 140px;
+  height: 90px;
+  background: radial-gradient(ellipse at 20% 50%,
+    rgba(201,169,110,0.08) 0%,
+    rgba(201,169,110,0.03) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+  animation: warmth 6s ease-in-out infinite;
+}
+
+.emblem {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #2e2920, #1e1b18);
+  border: 1px solid rgba(201,169,110,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  position: relative;
+  z-index: 1;
+  box-shadow:
+    0 1px 8px rgba(0,0,0,0.3),
+    0 0 12px rgba(201,169,110,0.05),
+    inset 0 1px 2px rgba(201,169,110,0.1),
+    inset 0 -1px 2px rgba(0,0,0,0.3);
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.presence:hover .emblem {
+  border-color: rgba(201,169,110,0.4);
+  box-shadow:
+    0 1px 8px rgba(0,0,0,0.3),
+    0 0 20px rgba(201,169,110,0.1),
+    inset 0 1px 2px rgba(201,169,110,0.12),
+    inset 0 -1px 2px rgba(0,0,0,0.3);
+}
+
+.char-info {
+  position: relative;
+  z-index: 1;
+  line-height: 1.25;
+}
+.char-name {
+  font-family: var(--font-grenze-gotisch);
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--warm-white);
+  letter-spacing: 0.3px;
+  transition: color 0.4s;
+}
+.presence:hover .char-name {
+  color: #f5ede0;
+}
+.char-subtitle {
+  font-family: var(--font-cinzel);
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--ash);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: color 0.6s;
+}
+.presence:hover .char-subtitle {
+  color: var(--ash-light);
+}
+
+/* System Tabs */
+.system-tabs {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  gap: 8px;
+}
+
+.sys-tab {
+  position: relative;
+  padding: 18px 20px;
+  font-family: var(--font-cinzel);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--ash);
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  user-select: none;
+  text-decoration: none;
+}
+.sys-tab:hover {
+  color: var(--ash-light);
+}
+
+/* Active tab — bonfire effect */
+.sys-tab.active {
+  color: var(--ember-bright);
+  text-shadow:
+    0 0 8px rgba(226,199,146,0.35),
+    0 0 20px rgba(201,169,110,0.15);
+  background: linear-gradient(
+    to top,
+    rgba(201,169,110,0.1) 0%,
+    rgba(201,169,110,0.04) 40%,
+    transparent 75%
+  );
+  animation: text-breathe 4s ease-in-out infinite;
+}
+
+/* Wide warmth pool */
+.sys-tab.active::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 20px;
+  background: radial-gradient(ellipse at 50% 100%,
+    rgba(219,184,122,0.2) 0%,
+    rgba(201,169,110,0.08) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+  animation: pool-breathe 4s ease-in-out infinite;
+}
+
+/* Ember core */
+.sys-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 4px;
+  border-radius: 50%;
+  background: linear-gradient(90deg,
+    transparent,
+    var(--bonfire-core) 30%,
+    var(--bonfire-core) 70%,
+    transparent
+  );
+  box-shadow:
+    0 0 6px rgba(232,180,76,0.6),
+    0 0 14px rgba(219,184,122,0.35),
+    0 0 30px rgba(201,169,110,0.15),
+    0 1px 4px rgba(232,180,76,0.4);
+  animation: ember-core 4s ease-in-out infinite;
+}
+
+/* Locked tabs */
+.sys-tab.locked {
+  color: #342e26;
+  letter-spacing: 1.5px;
+  font-size: 10.5px;
+  cursor: default;
+}
+.sys-tab.locked:hover {
+  color: #443c32;
+}
+
+/* Right side */
+.nav-end {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 12px 0 20px;
+}
+
+.vitals {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: default;
+  position: relative;
+}
+.hp-ember {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--emerald);
+  box-shadow:
+    0 0 4px rgba(34,197,94,0.5),
+    0 0 12px rgba(34,197,94,0.2);
+  animation: hp-breathe 3.5s ease-in-out infinite;
+}
+.hp-text {
+  font-family: var(--font-cinzel);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--deep-ash);
+  letter-spacing: 1px;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.vitals:hover .hp-text {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.gear-btn {
+  color: var(--ash);
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  opacity: 0.7;
+  padding: 4px;
+  text-decoration: none;
+}
+.gear-btn:hover {
+  color: var(--ember);
+  opacity: 1;
+  transform: rotate(30deg);
+}
+
+/* Herbalism bonfire (green flames) */
+.herb-context .sys-tab.active {
+  color: #b8d4aa;
+  text-shadow:
+    0 0 8px rgba(168,201,154,0.35),
+    0 0 20px rgba(109,155,90,0.15);
+  background: linear-gradient(
+    to top,
+    rgba(109,155,90,0.1) 0%,
+    rgba(109,155,90,0.04) 40%,
+    transparent 75%
+  );
+  animation: herb-text-breathe 4s ease-in-out infinite;
+}
+
+.herb-context .sys-tab.active::before {
+  background: radial-gradient(ellipse at 50% 100%,
+    rgba(109,155,90,0.2) 0%,
+    rgba(109,155,90,0.08) 40%,
+    transparent 70%
+  );
+}
+
+.herb-context .sys-tab.active::after {
+  background: linear-gradient(90deg,
+    transparent,
+    #7db86a 30%,
+    #7db86a 70%,
+    transparent
+  );
+  box-shadow:
+    0 0 6px rgba(109,155,90,0.6),
+    0 0 14px rgba(109,155,90,0.35),
+    0 0 30px rgba(109,155,90,0.15),
+    0 1px 4px rgba(109,155,90,0.4);
+  animation: herb-ember-core 4s ease-in-out infinite;
+}
+
+/* === Sub-tab styling (Profile page) === */
+.sub-tab-active {
+  font-family: var(--font-almendra);
+  font-size: 14px;
+  color: var(--warm-mid);
+  padding: 10px 18px;
+  position: relative;
+}
+.sub-tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 18px;
+  right: 18px;
+  height: 1px;
+  background: var(--warm-mid);
+  opacity: 0.4;
+}
+.sub-tab-inactive {
+  font-family: var(--font-almendra);
+  font-size: 14px;
+  color: var(--ash);
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+.sub-tab-inactive:hover {
+  color: var(--ash-light);
+}

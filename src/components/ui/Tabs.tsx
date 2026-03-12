@@ -34,11 +34,15 @@ export function Tabs({ defaultTab, children, className = '', onChange }: TabsPro
 type TabListProps = {
   children: ReactNode
   className?: string
+  variant?: 'system' | 'sub'
 }
 
-export function TabList({ children, className = '' }: TabListProps) {
+export function TabList({ children, className = '', variant = 'system' }: TabListProps) {
+  const borderClass = variant === 'sub'
+    ? 'border-b border-[var(--soot)]'
+    : 'border-b border-sepia-800/40'
   return (
-    <div className={`flex gap-1 border-b border-sepia-800/40 ${className}`}>
+    <div className={`flex gap-1 ${borderClass} ${className}`}>
       {children}
     </div>
   )
@@ -48,18 +52,21 @@ type TabProps = {
   value: string
   children: ReactNode
   className?: string
+  variant?: 'system' | 'sub'
 }
 
-export function Tab({ value, children, className = '' }: TabProps) {
+export function Tab({ value, children, className = '', variant = 'system' }: TabProps) {
   const ctx = useContext(TabsContext)
   if (!ctx) throw new Error('Tab must be used inside Tabs')
 
   const isActive = ctx.activeTab === value
+  const activeClass = variant === 'sub' ? 'sub-tab-active' : 'tab-active'
+  const inactiveClass = variant === 'sub' ? 'sub-tab-inactive' : 'tab-inactive'
 
   return (
     <button
       onClick={() => ctx.setActiveTab(value)}
-      className={`tab ${isActive ? 'tab-active' : 'tab-inactive'} ${className}`}
+      className={`tab ${isActive ? activeClass : inactiveClass} ${className}`}
       role="tab"
       aria-selected={isActive}
     >

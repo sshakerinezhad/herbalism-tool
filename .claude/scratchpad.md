@@ -1,68 +1,51 @@
 # Scratchpad
 
 **Branch:** `knights-of-belyar`
-**Last session:** 2026-03-10
+**Last session:** 2026-03-11
 
 ## What was done
 
-### Group A (Tasks 1-2) ✅ Checkpoint A passed
-- Task 1: Created `src/lib/characterUtils.ts` — 4 pure functions
-- Task 2: Fixed brew error message → "Cannot mix multiple types in one brew"
+### Piece 2.0 Design System brainstorm — COMPLETE
 
-### Group B (Tasks 3-6) ✅ Checkpoint B passed
-- Tasks 3-6: Migrated all modifiers from stored Profile fields to computed values. Profile type stripped to `{ name: string }`.
+Full design spec written to `docs/superpowers/specs/2026-03-11-design-system-evolution.md`.
 
-### User testing of Group B
-User manually tested and found 4 issues. All triaged — **no regressions from Group B:**
+**Key decisions (all approved individually by user):**
+- **Typography:** Grenze Gotisch (titles) + Almendra (body) + Cinzel Light (UI chrome) + Geist Mono (numbers)
+- **Nav tabs:** Arcane Glow — active tab has gradient up-glow + text-shadow
+- **Buttons:** Pill-shaped (border-radius: 999px), 3 tiers: bronze gradient primary, subtle secondary, text-only tertiary
+- **Element accents:** Illuminated gemstone technique — 4 layers (gradient bg, inner glow, outer glow, text glow) + shimmer on hover. Fire/Cold/Poison/Light/Dark/Lightning.
+- **Palette evolution:** Material surfaces (directional gradients, not flat), top-edge bronze highlights, gradient-fade dividers
+- **Elevation system:** Base → Raised → Elevated → Floating (replaces arbitrary shadows)
+- **Min text size:** 0.75rem (12px) — the Cinzel labels were too small before
+- **Early rename:** positive/negative → Light/Dark with 🔆/🌑
 
-| # | Issue | Verdict |
-|---|-------|---------|
-| 1 | Ability score edits don't persist to character page | Pre-existing — **Task 12** fixes (cache invalidation after save) |
-| 2 | Brewing "no effects selected" after pairing | **Not a bug** — test user 4 has no learned recipes. |
-| 3 | Brewing modifier +3 with INT +1 | Math correct (INT +1 + prof +2). Should eventually check Herbalist Tools proficiency, not vocation. **Defer.** |
-| 4 | INT changes in edit don't update character page | Same as #1 — **Task 12** |
+**Visual mockups** saved in `.superpowers/brainstorm/6248-1773275198/` — especially `dazzle-accents.html` and `palette-evolution.html` which are the approved reference designs.
 
-### Group C (Tasks 7-10) ✅ Checkpoint C passed
-- Task 7: Added vocation editing to edit-character page (`CharacterUpdate` type + dropdown in Basic Info, removed vocation from fixed identity section)
-- Task 8: Fixed PairingPhase to use index-based selection (fixes duplicate element bug, added useEffect reset)
-- Task 9: Added optimistic cache updates for herb deletion (queryClient.setQueryData for both single and delete-all)
-- Task 10: Created AddHerbModal — `fetchAllHerbs()` in characterInventory.ts, `useAllHerbs()` hook in queries.ts, searchable modal with quantity selector, exported from barrel, integrated into HerbalismSection with "+ Add Herbs" button
-
-### Group D (Tasks 11-14) ✅ Checkpoint D passed
-- Task 11: Added RACES, CLASSES, BACKGROUNDS, KNIGHT_ORDERS imports — identity section now shows "High Elf" instead of "high_elf"
-- Task 12: Replaced `saveSuccess` banner with `invalidateCharacter()` + `router.push('/profile')` — edit→save navigates back to profile
-- Task 13: Added `useInvalidateQueries` to create-character — cache invalidated before redirect (fixes "Create Your Knight" flash)
-- Task 14: Added `adjustHpForMaxChange` helper + CON-specific branch in `updateStat` + `updateHpCustomModifier` handler (CON up → fill to max, CON down → cap if above)
-
-### Group E (Tasks 15-18) ✅ Checkpoint E passed
-- Task 15: Created `011_weapon_self_contained.sql` — adds `range_normal`, `range_long`, `versatile_dice` columns + backfill from templates. Manually updated `database.types.ts` (Supabase not linked locally — `db:push` deferred to deploy)
-- Task 16: Changed `CharacterWeapon.properties` from `Record<string, unknown>` to `string[]`, added range/versatile fields to type. Fixed `addWeaponFromTemplate` to copy all template data. Added `updateCharacterWeapon()`. Fixed `ItemTooltip` to render both `string[]` (weapons) and `Record` (armor) properties. Fixed `WeaponSlotCard` cast.
-- Task 17: `WeaponCard` now reads `weapon.properties` directly (not `weapon.template?.properties`), shows range display, has edit button with `onEdit` prop. Added range helper text to `AddWeaponModal`.
-- Task 18: Created `EditWeaponModal` — pre-filled form for all weapon fields, comma-separated properties editing, calls `updateCharacterWeapon()`. Exported from barrel. Wired into `WeaponsTab` with `editingWeapon` state.
-
-### Post-Wave 1 Fix Session (2026-03-10)
-- Linked Supabase project locally (`supabase link`)
-- Pushed migration 011 (`db:push`) — `range_normal`, `range_long`, `versatile_dice` columns now live
-- Regenerated `database.types.ts` from live schema (replaces manual edits)
-- Wired up `versatile_dice` fully: `addCustomWeapon()`, `updateCharacterWeapon()`, `EditWeaponModal`, `AddWeaponModal` custom mode, `WeaponCard` display
-- User confirmed weapon adding works
+### Previous: Kickoff brainstorm (complete)
+See `.claude/wave2.md` for the 6 cross-cutting decisions.
 
 ## Current state
 
-- **Wave 1 fully complete and deployed** — all 13 bugs fixed, weapon editing added, migration live
-- Build passes cleanly, no type errors
+- **Wave 1 complete and deployed**
+- **Build passes cleanly**
+- **Supabase linked locally**
+- **Kickoff brainstorm complete**
+- **2.0 Design brainstorm complete** — spec doc written, user approved all pieces individually
 
 ## Key context for next agent
 
-- **Wave 1 is done.** Ready for Wave 2 (design system + system overhauls).
-- **Supabase is linked locally** — `db:push` and `db:types` both work
+- **Design spec is the source of truth:** `docs/superpowers/specs/2026-03-11-design-system-evolution.md`
+- **User's taste:** Apple-level polish + dark fantasy. "Tasteful but dazzling." Wants gemstone-quality accents, not flat colors.
+- **User hates clunky UI:** Rejected uppercase heavy nav tabs multiple times. Wants lithe, graceful, stylish. Arcane flair but simple.
 - **Profile type is `{ name: string }`** — all modifiers computed from `characterUtils.ts`
-- **Weapons are now self-contained** — template data copied at creation time, no joins needed for display
-- **`updateCharacterWeapon()`** exists in `src/lib/db/characters.ts` for editing weapons
-- **`ItemTooltip`** handles both `string[]` (weapon properties) and `Record<string, unknown>` (armor properties)
-- **Deferred item:** Brewing modifier should eventually check Herbalist Tools proficiency instead of vocation
+- **Tailwind v4:** No `tailwind.config.ts` — uses `@theme inline` in `globals.css`
+- **No component libraries:** Pure Tailwind, no Radix/Headless UI
 
 ## Next steps
 
-1. User testing of Groups C-E
-2. Brainstorm Wave 2 (design system)
+1. ~~Kickoff brainstorm~~ ✓
+2. ~~Brainstorm Piece 2.0~~ ✓
+3. **Get final sign-off on full design** ← NEXT (user approved each piece but needs formal "yes" on the combined doc)
+4. Write implementation plan (invoke `writing-plans` skill)
+5. Run `/verify` to generate tests
+6. Execute plan for Piece 2.0

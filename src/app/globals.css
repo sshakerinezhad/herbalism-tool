@@ -38,6 +38,37 @@
   --bronze-muted: #8b7355;
   --bronze-bright: #c9a66b;
   --bronze-glow: #a68952;
+
+  /* Element accent colors — used by .element-* classes */
+  --el-fire-text: #ff9a5c;
+  --el-fire-glow: 255,100,30;
+  --el-fire-grad-dark: #1a0a04;
+  --el-fire-grad-mid: #2d1008;
+
+  --el-water-text: #7ec8ff;
+  --el-water-glow: 100,180,255;
+  --el-water-grad-dark: #040a1a;
+  --el-water-grad-mid: #081228;
+
+  --el-earth-text: #7de87d;
+  --el-earth-glow: 80,220,80;
+  --el-earth-grad-dark: #061205;
+  --el-earth-grad-mid: #0d1f0a;
+
+  --el-air-text: #a0a0ff;
+  --el-air-glow: 140,140,255;
+  --el-air-grad-dark: #0a0a14;
+  --el-air-grad-mid: #121228;
+
+  --el-light-text: #ffd966;
+  --el-light-glow: 255,220,120;
+  --el-light-grad-dark: #1a1505;
+  --el-light-grad-mid: #2a2008;
+
+  --el-dark-text: #c88aff;
+  --el-dark-glow: 160,80,220;
+  --el-dark-grad-dark: #0d0510;
+  --el-dark-grad-mid: #150820;
 }
 
 @theme inline {
@@ -188,4 +219,250 @@ html {
 
 .modifier-neutral {
   color: var(--vellum-300);
+}
+
+/* ============================================
+   ELEVATION SYSTEM
+   Replaces arbitrary shadows with 4 semantic levels.
+   Values from palette-evolution.html mockup.
+   ============================================ */
+
+.elevation-base {
+  background: linear-gradient(160deg, #0f0e0b, #0d0c0a);
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+  border: 1px solid rgba(45,41,35,0.5);
+}
+
+.elevation-raised {
+  background: linear-gradient(160deg, #17140f, #151311);
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.02);
+  border: 1px solid rgba(61,52,42,0.4);
+}
+
+.elevation-elevated {
+  background: linear-gradient(160deg, #1d1a14, #1a1815);
+  box-shadow:
+    0 4px 16px rgba(0,0,0,0.35),
+    0 1px 3px rgba(0,0,0,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.03);
+  border: 1px solid rgba(61,52,42,0.5);
+}
+
+.elevation-floating {
+  background: linear-gradient(160deg, #231f18, #211e1a);
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.5),
+    0 2px 8px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  border: 1px solid rgba(61,52,42,0.6);
+}
+
+/* Top-edge bronze highlight — add to any card via class */
+.top-edge-highlight {
+  position: relative;
+}
+.top-edge-highlight::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201,166,107,0.15), transparent);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ============================================
+   ELEMENT ACCENTS — Illuminated Gemstone
+   4-layer technique: gradient bg, inner glow, outer glow, text glow.
+   Values from dazzle-accents.html mockup.
+   ============================================ */
+
+/* Per-element color vars (scoped via class) */
+.element-fire   { --el-text: var(--el-fire-text);   --el-glow: var(--el-fire-glow);   --el-gd: var(--el-fire-grad-dark);   --el-gm: var(--el-fire-grad-mid); }
+.element-water  { --el-text: var(--el-water-text);  --el-glow: var(--el-water-glow);  --el-gd: var(--el-water-grad-dark);  --el-gm: var(--el-water-grad-mid); }
+.element-earth  { --el-text: var(--el-earth-text);  --el-glow: var(--el-earth-glow);  --el-gd: var(--el-earth-grad-dark);  --el-gm: var(--el-earth-grad-mid); }
+.element-air    { --el-text: var(--el-air-text);    --el-glow: var(--el-air-glow);    --el-gd: var(--el-air-grad-dark);    --el-gm: var(--el-air-grad-mid); }
+.element-light  { --el-text: var(--el-light-text);  --el-glow: var(--el-light-glow);  --el-gd: var(--el-light-grad-dark);  --el-gm: var(--el-light-grad-mid); }
+.element-dark   { --el-text: var(--el-dark-text);   --el-glow: var(--el-dark-glow);   --el-gd: var(--el-dark-grad-dark);   --el-gm: var(--el-dark-grad-mid); }
+
+/* Badge — full illuminated treatment */
+.element-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 8px;
+  overflow: hidden;
+  color: var(--el-text);
+  background: linear-gradient(135deg, var(--el-gd), var(--el-gm), var(--el-gd));
+  border: 1px solid rgba(var(--el-glow), 0.25);
+  box-shadow:
+    inset 0 0 30px rgba(var(--el-glow), 0.06),
+    0 0 15px rgba(var(--el-glow), 0.04);
+  text-shadow: 0 0 10px rgba(var(--el-glow), 0.4);
+  transition: box-shadow 300ms ease, text-shadow 300ms ease;
+}
+
+/* Shimmer sweep on hover */
+.element-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  pointer-events: none;
+  transition: left 0s;
+}
+.element-badge:hover::before {
+  left: 100%;
+  transition: left 0.8s ease-in-out;
+}
+.element-badge:hover {
+  box-shadow:
+    inset 0 0 30px rgba(var(--el-glow), 0.12),
+    0 0 20px rgba(var(--el-glow), 0.1),
+    0 4px 20px rgba(0,0,0,0.4);
+  text-shadow: 0 0 14px rgba(var(--el-glow), 0.6);
+}
+
+/* Chip — inline subtle variant */
+.element-chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-cinzel);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.7rem;
+  border-radius: 4px;
+  color: var(--el-text);
+  background: rgba(var(--el-glow), 0.08);
+  border: 1px solid rgba(var(--el-glow), 0.2);
+  box-shadow: 0 0 8px rgba(var(--el-glow), 0.08);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes warm-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes glow-brighten {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.15); }
+}
+
+.animate-warm-pulse {
+  animation: warm-pulse 2s ease-in-out infinite;
+}
+
+.animate-modal-in {
+  animation: modal-in 200ms ease-out;
+}
+
+/* ============================================
+   BUTTON VARIANTS
+   Values from nav-and-buttons.html mockup.
+   ============================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  font-family: var(--font-almendra);
+  transition: all 200ms ease-out;
+  cursor: pointer;
+}
+.btn:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.btn-primary {
+  background: linear-gradient(to bottom, #d4b87a, #b89a5a);
+  color: var(--grimoire-950);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.btn-primary:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.btn-primary:active {
+  filter: brightness(0.95);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.btn-secondary {
+  color: var(--vellum-200);
+  background: rgba(139,115,85,0.12);
+  border: 1px solid rgba(139,115,85,0.2);
+}
+.btn-secondary:hover {
+  background: rgba(139,115,85,0.2);
+  border-color: rgba(139,115,85,0.3);
+}
+.btn-secondary:active {
+  background: rgba(139,115,85,0.25);
+}
+
+.btn-text {
+  color: var(--bronze-bright);
+  background: transparent;
+  border: none;
+}
+.btn-text:hover {
+  color: #d4b87a;
+  background: rgba(139,115,85,0.08);
+}
+.btn-text:active {
+  background: rgba(139,115,85,0.12);
+}
+
+/* ============================================
+   TABS — Arcane Glow
+   Values from nav-and-buttons.html mockup.
+   ============================================ */
+
+.tab {
+  font-family: var(--font-almendra);
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid transparent;
+  transition: color 300ms ease, background 300ms ease, text-shadow 300ms ease, border-color 300ms ease;
+  cursor: pointer;
+  background: transparent;
+}
+
+.tab-active {
+  color: #c9a66b;
+  border-bottom-color: rgba(201,166,107,0.5);
+  background: linear-gradient(to top, rgba(201,166,107,0.06), transparent 70%);
+  text-shadow: 0 0 12px rgba(201,166,107,0.3);
+}
+
+.tab-inactive {
+  color: #6b5d4a;
+  border-bottom-color: rgba(61,52,42,0.25);
+}
+.tab-inactive:hover {
+  color: #8b7355;
 }

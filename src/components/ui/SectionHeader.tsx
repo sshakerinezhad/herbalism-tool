@@ -14,7 +14,7 @@ type SectionHeaderProps = {
  */
 export function SectionHeader({ children, className = '' }: SectionHeaderProps) {
   return (
-    <h2 className={`text-xs font-semibold text-vellum-300 uppercase tracking-widest border-b border-sepia-700/40 pb-1 mb-3 ${className}`}>
+    <h2 className={`text-xs font-ui tracking-[0.15em] text-vellum-300 uppercase border-b border-sepia-700/40 pb-1 mb-3 ${className}`}>
       {children}
     </h2>
   )

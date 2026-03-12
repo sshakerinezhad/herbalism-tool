@@ -12,14 +12,14 @@ type DividerProps = {
 }
 
 const horizontalVariants: Record<DividerVariant, string> = {
-  default: 'h-px bg-sepia-700/50',
+  default: 'h-px bg-gradient-to-r from-transparent via-sepia-700/50 to-transparent',
   ornate: 'h-px bg-gradient-to-r from-transparent via-sepia-600/60 to-transparent',
   subtle: 'h-px bg-sepia-800/40',
   bronze: 'h-px bg-gradient-to-r from-transparent via-bronze-muted/50 to-transparent',
 }
 
 const verticalVariants: Record<DividerVariant, string> = {
-  default: 'w-px bg-sepia-700/50',
+  default: 'w-px bg-gradient-to-b from-transparent via-sepia-700/50 to-transparent',
   ornate: 'w-px bg-gradient-to-b from-transparent via-sepia-600/60 to-transparent',
   subtle: 'w-px bg-sepia-800/40',
   bronze: 'w-px bg-gradient-to-b from-transparent via-bronze-muted/50 to-transparent',
@@ -44,7 +44,7 @@ export function Divider({
     return (
       <div className={`flex items-center gap-3 ${className}`}>
         <div className={`flex-1 ${horizontalVariants[variant]}`} />
-        <span className="text-bronze-muted/60 text-xs">&#9670;</span>
+        <span className="text-bronze-muted/60 text-xs">✧</span>
         <div className={`flex-1 ${horizontalVariants[variant]}`} />
       </div>
     )

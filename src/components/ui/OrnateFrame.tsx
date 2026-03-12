@@ -15,10 +15,10 @@ type OrnateFrameProps = {
 }
 
 const variantStyles: Record<OrnateFrameVariant, string> = {
-  default: 'border-sepia-700/60 shadow-[inset_0_1px_0_0_rgba(201,166,107,0.1)]',
-  bronze: 'border-bronze-muted/70 shadow-[inset_0_1px_0_0_rgba(201,166,107,0.15),0_0_8px_rgba(139,115,85,0.2)]',
-  gold: 'border-bronze-bright/60 shadow-[inset_0_1px_0_0_rgba(201,166,107,0.2),0_0_12px_rgba(201,166,107,0.15)]',
-  subtle: 'border-sepia-800/50 shadow-none',
+  default: 'elevation-raised top-edge-highlight',
+  bronze: 'elevation-elevated top-edge-highlight glow-bronze',
+  gold: 'elevation-elevated top-edge-highlight shadow-[0_0_12px_rgba(201,166,107,0.15)]',
+  subtle: 'elevation-base',
 }
 
 const paddingStyles = {
@@ -44,7 +44,7 @@ export function OrnateFrame({
   return (
     <div
       className={`
-        relative bg-grimoire-900 rounded-sm border
+        relative rounded-sm overflow-hidden
         ${variantStyles[variant]}
         ${paddingStyles[padding]}
         ${className}

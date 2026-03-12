@@ -15,11 +15,11 @@ type GrimoireCardProps = {
 }
 
 const variantStyles: Record<GrimoireCardVariant, string> = {
-  default: 'bg-grimoire-900 border-sepia-700/50 shadow-sm',
-  raised: 'bg-grimoire-850 border-sepia-700/60 shadow-md glow-inner-bronze',
-  inset: 'bg-grimoire-950 border-sepia-800/50 shadow-inner',
-  bronze: 'bg-grimoire-900 border-bronze-muted/50 glow-bronze',
-  subtle: 'bg-grimoire-900/80 border-sepia-800/40',
+  default: 'elevation-raised top-edge-highlight',
+  raised: 'elevation-elevated top-edge-highlight',
+  inset: 'elevation-base',
+  bronze: 'elevation-elevated top-edge-highlight glow-bronze',
+  subtle: 'elevation-base',
 }
 
 const paddingStyles = {
@@ -45,7 +45,7 @@ export function GrimoireCard({
   return (
     <div
       className={`
-        relative rounded border
+        relative rounded overflow-hidden
         ${variantStyles[variant]}
         ${paddingStyles[padding]}
         ${className}

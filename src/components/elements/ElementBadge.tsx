@@ -1,94 +1,75 @@
 /**
- * ElementBadge - Display element symbols with optional styling
- * 
- * Use this to consistently render element icons throughout the app.
+ * ElementBadge — Illuminated gemstone element display
+ *
+ * Uses the 4-layer CSS technique (gradient bg, inner glow, outer glow, text glow)
+ * with shimmer hover effect. All visual magic lives in globals.css .element-badge classes.
  */
 
-import { getElementSymbol, getElementColors } from '@/lib/constants'
+import { getElementSymbol, getElementDisplayName } from '@/lib/constants'
 
 type ElementBadgeProps = {
-  /** Element name (fire, water, earth, air, positive, negative) */
+  /** Element identifier (fire, water, earth, air, light, dark) */
   element: string
-  /** Whether to show background styling */
-  showBackground?: boolean
   /** Size variant */
   size?: 'sm' | 'md' | 'lg'
-  /** Whether to show the element name as a tooltip */
-  showTooltip?: boolean
+  /** Show text label alongside emoji */
+  showLabel?: boolean
   /** Optional additional classes */
   className?: string
 }
 
 const sizeClasses = {
-  sm: 'text-sm',
-  md: 'text-base',
-  lg: 'text-lg',
+  sm: 'px-2 py-1 text-xs',
+  md: 'px-3 py-1.5 text-sm',
+  lg: 'px-4 py-2 text-base',
 }
 
-export function ElementBadge({ 
-  element, 
-  showBackground = false, 
+export function ElementBadge({
+  element,
   size = 'md',
-  showTooltip = true,
-  className = '' 
+  showLabel = true,
+  className = '',
 }: ElementBadgeProps) {
   const symbol = getElementSymbol(element)
-  const colors = getElementColors(element)
-  
-  const bgClasses = showBackground 
-    ? `px-1.5 py-0.5 rounded ${colors.bg} ${colors.border}` 
-    : ''
-  
+  const displayName = getElementDisplayName(element)
+  const elClass = `element-${element.toLowerCase()}`
+
   return (
-    <span 
-      className={`${sizeClasses[size]} ${bgClasses} ${className}`}
-      title={showTooltip ? element : undefined}
+    <span
+      className={`element-badge ${elClass} ${sizeClasses[size]} ${className}`}
+      title={displayName}
     >
-      {symbol}
+      <span className="relative z-10 inline-flex items-center gap-1.5">
+        <span>{symbol}</span>
+        {showLabel && (
+          <span className="font-ui tracking-wider">{displayName}</span>
+        )}
+      </span>
     </span>
   )
 }
 
 type ElementListProps = {
-  /** Array of element names */
   elements: string[]
-  /** Whether to show background styling on each */
-  showBackground?: boolean
-  /** Size variant */
   size?: 'sm' | 'md' | 'lg'
-  /** Gap between elements */
-  gap?: 'none' | 'sm' | 'md'
-  /** Optional additional classes for container */
+  showLabel?: boolean
+  gap?: 'sm' | 'md'
   className?: string
 }
 
-const gapClasses = {
-  none: '',
-  sm: 'gap-0.5',
-  md: 'gap-1',
-}
-
-/**
- * ElementList - Render multiple element badges in a row
- */
-export function ElementList({ 
-  elements, 
-  showBackground = false,
+export function ElementList({
+  elements,
   size = 'md',
-  gap = 'none',
-  className = ''
+  showLabel = false,
+  gap = 'sm',
+  className = '',
 }: ElementListProps) {
+  const gapClass = gap === 'sm' ? 'gap-1' : 'gap-2'
   return (
-    <span className={`inline-flex items-center ${gapClasses[gap]} ${className}`}>
+    <span className={`inline-flex items-center flex-wrap ${gapClass} ${className}`}>
       {elements.map((el, i) => (
-        <ElementBadge 
-          key={i} 
-          element={el} 
-          showBackground={showBackground}
-          size={size}
-        />
+        <ElementBadge key={i} element={el} size={size} showLabel={showLabel} />
       ))}
     </span>
   )
 }
-

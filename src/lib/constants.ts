@@ -13,8 +13,27 @@ export const ELEMENT_SYMBOLS: Record<string, string> = {
   water: '💧',
   earth: '⛰️',
   air: '💨',
-  positive: '✨',
-  negative: '💀',
+  light: '🔆',
+  dark: '🌑',
+}
+
+/** Display names for elements (capitalized identifiers) */
+export const ELEMENT_DISPLAY_NAMES: Record<string, string> = {
+  fire: 'Fire',
+  water: 'Water',
+  earth: 'Earth',
+  air: 'Air',
+  light: 'Light',
+  dark: 'Dark',
+}
+
+/**
+ * Get the display name for an element
+ * @param element - The element identifier (fire, water, earth, air, light, dark)
+ * @returns Human-readable display name
+ */
+export function getElementDisplayName(element: string): string {
+  return ELEMENT_DISPLAY_NAMES[element.toLowerCase()] || element
 }
 
 /** Color schemes for element-based styling */
@@ -25,6 +44,8 @@ export const ELEMENT_COLORS: Record<string, {
   header: string
   row1: string
   row2: string
+  /** CSS class for element-specific coloring */
+  cssClass: string
 }> = {
   fire: {
     bg: 'bg-red-950/30',
@@ -33,14 +54,16 @@ export const ELEMENT_COLORS: Record<string, {
     header: 'bg-red-900/40',
     row1: 'bg-red-950/30',
     row2: 'bg-red-950/10',
+    cssClass: 'element-fire',
   },
   water: {
-    bg: 'bg-blue-600/20',
-    border: 'border-blue-800/50',
-    text: 'text-blue-200',
-    header: 'bg-blue-600/40',
-    row1: 'bg-blue-600/20',
-    row2: 'bg-blue-600/5',
+    bg: 'bg-sky-950/30',
+    border: 'border-sky-800/50',
+    text: 'text-sky-200',
+    header: 'bg-sky-900/40',
+    row1: 'bg-sky-950/30',
+    row2: 'bg-sky-950/10',
+    cssClass: 'element-water',
   },
   earth: {
     bg: 'bg-green-950/30',
@@ -49,30 +72,34 @@ export const ELEMENT_COLORS: Record<string, {
     header: 'bg-green-900/40',
     row1: 'bg-green-950/30',
     row2: 'bg-green-950/10',
+    cssClass: 'element-earth',
   },
   air: {
-    bg: 'bg-zinc-400/30',
-    border: 'border-zinc-500/50',
-    text: 'text-zinc-200',
-    header: 'bg-zinc-300/40',
-    row1: 'bg-zinc-400/30',
-    row2: 'bg-zinc-400/10',
+    bg: 'bg-indigo-950/30',
+    border: 'border-indigo-800/50',
+    text: 'text-indigo-200',
+    header: 'bg-indigo-900/40',
+    row1: 'bg-indigo-950/30',
+    row2: 'bg-indigo-950/10',
+    cssClass: 'element-air',
   },
-  positive: {
-    bg: 'bg-yellow-400/20',
-    border: 'border-yellow-400/50',
+  light: {
+    bg: 'bg-yellow-400/10',
+    border: 'border-yellow-400/40',
     text: 'text-yellow-200',
-    header: 'bg-yellow-400/30',
-    row1: 'bg-yellow-400/20',
-    row2: 'bg-yellow-400/10',
+    header: 'bg-yellow-400/20',
+    row1: 'bg-yellow-400/10',
+    row2: 'bg-yellow-400/5',
+    cssClass: 'element-light',
   },
-  negative: {
+  dark: {
     bg: 'bg-purple-950/30',
     border: 'border-purple-800/50',
     text: 'text-purple-200',
     header: 'bg-purple-900/40',
     row1: 'bg-purple-950/30',
     row2: 'bg-purple-950/10',
+    cssClass: 'element-dark',
   },
   mixed: {
     bg: 'bg-zinc-800/20',
@@ -81,11 +108,12 @@ export const ELEMENT_COLORS: Record<string, {
     header: 'bg-zinc-700/40',
     row1: 'bg-zinc-800/30',
     row2: 'bg-zinc-800/10',
+    cssClass: '',
   },
 }
 
 /** Canonical order for sorting elements */
-export const ELEMENT_ORDER = ['fire', 'water', 'earth', 'air', 'positive', 'negative'] as const
+export const ELEMENT_ORDER = ['fire', 'water', 'earth', 'air', 'light', 'dark'] as const
 
 // ============ Rarity ============
 

@@ -264,7 +264,7 @@ export default function CreateCharacterPage() {
 
     // Success! Redirect to profile to see the new character
     invalidateCharacter(user.id)
-    router.push('/profile')
+    router.push('/')
   }
 
   // Loading states
@@ -288,7 +288,7 @@ export default function CreateCharacterPage() {
           </p>
           <div className="flex gap-4 justify-center">
             <Link
-              href="/profile"
+              href="/"
               className="px-6 py-3 bg-emerald-700 hover:bg-emerald-600 rounded-lg font-medium transition-colors"
             >
               View My Knight
@@ -434,7 +434,7 @@ export default function CreateCharacterPage() {
                 onClick={() => {
                   setWarnings([])
                   invalidateCharacter(user!.id)
-                  router.push('/profile')
+                  router.push('/')
                 }}
                 className="px-6 py-3 bg-emerald-700 hover:bg-emerald-600 rounded-lg font-medium transition-colors"
               >

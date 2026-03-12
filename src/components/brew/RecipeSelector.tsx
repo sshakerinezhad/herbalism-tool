@@ -58,7 +58,7 @@ export function RecipeSelector({
           <div className="bg-zinc-800/50 rounded-lg p-6 text-center">
             <p className="text-zinc-400 mb-4">No recipes known</p>
             <Link
-              href="/recipes"
+              href="/"
               className="inline-block px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors"
             >
               📖 View Recipe Book

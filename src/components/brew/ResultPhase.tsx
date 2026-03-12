@@ -76,7 +76,7 @@ export function ResultPhase({
         </button>
         {success && (
           <Link
-            href="/inventory"
+            href="/"
             className="flex-1 py-3 bg-purple-700 hover:bg-purple-600 rounded-lg font-semibold transition-colors text-center"
           >
             View Inventory
@@ -199,7 +199,7 @@ export function BatchResultPhase({
         </button>
         {successCount > 0 && (
           <Link
-            href="/inventory"
+            href="/"
             className="flex-1 py-3 bg-purple-700 hover:bg-purple-600 rounded-lg font-semibold transition-colors text-center"
           >
             View Inventory

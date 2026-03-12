@@ -53,7 +53,7 @@ export default function SetupPhase(props: SetupPhaseProps) {
       {!profile.name && (
         <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-4">
           <p className="text-amber-200 text-sm">
-            💡 Set up your <Link href="/profile" className="underline hover:text-amber-100">character profile</Link> to save your foraging modifier.
+            💡 Set up your <Link href="/" className="underline hover:text-amber-100">character profile</Link> to save your foraging modifier.
           </p>
         </div>
       )}

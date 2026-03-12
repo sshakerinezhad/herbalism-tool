@@ -175,7 +175,7 @@ export function ResultsPhase(props: ResultsPhaseProps) {
         </button>
         {remainingHerbs.length > 0 && (
           <Link
-            href="/inventory"
+            href="/"
             className="px-6 py-3 bg-blue-700 hover:bg-blue-600 rounded-lg font-medium transition-colors"
           >
             View Inventory →

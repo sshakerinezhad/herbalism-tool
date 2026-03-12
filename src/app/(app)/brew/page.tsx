@@ -306,7 +306,7 @@ export default function BrewPage() {
               You need to create a character before you can brew elixirs and bombs.
             </p>
             <Link
-              href="/profile"
+              href="/"
               className="inline-block px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors"
             >
               Create Character
@@ -328,7 +328,7 @@ export default function BrewPage() {
               Only characters with the Herbalist vocation can brew elixirs and bombs.
             </p>
             <Link
-              href="/profile"
+              href="/"
               className="inline-block mt-4 px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors"
             >
               View Profile

@@ -9,11 +9,17 @@
 
 All 9 tasks executed. See `wave2.md` for full summary.
 
-### Piece 2A — Profile & Navigation Restructure — COMPLETE
+### Piece 2A — Profile & Navigation Restructure — NAVIGATION DONE, VISUAL PASS DEFERRED
 
-Sessions 1-3: brainstorm. Session 4: plan. Session 5: implementation.
+Sessions 1-3: brainstorm. Session 4: plan. Session 5: implementation (14 tasks across 5 chunks, 9 commits).
 
-All 14 tasks executed. Persistent Ember & Silence nav bar, profile-as-home with sub-tabs, herbalism hub, settings page with editable identity + delete character, forage/brew in route group, all links updated.
+**What shipped:** Persistent Ember & Silence nav bar with bonfire indicators, route group `(app)/` with centralized auth, profile-as-home with sub-tabs (Character|Inventory|Journal), herbalism hub, settings page with editable identity + delete character, forage/brew moved into route group, all stale route references updated.
+
+**What's still in 2A scope but deferred (needs separate brainstorm):**
+- Character bar improvements (trait modals, skill proficiencies)
+- Mobile responsive nav collapse
+- Character creation wizard restyling
+- Design system application to profile/settings/character creation page content (pages moved as-is, no visual polish yet)
 
 **Route structure:**
 - `/` — Profile home (Character | Inventory | Journal sub-tabs)
@@ -28,20 +34,14 @@ All 14 tasks executed. Persistent Ember & Silence nav bar, profile-as-home with 
 
 - **Build passes cleanly** — zero errors
 - **Branch not yet merged** — still on `knights-of-belyar`
-- **All 2A work complete** — ready for manual testing or next piece
+- **2A navigation work done** — deferred items still need brainstorming
 
 ## What the next session needs to do
 
-1. **Manual testing** — verify all routes work with real data (dev server)
-2. **Brainstorm 2B** — Herbalism & Inventory piece
-3. Or **merge branch** if testing looks good
-
-## Open items (deferred — brainstorm separately)
-
-- Character bar improvements (trait modals, skill proficiencies)
-- Mobile responsive nav collapse
-- Character creation wizard restyling
-- Design system application to profile/settings page content
+1. **Manual testing** — verify all routes work with real data (`npm run dev`)
+2. **Decide on deferred 2A items** — brainstorm those separately, or fold into 2B/later
+3. **Brainstorm 2B** — Herbalism & Inventory piece (see `wave2.md`)
+4. Or **merge branch** if testing looks good
 
 ## Key files
 

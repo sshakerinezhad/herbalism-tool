@@ -102,11 +102,14 @@ export function CoinPurse({
   const [coins, setCoins] = useState<Coins>(propCoins)
   const [error, setError] = useState<string | null>(null)
   const [locked, setLocked] = useState(true)
+  const [pendingCoin, setPendingCoin] = useState<CoinType | null>(null)
 
   // Sync local state with prop changes (e.g., after cache invalidation refetch)
+  // Skip sync if a mutation is in-flight — don't clobber optimistic state
   useEffect(() => {
+    if (pendingCoin) return
     setCoins(propCoins)
-  }, [propCoins.platinum, propCoins.gold, propCoins.silver, propCoins.copper])
+  }, [propCoins.platinum, propCoins.gold, propCoins.silver, propCoins.copper, pendingCoin])
 
   /**
    * Handle increment/decrement with optimistic update pattern:
@@ -115,11 +118,14 @@ export function CoinPurse({
    * 3. Revert on error
    */
   async function handleChange(coinType: CoinType, delta: number) {
-    if (disabled) return
+    if (disabled || pendingCoin) return
 
     const previousValue = coins[coinType]
     const newValue = Math.max(0, previousValue + delta)
     if (newValue === previousValue) return
+
+    // Block concurrent mutations
+    setPendingCoin(coinType)
 
     // Optimistic update
     setCoins(prev => ({ ...prev, [coinType]: newValue }))
@@ -135,6 +141,8 @@ export function CoinPurse({
     } else {
       onUpdate?.()
     }
+
+    setPendingCoin(null)
   }
 
   const isDisabled = disabled || locked
@@ -163,7 +171,7 @@ export function CoinPurse({
         </div>
       )}
 
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-4 gap-2 max-w-sm mx-auto">
         {COIN_CONFIG.map(({ type, label, gradient, textColor, glow }) => (
           <CoinCell
             key={type}
@@ -172,7 +180,7 @@ export function CoinPurse({
             gradient={gradient}
             textColor={textColor}
             glow={glow}
-            disabled={isDisabled}
+            disabled={isDisabled || pendingCoin === type}
             onChange={(delta) => handleChange(type, delta)}
           />
         ))}

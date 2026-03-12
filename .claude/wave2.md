@@ -57,6 +57,17 @@ Replaced hub-and-spoke navigation with persistent Ember & Silence nav bar and pr
 
 **Plan:** `.claude/work-plan.md` | **Spec:** `docs/superpowers/specs/2026-03-12-profile-navigation-restructure.md` | **Nav mockup:** `.claude/ember-refined-v3.html`
 
+### Interstitial — Bug Fixes + Character Sheet Polish ✓ COMPLETE
+
+Targeted fixes and UI improvements between 2A and 2B. Not a formal wave piece — driven by user-reported issues.
+
+**What shipped (session 11, uncommitted):**
+- **Brewing bug fix:** `useBrewState.ts` — removed `count * batchCount` that multiplied potency by batch count (DB layer already handles repetition)
+- **CoinPurse debounce:** `CoinPurse.tsx` — added `pendingCoin` state guard to serialize async mutations and prevent race conditions from rapid clicks
+- **AddElixirModal:** New modal to manually add brewed items from known recipes — potency picker (I–IV), template variable choices, quantity. Wired into HerbalismSection Brewed tab.
+- **SkillsPanel redesign:** View mode now 2-column grid with tighter spacing (~50% less vertical space). Edit mode unchanged.
+- **CoinPurse width:** Constrained to `max-w-sm`, centered, reduced gap
+
 ### 2B — Herbalism & Inventory
 
 **Functional:**

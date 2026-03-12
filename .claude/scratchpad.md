@@ -1,48 +1,35 @@
 # Scratchpad
 
-**Branch:** `knights-of-belyar`
-**Last session:** 2026-03-12 (session 9 — planning only)
-
-## Prior uncommitted work (session 8)
-
-The full 2A Visual Pass is implemented but **still uncommitted**. All changes listed below are sitting in the working tree:
-- 4 new files: `Textarea.tsx`, `SkillsPanel.tsx`, `ChapterProgress.tsx`, `SelectionCard.tsx`
-- 12 modified files across Settings, Wizard, Profile, db, hooks
-- Build was passing as of session 8. Needs commit + visual testing.
-
-## What was done this session (session 9)
-
-**Planning session only — no code changes.** Investigated 3 user-reported issues and designed fixes:
-
-### 1. Brewing bug (confirmed)
-- **Root cause:** `src/lib/hooks/useBrewState.ts` ~line 380 — `count: count * batchCount` multiplies effect potency by batch count. "Brew 3 single-power" becomes "1 triple-power × dice results."
-- **Fix:** Remove `* batchCount` — batch count already controls repetition at the DB layer.
-
-### 2. CoinPurse debounce (confirmed)
-- **Root cause:** `src/components/character/CoinPurse.tsx` — no pending state guard, so rapid clicks fire concurrent async DB calls that race. The `useEffect` on `propCoins` can reset optimistic state mid-flight.
-- **Fix:** Add `pendingCoin` state to block concurrent mutations + guard the useEffect sync.
-
-### 3. Add Elixir feature (new)
-- User wants to manually add elixirs from known recipes (not free-text).
-- **New file:** `AddElixirModal.tsx` in `src/components/inventory/herbalism/` — mirrors AddHerbModal pattern.
-- Pick from unlocked recipes → set potency (1–4) → handle template variable choices → set quantity → calls existing `addCharacterBrewedItem()`.
-- Reuses: `parseTemplateVariables` + `fillTemplate` from `src/lib/brewing.ts`, `useCharacterRecipes` hook, `addCharacterBrewedItem` from `characterInventory.ts`.
-
-### 4. Honour stat — already works
-- User didn't realize honour is already editable on Settings page. No changes needed.
+**Branch:** `main`
+**Last session:** 2026-03-12 (session 11)
 
 ## Current state
 
-- **Work plan written** at `.claude/work-plan.md` — covers all 3 items above
-- **No code changes made this session** — plan mode only
-- **Prior 2A visual pass still uncommitted**
+- On `main`, **uncommitted changes** from session 11
+- Build passing
+- Work plan at `.claude/work-plan.md` is fully executed
+
+## Session 11 — work plan execution + UI polish (2026-03-12)
+
+**All 3 work plan items + 2 bonus UI fixes implemented:**
+
+| # | Change | Files | Status |
+|---|--------|-------|--------|
+| 1 | Brewing bug — removed `* batchCount` potency multiplier | `useBrewState.ts` | Done |
+| 2 | CoinPurse debounce — `pendingCoin` guard serializes mutations, skips prop sync mid-flight | `CoinPurse.tsx` | Done |
+| 3 | AddElixirModal — pick from unlocked recipes, potency I–IV, template vars, quantity | `AddElixirModal.tsx` (new), `HerbalismSection.tsx`, `index.ts` | Done |
+| 4 | SkillsPanel redesign — 2-column grid view mode, tighter spacing, text-xs | `SkillsPanel.tsx` | Done |
+| 5 | CoinPurse width — `max-w-sm mx-auto`, gap-2 | `CoinPurse.tsx` | Done |
 
 ## What the next session needs to do
 
-1. **Commit the 2A visual pass first** (large commit, all uncommitted changes from session 8)
-2. **Implement work plan** — 3 items in order:
-   - Brewing bug fix (1 line)
-   - CoinPurse debounce (~15 lines)
-   - AddElixirModal (new file + 2 modified files)
-3. **Verify:** `npm run build` + manual testing per work-plan.md verification section
-4. **Commit** the bug fixes + feature
+1. **Manual testing** per checklist below
+2. **Commit** the bug fixes + feature + UI polish
+3. **Start 2B** (Herbalism & Inventory overhaul) — see `.claude/wave2.md`
+
+### Manual testing checklist:
+- Brew page: "by recipe" → select 3× single-power → should get up to 3 single-potency elixirs (not one triple-power)
+- CoinPurse: rapid-click +1 gold 5 times → should increment exactly 5, no jumps or resets
+- Inventory Brewed tab: click "+ Add Elixir" → pick recipe → set potency 2 → add → verify item appears
+- Character sheet: verify skills panel is compact 2-column layout
+- Character sheet: verify coin purse is narrower and centered

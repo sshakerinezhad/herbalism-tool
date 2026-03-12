@@ -13,12 +13,14 @@ Everything should be clean, simple, and scalable. No spaghetti code.
 
 ## Verification
 
-Every change must be verified with irrefutable proof before it is considered done. Run `/verify` against the workplan before implementation begins. It produces the tests in `__verify__/`.
+Verification with `/verify` is **optional** — only run it when I explicitly ask for it.
 
-When implementing:
-- After each change, run its corresponding test from `__verify__/tests/`. If it fails, fix the implementation. Do not modify the test. Do not move on.
-- At each breakpoint, run the checkpoint script. If it fails, everything in that block is broken. Fix before proceeding.
-- A step is not complete until its tests and the relevant checkpoint pass.
+When I do request it:
+- Run `/verify` against the workplan to generate tests in `__verify__/`
+- After each change, run its corresponding test. If it fails, fix the implementation, not the test.
+- At each breakpoint, run the checkpoint script. Fix before proceeding.
+
+When I don't request it, `npm run build` is sufficient proof that things work.
 
 ## File Conventions
 - `masterplan.md` — long-range architecture and goals

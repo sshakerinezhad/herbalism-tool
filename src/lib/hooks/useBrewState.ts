@@ -377,7 +377,7 @@ export function useBrewState({ inventory, characterRecipes }: UseBrewStateParams
       // Build paired effects from selected recipes
       const effects: PairedEffect[] = selectedRecipes.map(({ recipe, count }) => ({
         recipe,
-        count: count * batchCount
+        count
       }))
 
       // Check for required choices

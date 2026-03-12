@@ -76,6 +76,56 @@ export function SkillsPanel({
     return n >= 0 ? `+${n}` : `${n}`
   }
 
+  if (mode === 'view') {
+    return (
+      <div className="grid grid-cols-2 gap-x-5 gap-y-2.5">
+        {ABILITY_ORDER.map(ability => {
+          const abilitySkills = grouped.get(ability)
+          if (!abilitySkills || abilitySkills.length === 0) return null
+
+          return (
+            <div key={ability}>
+              <h4 className="text-[10px] font-ui tracking-[0.14em] text-vellum-400/80 uppercase mb-1 pb-0.5 border-b border-sepia-800/40">
+                {ABILITY_NAMES[ability]}
+              </h4>
+              <div>
+                {abilitySkills.map(skill => {
+                  const state = skillStates.get(skill.id) ?? { is_proficient: false, is_expertise: false }
+                  const bonus = getBonus(skill)
+
+                  return (
+                    <div key={skill.id} className="flex items-center justify-between py-[3px] px-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                          state.is_expertise
+                            ? 'bg-amber-400'
+                            : state.is_proficient
+                              ? 'bg-bronze-muted'
+                              : 'bg-sepia-800/40'
+                        }`} />
+                        <span className={`text-xs leading-tight ${
+                          state.is_proficient ? 'text-vellum-200' : 'text-vellum-400/70'
+                        }`}>
+                          {skill.name}
+                        </span>
+                      </div>
+                      <span className={`text-xs font-mono tabular-nums ml-2 ${
+                        state.is_proficient ? 'text-vellum-200' : 'text-vellum-400/50'
+                      }`}>
+                        {formatBonus(bonus)}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  // Edit mode — keep single column for usability
   return (
     <div className="space-y-4">
       {ABILITY_ORDER.map(ability => {
@@ -92,33 +142,6 @@ export function SkillsPanel({
                 const state = skillStates.get(skill.id) ?? { is_proficient: false, is_expertise: false }
                 const bonus = getBonus(skill)
 
-                if (mode === 'view') {
-                  return (
-                    <div key={skill.id} className="flex items-center justify-between py-1 px-2 rounded">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${
-                          state.is_expertise
-                            ? 'bg-amber-400'
-                            : state.is_proficient
-                              ? 'bg-bronze-muted'
-                              : 'bg-sepia-800/50'
-                        }`} />
-                        <span className={`text-sm ${
-                          state.is_proficient ? 'text-vellum-100' : 'text-vellum-400'
-                        }`}>
-                          {skill.name}
-                        </span>
-                      </div>
-                      <span className={`text-sm font-mono tabular-nums ${
-                        state.is_proficient ? 'text-vellum-100' : 'text-vellum-500'
-                      }`}>
-                        {formatBonus(bonus)}
-                      </span>
-                    </div>
-                  )
-                }
-
-                // Edit mode
                 return (
                   <div key={skill.id} className="flex items-center justify-between py-1 px-2 rounded hover:bg-grimoire-950/50">
                     <div className="flex items-center gap-3">
@@ -128,7 +151,6 @@ export function SkillsPanel({
                           const newProf = !state.is_proficient
                           onChange?.(skill.id, {
                             is_proficient: newProf,
-                            // Clear expertise if removing proficiency
                             is_expertise: newProf ? state.is_expertise : false,
                           })
                         }}

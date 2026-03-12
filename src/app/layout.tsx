@@ -1,11 +1,26 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Grenze_Gotisch, Almendra, Cinzel } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const grenzeGotisch = Grenze_Gotisch({
+  variable: "--font-grenze-gotisch",
   subsets: ["latin"],
+  weight: ["600", "700", "800", "900"],
+});
+
+const almendra = Almendra({
+  variable: "--font-almendra",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  style: ["normal", "italic"],
+});
+
+const cinzel = Cinzel({
+  variable: "--font-cinzel",
+  subsets: ["latin"],
+  weight: ["400"],
 });
 
 const geistMono = Geist_Mono({
@@ -26,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${grenzeGotisch.variable} ${almendra.variable} ${cinzel.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
           {children}

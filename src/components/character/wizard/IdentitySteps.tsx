@@ -20,6 +20,8 @@ import {
   BACKGROUNDS,
   KNIGHT_ORDERS,
 } from '@/lib/constants'
+import { Input, Textarea } from '@/components/ui'
+import { SelectionCard } from './SelectionCard'
 
 // ============ Step 1: Name & Appearance ============
 
@@ -27,25 +29,23 @@ export function StepName({ data, setData }: StepProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold mb-4">What is your knight&apos;s name?</h2>
-        <input
-          type="text"
+        <h2 className="font-heading text-xl text-vellum-50 mb-4">What is your knight&apos;s name?</h2>
+        <Input
           value={data.name}
           onChange={(e) => setData(prev => ({ ...prev, name: e.target.value }))}
           placeholder="Enter character name"
-          className="w-full max-w-md px-4 py-3 bg-zinc-900 border border-zinc-600 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-600"
+          className="max-w-md"
           autoFocus
         />
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold mb-4">Describe your appearance (optional)</h2>
-        <textarea
+        <h2 className="font-heading text-xl text-vellum-50 mb-4">Describe your appearance (optional)</h2>
+        <Textarea
           value={data.appearance}
           onChange={(e) => setData(prev => ({ ...prev, appearance: e.target.value }))}
           placeholder="Physical description, distinctive features, etc."
           rows={4}
-          className="w-full px-4 py-3 bg-zinc-900 border border-zinc-600 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-600 resize-none"
         />
       </div>
     </div>
@@ -59,47 +59,39 @@ export function StepRace({ data, setData }: StepProps) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Choose your race</h2>
+      <h2 className="font-heading text-xl text-vellum-50">Choose your race</h2>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {raceEntries.map(([key, { name }]) => (
-          <button
+          <SelectionCard
             key={key}
+            selected={data.race === key}
             onClick={() => setData(prev => ({
               ...prev,
               race: key,
               subrace: key === 'human' ? prev.subrace : null
             }))}
-            className={`p-4 rounded-lg border text-left transition-colors ${
-              data.race === key
-                ? 'bg-emerald-900/30 border-emerald-600 text-emerald-100'
-                : 'bg-zinc-900 border-zinc-700 hover:border-zinc-500'
-            }`}
           >
-            <span className="font-medium">{name}</span>
-          </button>
+            <span className="font-medium text-vellum-100">{name}</span>
+          </SelectionCard>
         ))}
       </div>
 
       {data.race === 'human' && (
         <div className="mt-6">
-          <h3 className="text-lg font-medium mb-3">Choose your culture</h3>
+          <h3 className="font-heading text-lg text-vellum-100 mb-3">Choose your culture</h3>
           <div className="grid grid-cols-2 gap-3">
             {(Object.entries(HUMAN_CULTURES) as [HumanCulture, typeof HUMAN_CULTURES[HumanCulture]][]).map(([key, culture]) => (
-              <button
+              <SelectionCard
                 key={key}
+                selected={data.subrace === key}
                 onClick={() => setData(prev => ({ ...prev, subrace: key }))}
-                className={`p-4 rounded-lg border text-left transition-colors ${
-                  data.subrace === key
-                    ? 'bg-emerald-900/30 border-emerald-600'
-                    : 'bg-zinc-900 border-zinc-700 hover:border-zinc-500'
-                }`}
               >
-                <div className="font-medium">{culture.name}</div>
-                <div className="text-xs text-zinc-400 mt-1">
+                <div className="font-medium text-vellum-100">{culture.name}</div>
+                <div className="text-xs text-vellum-400 mt-1">
                   {culture.region} &bull; {culture.religion}
                 </div>
-              </button>
+              </SelectionCard>
             ))}
           </div>
         </div>
@@ -113,36 +105,31 @@ export function StepRace({ data, setData }: StepProps) {
 export function StepBackground({ data, setData }: StepProps) {
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Choose your background</h2>
+      <h2 className="font-heading text-xl text-vellum-50">Choose your background</h2>
 
       <div className="grid gap-4">
         {(Object.entries(BACKGROUNDS) as [Background, typeof BACKGROUNDS[Background]][]).map(([key, bg]) => (
-          <button
+          <SelectionCard
             key={key}
+            selected={data.background === key}
             onClick={() => setData(prev => ({ ...prev, background: key }))}
-            className={`p-4 rounded-lg border text-left transition-colors ${
-              data.background === key
-                ? 'bg-emerald-900/30 border-emerald-600'
-                : 'bg-zinc-900 border-zinc-700 hover:border-zinc-500'
-            }`}
           >
-            <div className="font-medium text-lg">{bg.name}</div>
-            <div className="text-zinc-400 text-sm mt-1">{bg.description}</div>
-          </button>
+            <div className="text-vellum-100 font-medium text-lg">{bg.name}</div>
+            <div className="text-vellum-400 text-sm mt-1">{bg.description}</div>
+          </SelectionCard>
         ))}
       </div>
 
       {data.background === 'initiate' && (
         <div className="mt-6">
-          <label className="block text-lg font-medium mb-2">
+          <label className="block font-heading text-lg text-vellum-100 mb-2">
             What was your previous profession?
           </label>
-          <input
-            type="text"
+          <Input
             value={data.previousProfession}
             onChange={(e) => setData(prev => ({ ...prev, previousProfession: e.target.value }))}
             placeholder="e.g., Blacksmith, Sailor, Scholar..."
-            className="w-full max-w-md px-4 py-3 bg-zinc-900 border border-zinc-600 rounded-lg text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-600"
+            className="max-w-md"
           />
         </div>
       )}
@@ -157,28 +144,22 @@ export function StepClass({ data, setData }: StepProps) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Choose your class</h2>
+      <h2 className="font-heading text-xl text-vellum-50">Choose your class</h2>
 
       <div className="grid gap-3">
         {classEntries.map(([key, cls]) => {
           const isDisabled = cls.requiresBackground && data.background !== cls.requiresBackground
 
           return (
-            <button
+            <SelectionCard
               key={key}
-              onClick={() => !isDisabled && setData(prev => ({ ...prev, class: key }))}
+              selected={data.class === key}
               disabled={isDisabled}
-              className={`p-4 rounded-lg border text-left transition-colors ${
-                data.class === key
-                  ? 'bg-emerald-900/30 border-emerald-600'
-                  : isDisabled
-                    ? 'bg-zinc-900/50 border-zinc-800 text-zinc-500 cursor-not-allowed'
-                    : 'bg-zinc-900 border-zinc-700 hover:border-zinc-500'
-              }`}
+              onClick={() => !isDisabled && setData(prev => ({ ...prev, class: key }))}
             >
               <div className="flex justify-between items-center">
-                <span className="font-medium text-lg">{cls.name}</span>
-                <span className="text-sm text-zinc-400">
+                <span className="font-medium text-lg text-vellum-100">{cls.name}</span>
+                <span className="text-sm text-vellum-400">
                   +{cls.proficiencies} skill proficiencies
                 </span>
               </div>
@@ -187,7 +168,7 @@ export function StepClass({ data, setData }: StepProps) {
                   Requires {BACKGROUNDS[cls.requiresBackground].name} background
                 </div>
               )}
-            </button>
+            </SelectionCard>
           )
         })}
       </div>
@@ -200,26 +181,22 @@ export function StepClass({ data, setData }: StepProps) {
 export function StepOrder({ data, setData }: StepProps) {
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Choose your Knight Order</h2>
-      <p className="text-zinc-400">
+      <h2 className="font-heading text-xl text-vellum-50">Choose your Knight Order</h2>
+      <p className="text-vellum-400">
         Each order specializes in hunting a specific type of creature.
       </p>
 
       <div className="grid gap-3">
         {(Object.entries(KNIGHT_ORDERS) as [KnightOrder, typeof KNIGHT_ORDERS[KnightOrder]][]).map(([key, order]) => (
-          <button
+          <SelectionCard
             key={key}
+            selected={data.knightOrder === key}
             onClick={() => setData(prev => ({ ...prev, knightOrder: key }))}
-            className={`p-4 rounded-lg border text-left transition-colors ${
-              data.knightOrder === key
-                ? 'bg-emerald-900/30 border-emerald-600'
-                : 'bg-zinc-900 border-zinc-700 hover:border-zinc-500'
-            }`}
           >
-            <div className="font-medium">{order.name}</div>
+            <div className="font-medium text-vellum-100">{order.name}</div>
             <div className="text-sm text-amber-400 mt-1">Focus: {order.focus}</div>
-            <div className="text-sm text-zinc-400 mt-1">{order.description}</div>
-          </button>
+            <div className="text-sm text-vellum-400 mt-1">{order.description}</div>
+          </SelectionCard>
         ))}
       </div>
     </div>

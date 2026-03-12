@@ -16,6 +16,7 @@ import {
   useCharacterSkills,
   useCharacterArmor,
   useArmorSlots,
+  useSkills,
   useCharacterWeaponSlots,
   useCharacterQuickSlots,
   useCharacterWeapons,
@@ -25,7 +26,7 @@ import {
   CharacterSkillData,
   CharacterArmorData,
 } from '@/lib/hooks'
-import { ProfileSkeleton, ErrorDisplay, GrimoireCard, SectionHeader } from '@/components/ui'
+import { ProfileSkeleton, ErrorDisplay, GrimoireCard, SectionHeader, Button } from '@/components/ui'
 import {
   setCharacterArmor,
   removeCharacterArmor,
@@ -35,10 +36,12 @@ import {
   QuickSlots,
   CharacterBanner,
   EquipmentWeaponsPanel,
+  SkillsPanel,
 } from '@/components/character'
 import {
   getAbilityModifier,
   calculateMaxHP,
+  getProficiencyBonus,
 } from '@/lib/constants'
 import { computeMaxForagingSessions, computeForagingModifier, computeBrewingModifier } from '@/lib/characterUtils'
 import type { Character, ArmorSlot, ArmorType } from '@/lib/types'
@@ -133,6 +136,11 @@ export function CharacterSheet({ character, userEmail }: CharacterSheetProps) {
   } = useArmorSlots()
 
   const {
+    data: allSkills = [],
+    isLoading: allSkillsLoading,
+  } = useSkills()
+
+  const {
     data: weaponSlots = [],
     isLoading: weaponSlotsLoading,
   } = useCharacterWeaponSlots(character.id)
@@ -158,7 +166,7 @@ export function CharacterSheet({ character, userEmail }: CharacterSheetProps) {
   } = useCharacterBrewedItems(character.id)
 
   // Show skeleton while sub-data loads
-  const subDataLoading = skillsLoading || armorLoading || slotsLoading ||
+  const subDataLoading = skillsLoading || armorLoading || slotsLoading || allSkillsLoading ||
     weaponSlotsLoading || quickSlotsLoading || weaponsLoading || itemsLoading || brewedLoading
 
   if (subDataLoading) {
@@ -170,6 +178,7 @@ export function CharacterSheet({ character, userEmail }: CharacterSheetProps) {
       character={character}
       userEmail={userEmail}
       characterSkills={characterSkills}
+      allSkills={allSkills}
       characterArmor={characterArmor}
       allArmorSlots={allArmorSlots}
       weaponSlots={weaponSlots}
@@ -196,6 +205,7 @@ function CharacterSheetContent({
   character,
   userEmail,
   characterSkills,
+  allSkills,
   characterArmor,
   allArmorSlots,
   weaponSlots,
@@ -216,6 +226,7 @@ function CharacterSheetContent({
   character: Character
   userEmail?: string
   characterSkills: CharacterSkillData[]
+  allSkills: import('@/lib/types').Skill[]
   characterArmor: CharacterArmorData[]
   allArmorSlots: ArmorSlot[]
   weaponSlots: import('@/lib/types').CharacterWeaponSlot[]
@@ -237,10 +248,24 @@ function CharacterSheetContent({
   const isHerbalist = character.vocation === 'herbalist'
   const [armorError, setArmorError] = useState<string | null>(null)
 
-  // Get proficient skill names
-  const proficientSkillNames = characterSkills
-    .filter(cs => cs.is_proficient)
-    .map(cs => cs.skill.name)
+  // Build skill state map for SkillsPanel
+  const skillStates = new Map<number, { is_proficient: boolean; is_expertise: boolean }>()
+  for (const cs of characterSkills) {
+    skillStates.set(cs.skill.id, {
+      is_proficient: cs.is_proficient,
+      is_expertise: cs.is_expertise,
+    })
+  }
+
+  const characterStats = {
+    str: character.str,
+    dex: character.dex,
+    con: character.con,
+    int: character.int,
+    wis: character.wis,
+    cha: character.cha,
+    hon: character.hon,
+  }
 
   // Calculate AC from armor
   const { totalAC, armorLevel } = calculateArmorClass(characterArmor, allArmorSlots, character.dex)
@@ -296,39 +321,32 @@ function CharacterSheetContent({
         <ErrorDisplay message={armorError} />
       )}
 
-      {/* Skills + Coin Purse row */}
-      <div className="grid md:grid-cols-2 gap-4">
-        {/* Skills Card */}
-        <GrimoireCard>
-          <SectionHeader>Skill Proficiencies</SectionHeader>
-          <div className="flex flex-wrap gap-2">
-            {proficientSkillNames.length > 0 ? (
-              proficientSkillNames.map(name => (
-                <span key={name} className="px-2 py-1 bg-emerald-900/30 border border-emerald-700/50 text-emerald-400 rounded text-sm">
-                  {name}
-                </span>
-              ))
-            ) : (
-              <span className="text-vellum-300 text-sm">No skills recorded</span>
-            )}
-          </div>
-        </GrimoireCard>
+      {/* Skills */}
+      <GrimoireCard>
+        <SectionHeader>Skills</SectionHeader>
+        <SkillsPanel
+          mode="view"
+          skills={allSkills}
+          skillStates={skillStates}
+          stats={characterStats}
+          level={character.level}
+        />
+      </GrimoireCard>
 
-        {/* Money Card */}
-        <GrimoireCard>
-          <SectionHeader>Coin Purse</SectionHeader>
-          <CoinPurse
-            characterId={character.id}
-            coins={{
-              platinum: character.platinum,
-              gold: character.gold,
-              silver: character.silver,
-              copper: character.copper,
-            }}
-            onUpdate={onMoneyChanged}
-          />
-        </GrimoireCard>
-      </div>
+      {/* Coin Purse */}
+      <GrimoireCard>
+        <SectionHeader>Coin Purse</SectionHeader>
+        <CoinPurse
+          characterId={character.id}
+          coins={{
+            platinum: character.platinum,
+            gold: character.gold,
+            silver: character.silver,
+            copper: character.copper,
+          }}
+          onUpdate={onMoneyChanged}
+        />
+      </GrimoireCard>
 
       {/* Quick Slots */}
       <QuickSlots
@@ -349,16 +367,12 @@ function CharacterSheetContent({
 
       {/* Herbalist Section - Only show for herbalists */}
       {isHerbalist && (
-        <div>
-          <h2 className="text-lg font-semibold mb-4 text-emerald-400">🌿 Herbalism Settings</h2>
+        <GrimoireCard className="space-y-4">
+          <SectionHeader>Herbalism</SectionHeader>
 
           {profileLoadError && (
-            <div className="mb-4">
-              <ErrorDisplay message={`${profileLoadError}. Using local defaults.`} />
-            </div>
+            <ErrorDisplay message={`${profileLoadError}. Using local defaults.`} />
           )}
-
-          <GrimoireCard className="space-y-4">
             {/* Max Foraging Sessions (computed) */}
             <div className="flex justify-between items-center">
               <span className="text-vellum-300">Max Foraging Sessions</span>
@@ -398,17 +412,17 @@ function CharacterSheetContent({
                   <span className="text-vellum-300">
                     Sessions used today: <strong className="text-vellum-100">{sessionsUsedToday}</strong>
                   </span>
-                  <button
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={longRest}
-                    className="px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded-lg text-sm font-medium text-vellum-50 transition-colors"
                   >
                     Long Rest
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
-          </GrimoireCard>
-        </div>
+        </GrimoireCard>
       )}
 
       {/* Non-herbalist foraging note */}

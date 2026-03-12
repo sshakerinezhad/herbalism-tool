@@ -555,6 +555,47 @@ export async function fetchCharacterSkills(characterId: string): Promise<{
   return { data: transformed, error: null }
 }
 
+/**
+ * Replace all skill proficiencies for a character
+ * Deletes existing rows, then batch inserts the new set.
+ */
+export async function upsertCharacterSkills(
+  characterId: string,
+  skills: Array<{ skill_id: number; is_proficient: boolean; is_expertise: boolean }>
+): Promise<{ error: string | null }> {
+  // Delete all existing skill rows for this character
+  const { error: deleteError } = await supabase
+    .from('character_skills')
+    .delete()
+    .eq('character_id', characterId)
+
+  if (deleteError) {
+    return { error: deleteError.message }
+  }
+
+  // Insert the new set (skip if empty)
+  if (skills.length === 0) {
+    return { error: null }
+  }
+
+  const rows = skills.map(s => ({
+    character_id: characterId,
+    skill_id: s.skill_id,
+    is_proficient: s.is_proficient,
+    is_expertise: s.is_expertise,
+  }))
+
+  const { error: insertError } = await supabase
+    .from('character_skills')
+    .insert(rows)
+
+  if (insertError) {
+    return { error: insertError.message }
+  }
+
+  return { error: null }
+}
+
 // ============ Weapon Slot Operations ============
 
 /**

@@ -22,6 +22,9 @@ export type { QuickSlotCellProps } from './QuickSlotCell'
 export { EquipmentWeaponsPanel } from './EquipmentWeaponsPanel'
 export type { EquipmentWeaponsPanelProps } from './EquipmentWeaponsPanel'
 
+// Shared components
+export { SkillsPanel } from './SkillsPanel'
+
 // Profile page components
 export { CharacterPortrait } from './CharacterPortrait'
 export { CharacterBanner } from './CharacterBanner'

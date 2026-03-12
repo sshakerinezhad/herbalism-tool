@@ -3,17 +3,16 @@
 /**
  * Character Creation Wizard
  *
- * A 10-step guided wizard for creating a Knight of Belyar character.
+ * A chapter-based guided wizard for creating a Knight of Belyar character.
  * Orchestrates state, validation, navigation, and submission.
  * Step rendering is delegated to extracted components in @/components/character/wizard.
  */
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { useAuth } from '@/lib/auth'
 import { useArmorSlots, useSkills, useInvalidateQueries } from '@/lib/hooks'
-import { LoadingState, WarningDisplay } from '@/components/ui'
+import { LoadingState, WarningDisplay, GrimoireCard, Button, ErrorDisplay } from '@/components/ui'
 import {
   createCharacter,
   hasCharacter,
@@ -23,8 +22,9 @@ import {
 import { initializeBaseCharacterRecipes } from '@/lib/db/characterInventory'
 import { CLASSES } from '@/lib/constants'
 import type { CharacterStats } from '@/lib/types'
-import type { WizardStep, WizardData } from '@/components/character/wizard'
+import type { WizardStep, WizardData, WizardChapter } from '@/components/character/wizard'
 import {
+  ChapterProgress,
   StepName,
   StepRace,
   StepBackground,
@@ -39,23 +39,14 @@ import {
 
 // ============ Constants ============
 
-const STEPS: WizardStep[] = [
-  'name', 'race', 'background', 'class', 'order',
-  'stats', 'skills', 'vocation', 'equipment', 'review'
+const CHAPTERS: WizardChapter[] = [
+  { number: 'I',   title: 'Name Your Knight',      steps: ['name'] },
+  { number: 'II',  title: 'Choose Your Heritage',   steps: ['race', 'background'] },
+  { number: 'III', title: 'Choose Your Path',        steps: ['class', 'order'] },
+  { number: 'IV',  title: 'Set Your Abilities',      steps: ['stats', 'skills'] },
+  { number: 'V',   title: 'Choose Your Calling',     steps: ['vocation', 'equipment'] },
+  { number: 'VI',  title: 'Review & Forge',          steps: ['review'] },
 ]
-
-const STEP_TITLES: Record<WizardStep, string> = {
-  name: 'Name & Appearance',
-  race: 'Race',
-  background: 'Background',
-  class: 'Class',
-  order: 'Knight Order',
-  stats: 'Statistics',
-  skills: 'Skills',
-  vocation: 'Vocation',
-  equipment: 'Equipment',
-  review: 'Review & Create',
-}
 
 const DEFAULT_STATS: CharacterStats = {
   str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10, hon: 8
@@ -73,8 +64,14 @@ export default function CreateCharacterPage() {
   const { data: armorSlots = [], isLoading: slotsLoading } = useArmorSlots()
   const loadingRef = skillsLoading || slotsLoading
 
-  // Wizard state
-  const [currentStep, setCurrentStep] = useState<WizardStep>('name')
+  // Chapter-based navigation state
+  const [currentChapter, setCurrentChapter] = useState(0)
+  const [currentSubStep, setCurrentSubStep] = useState(0)
+
+  // Derive current step from chapter/substep
+  const currentStep = CHAPTERS[currentChapter].steps[currentSubStep]
+
+  // Wizard data state
   const [data, setData] = useState<WizardData>({
     name: '',
     appearance: '',
@@ -125,28 +122,57 @@ export default function CreateCharacterPage() {
   }, [data.class])
 
   // Navigation
-  const currentStepIndex = STEPS.indexOf(currentStep)
-  const canGoBack = currentStepIndex > 0
-  const canGoNext = currentStepIndex < STEPS.length - 1
+  const isFirstStep = currentChapter === 0 && currentSubStep === 0
+  const isLastStep = currentChapter === CHAPTERS.length - 1 &&
+    currentSubStep === CHAPTERS[CHAPTERS.length - 1].steps.length - 1
 
   function goBack() {
-    if (canGoBack) {
-      setCurrentStep(STEPS[currentStepIndex - 1])
+    if (currentSubStep > 0) {
+      setCurrentSubStep(currentSubStep - 1)
+    } else if (currentChapter > 0) {
+      const prevChapter = currentChapter - 1
+      setCurrentChapter(prevChapter)
+      setCurrentSubStep(CHAPTERS[prevChapter].steps.length - 1)
     }
   }
 
   function goNext() {
-    if (canGoNext && isStepValid(currentStep)) {
-      setCurrentStep(STEPS[currentStepIndex + 1])
+    if (!isStepValid(currentStep)) return
+
+    const chapter = CHAPTERS[currentChapter]
+    if (currentSubStep < chapter.steps.length - 1) {
+      setCurrentSubStep(currentSubStep + 1)
+    } else if (currentChapter < CHAPTERS.length - 1) {
+      setCurrentChapter(currentChapter + 1)
+      setCurrentSubStep(0)
     }
   }
 
   function goToStep(step: WizardStep) {
-    const targetIndex = STEPS.indexOf(step)
-    // Can only go to steps we've completed or the next one
-    if (targetIndex <= currentStepIndex + 1) {
-      setCurrentStep(step)
+    // Find which chapter and substep this step is in
+    for (let c = 0; c < CHAPTERS.length; c++) {
+      const s = CHAPTERS[c].steps.indexOf(step)
+      if (s !== -1) {
+        // Flatten current position and target position to compare
+        const currentFlat = flatIndex(currentChapter, currentSubStep)
+        const targetFlat = flatIndex(c, s)
+        // Can go to any step we've completed or the next one
+        if (targetFlat <= currentFlat + 1) {
+          setCurrentChapter(c)
+          setCurrentSubStep(s)
+        }
+        return
+      }
     }
+  }
+
+  // Helper to flatten chapter/substep into a single index for comparison
+  function flatIndex(chapter: number, subStep: number): number {
+    let idx = 0
+    for (let c = 0; c < chapter; c++) {
+      idx += CHAPTERS[c].steps.length
+    }
+    return idx + subStep
   }
 
   // Validation
@@ -279,26 +305,20 @@ export default function CreateCharacterPage() {
   // If user already has a character, show message instead of wizard
   if (hasExistingCharacter) {
     return (
-      <div className="min-h-screen bg-zinc-900 text-zinc-100 flex items-center justify-center p-8">
+      <div className="min-h-screen bg-grimoire-950 text-vellum-50 flex items-center justify-center p-8">
         <div className="max-w-md text-center">
           <div className="text-6xl mb-4">&#x2694;&#xFE0F;</div>
-          <h1 className="text-2xl font-bold mb-3">You Already Have a Knight</h1>
-          <p className="text-zinc-400 mb-6">
+          <h1 className="font-heading text-2xl mb-3">You Already Have a Knight</h1>
+          <p className="text-vellum-400 mb-6">
             You&apos;ve already created a character. You can view and edit your knight from the profile page.
           </p>
           <div className="flex gap-4 justify-center">
-            <Link
-              href="/"
-              className="px-6 py-3 bg-emerald-700 hover:bg-emerald-600 rounded-lg font-medium transition-colors"
-            >
+            <Button variant="primary" onClick={() => router.push('/')}>
               View My Knight
-            </Link>
-            <Link
-              href="/"
-              className="px-6 py-3 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium transition-colors"
-            >
+            </Button>
+            <Button variant="secondary" onClick={() => router.push('/')}>
               Go Home
-            </Link>
+            </Button>
           </div>
         </div>
       </div>
@@ -306,44 +326,20 @@ export default function CreateCharacterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-900 text-zinc-100">
-      {/* Header */}
-      <div className="bg-zinc-800 border-b border-zinc-700 py-4 px-6">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold">&#x2694;&#xFE0F; Create Your Knight</h1>
-          <p className="text-zinc-400 text-sm mt-1">
-            Step {currentStepIndex + 1} of {STEPS.length}: {STEP_TITLES[currentStep]}
-          </p>
-        </div>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="bg-zinc-800/50 border-b border-zinc-700">
-        <div className="max-w-4xl mx-auto px-6 py-3">
-          <div className="flex gap-1">
-            {STEPS.map((step, idx) => (
-              <button
-                key={step}
-                onClick={() => goToStep(step)}
-                disabled={idx > currentStepIndex + 1}
-                className={`flex-1 h-2 rounded-full transition-colors ${
-                  idx < currentStepIndex
-                    ? 'bg-emerald-600'
-                    : idx === currentStepIndex
-                      ? 'bg-emerald-500'
-                      : 'bg-zinc-700'
-                } ${idx <= currentStepIndex + 1 ? 'cursor-pointer hover:opacity-80' : 'cursor-not-allowed'}`}
-                title={STEP_TITLES[step]}
-              />
-            ))}
-          </div>
-        </div>
+    <div className="min-h-screen bg-grimoire-950 text-vellum-50">
+      {/* Header with Chapter Progress */}
+      <div className="max-w-4xl mx-auto px-6 pt-8">
+        <ChapterProgress
+          chapters={CHAPTERS}
+          currentChapterIndex={currentChapter}
+          currentSubStepIndex={currentSubStep}
+        />
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-4xl mx-auto px-6 py-6">
         {/* Step Content */}
-        <div className="bg-zinc-800 rounded-lg border border-zinc-700 p-6 min-h-[400px]">
+        <GrimoireCard variant="raised" padding="lg" className="min-h-[400px]">
           {currentStep === 'name' && (
             <StepName data={data} setData={setData} />
           )}
@@ -383,41 +379,40 @@ export default function CreateCharacterPage() {
           {currentStep === 'review' && (
             <StepReview data={data} skills={skills} />
           )}
-        </div>
+        </GrimoireCard>
 
         {/* Navigation */}
         <div className="flex justify-between mt-6">
-          <button
+          <Button
+            variant="secondary"
             onClick={goBack}
-            disabled={!canGoBack}
-            className="px-6 py-3 bg-zinc-700 hover:bg-zinc-600 disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
+            disabled={isFirstStep}
           >
             &larr; Back
-          </button>
+          </Button>
 
           {currentStep === 'review' ? (
-            <button
+            <Button
+              variant="primary"
               onClick={handleSubmit}
               disabled={isSubmitting || !isStepValid('review')}
-              className="px-8 py-3 bg-emerald-700 hover:bg-emerald-600 disabled:bg-zinc-700 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
+              loading={isSubmitting}
             >
-              {isSubmitting ? 'Creating...' : '&#x2713; Create Character'}
-            </button>
+              {isSubmitting ? 'Creating...' : 'Create Character'}
+            </Button>
           ) : (
-            <button
+            <Button
+              variant="primary"
               onClick={goNext}
               disabled={!isStepValid(currentStep)}
-              className="px-6 py-3 bg-emerald-700 hover:bg-emerald-600 disabled:bg-zinc-700 disabled:cursor-not-allowed rounded-lg font-medium transition-colors"
             >
               Next &rarr;
-            </button>
+            </Button>
           )}
         </div>
 
         {submitError && (
-          <div className="mt-4 p-4 bg-red-900/30 border border-red-700 rounded-lg">
-            <p className="text-red-300">{submitError}</p>
-          </div>
+          <ErrorDisplay message={submitError} className="mt-4" />
         )}
 
         {warnings.length > 0 && (
@@ -430,16 +425,16 @@ export default function CreateCharacterPage() {
               />
             ))}
             <div className="flex justify-end mt-4">
-              <button
+              <Button
+                variant="primary"
                 onClick={() => {
                   setWarnings([])
                   invalidateCharacter(user!.id)
                   router.push('/')
                 }}
-                className="px-6 py-3 bg-emerald-700 hover:bg-emerald-600 rounded-lg font-medium transition-colors"
               >
                 Continue to Profile &rarr;
-              </button>
+              </Button>
             </div>
           </div>
         )}

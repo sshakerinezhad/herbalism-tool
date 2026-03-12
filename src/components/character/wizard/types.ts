@@ -41,6 +41,12 @@ export type WizardData = {
   copper: number
 }
 
+export type WizardChapter = {
+  number: string  // Roman numeral
+  title: string
+  steps: WizardStep[]
+}
+
 export type StepProps = {
   data: WizardData
   setData: React.Dispatch<React.SetStateAction<WizardData>>

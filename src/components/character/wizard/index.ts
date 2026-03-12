@@ -1,7 +1,11 @@
 // Barrel export for character creation wizard components
 
 // Types
-export type { WizardStep, WizardData, StepProps } from './types'
+export type { WizardStep, WizardData, StepProps, WizardChapter } from './types'
+
+// UI components
+export { ChapterProgress } from './ChapterProgress'
+export { SelectionCard } from './SelectionCard'
 
 // Identity steps (Name, Race, Background, Class, Order)
 export { StepName, StepRace, StepBackground, StepClass, StepOrder } from './IdentitySteps'

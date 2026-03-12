@@ -16,7 +16,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth'
-import { useCharacter, useInvalidateQueries } from '@/lib/hooks'
+import { useCharacter, useCharacterSkills, useSkills, useInvalidateQueries } from '@/lib/hooks'
 import {
   LoadingState,
   ErrorDisplay,
@@ -24,14 +24,17 @@ import {
   SectionHeader,
   Select,
   Input,
+  Textarea,
   Modal,
   Button,
 } from '@/components/ui'
-import { updateCharacter, deleteCharacter } from '@/lib/db/characters'
+import { updateCharacter, deleteCharacter, upsertCharacterSkills } from '@/lib/db/characters'
+import { SkillsPanel } from '@/components/character'
 import {
   ABILITY_NAMES,
   getAbilityModifier,
   calculateMaxHP,
+  getProficiencyBonus,
   VOCATIONS,
   RACES,
   CLASSES,
@@ -48,6 +51,8 @@ import type {
 
 // ============ Form State ============
 
+type SkillState = { is_proficient: boolean; is_expertise: boolean }
+
 type FormState = {
   // Identity
   race: Race
@@ -61,6 +66,8 @@ type FormState = {
   appearance: string
   // Stats
   stats: CharacterStats
+  // Skills
+  skillChanges: Map<number, SkillState>
   // HP & Money
   hp_current: number
   hp_custom_modifier: number
@@ -78,7 +85,9 @@ export default function SettingsPage() {
   const { user, signOut } = useAuth()
   const router = useRouter()
   const { data: character, isLoading, error } = useCharacter(user?.id ?? null)
-  const { invalidateCharacter, invalidateAllUserData } = useInvalidateQueries()
+  const { data: characterSkills = [] } = useCharacterSkills(character?.id ?? null)
+  const { data: allSkills = [] } = useSkills()
+  const { invalidateCharacter, invalidateCharacterSkills, invalidateAllUserData } = useInvalidateQueries()
 
   const [form, setForm] = useState<FormState | null>(null)
   const [saving, setSaving] = useState(false)
@@ -91,6 +100,15 @@ export default function SettingsPage() {
   // Initialize form when character loads
   useEffect(() => {
     if (character && !form) {
+      // Build skill state map from loaded character skills
+      const skillMap = new Map<number, SkillState>()
+      for (const cs of characterSkills) {
+        skillMap.set(cs.skill.id, {
+          is_proficient: cs.is_proficient,
+          is_expertise: cs.is_expertise,
+        })
+      }
+
       setForm({
         race: character.race,
         class: character.class,
@@ -109,6 +127,7 @@ export default function SettingsPage() {
           cha: character.cha,
           hon: character.hon,
         },
+        skillChanges: skillMap,
         hp_current: character.hp_current,
         hp_custom_modifier: character.hp_custom_modifier,
         platinum: character.platinum,
@@ -117,7 +136,7 @@ export default function SettingsPage() {
         copper: character.copper,
       })
     }
-  }, [character, form])
+  }, [character, characterSkills, form])
 
   // ============ Helpers ============
 
@@ -228,7 +247,24 @@ export default function SettingsPage() {
       return
     }
 
+    // Save skill changes
+    const skillRows = Array.from(form.skillChanges.entries())
+      .filter(([, state]) => state.is_proficient)
+      .map(([skillId, state]) => ({
+        skill_id: skillId,
+        is_proficient: state.is_proficient,
+        is_expertise: state.is_expertise,
+      }))
+
+    const { error: skillError } = await upsertCharacterSkills(character.id, skillRows)
+    if (skillError) {
+      setSaveError(`Character saved, but skills failed: ${skillError}`)
+      setSaving(false)
+      return
+    }
+
     invalidateCharacter(user.id)
+    invalidateCharacterSkills(character.id)
     router.push('/')
   }
 
@@ -355,28 +391,23 @@ export default function SettingsPage() {
               className="max-w-md"
             />
 
-            <div className="space-y-1">
-              <label className="font-ui text-xs tracking-wider text-vellum-300">Level</label>
-              <input
-                type="number"
-                min={1}
-                max={20}
-                value={form.level}
-                onChange={(e) => updateField('level', parseInt(e.target.value) || 1)}
-                className="w-24 px-3 py-2 rounded-lg font-body bg-grimoire-950 border border-sepia-700/50 text-vellum-50 text-center focus:outline-none focus:border-bronze-muted focus:shadow-[0_0_0_1px_rgba(201,166,107,0.3)] transition-all duration-200"
-              />
-            </div>
+            <Input
+              label="Level"
+              type="number"
+              min={1}
+              max={20}
+              value={form.level}
+              onChange={(e) => updateField('level', parseInt(e.target.value) || 1)}
+              className="w-24 text-center"
+            />
 
-            <div className="space-y-1">
-              <label className="font-ui text-xs tracking-wider text-vellum-300">Appearance</label>
-              <textarea
-                value={form.appearance}
-                onChange={(e) => updateField('appearance', e.target.value)}
-                rows={3}
-                className="w-full px-3 py-2 rounded-lg font-body bg-grimoire-950 border border-sepia-700/50 text-vellum-50 placeholder:text-vellum-400/50 focus:outline-none focus:border-bronze-muted focus:shadow-[0_0_0_1px_rgba(201,166,107,0.3)] transition-all duration-200 resize-none"
-                placeholder="Physical description, distinctive features..."
-              />
-            </div>
+            <Textarea
+              label="Appearance"
+              value={form.appearance}
+              onChange={(e) => updateField('appearance', e.target.value)}
+              rows={3}
+              placeholder="Physical description, distinctive features..."
+            />
           </div>
         </GrimoireCard>
 
@@ -393,13 +424,13 @@ export default function SettingsPage() {
                   {ABILITY_NAMES[stat]}
                 </label>
                 <div className="flex items-center gap-2">
-                  <input
+                  <Input
                     type="number"
                     min={1}
                     max={30}
                     value={form.stats[stat]}
                     onChange={(e) => updateStat(stat, parseInt(e.target.value) || 10)}
-                    className="w-16 px-2 py-1 bg-grimoire-950 border border-sepia-700/50 rounded text-center text-lg font-bold text-vellum-50 focus:outline-none focus:border-bronze-muted"
+                    className="!w-16 !px-2 !py-1 text-center text-lg font-bold"
                   />
                   <span
                     className={`text-sm font-bold ${
@@ -421,13 +452,13 @@ export default function SettingsPage() {
                 {ABILITY_NAMES.hon}
               </label>
               <div className="flex items-center gap-2">
-                <input
+                <Input
                   type="number"
                   min={1}
                   max={30}
                   value={form.stats.hon}
                   onChange={(e) => updateStat('hon', parseInt(e.target.value) || 8)}
-                  className="w-16 px-2 py-1 bg-grimoire-950 border border-amber-700/40 rounded text-center text-lg font-bold text-vellum-50 focus:outline-none focus:border-amber-500"
+                  className="!w-16 !px-2 !py-1 text-center text-lg font-bold !border-amber-700/40 focus:!border-amber-500"
                 />
                 <span
                   className={`text-sm font-bold ${
@@ -445,86 +476,93 @@ export default function SettingsPage() {
           </div>
         </GrimoireCard>
 
-        {/* 4. HP & Money */}
+        {/* 4. Skills */}
+        <GrimoireCard padding="lg">
+          <SectionHeader>Skills</SectionHeader>
+          <p className="text-xs text-vellum-400 mb-4">
+            Check proficiency, click EXP for expertise. Proficiency bonus: +{getProficiencyBonus(form.level)}.
+          </p>
+          <SkillsPanel
+            mode="edit"
+            skills={allSkills}
+            skillStates={form.skillChanges}
+            stats={form.stats}
+            level={form.level}
+            onChange={(skillId, state) => {
+              setForm(prev => {
+                if (!prev) return prev
+                const newMap = new Map(prev.skillChanges)
+                newMap.set(skillId, state)
+                return { ...prev, skillChanges: newMap }
+              })
+            }}
+          />
+        </GrimoireCard>
+
+        {/* 5. HP & Money */}
         <GrimoireCard padding="lg">
           <SectionHeader>HP &amp; Money</SectionHeader>
 
           {/* HP row */}
           <div className="grid grid-cols-2 gap-6 mb-6">
-            <div className="space-y-1">
-              <label className="font-ui text-xs tracking-wider text-vellum-300">Current HP</label>
-              <input
+            <div>
+              <Input
+                label="Current HP"
                 type="number"
                 min={0}
                 value={form.hp_current}
                 onChange={(e) => updateField('hp_current', parseInt(e.target.value) || 0)}
-                className="w-24 px-3 py-2 rounded-lg font-body bg-grimoire-950 border border-sepia-700/50 text-vellum-50 text-center text-lg font-bold focus:outline-none focus:border-bronze-muted"
+                className="!w-24 text-center text-lg font-bold"
               />
-              <p className="text-xs text-vellum-400">Max HP: {maxHP}</p>
+              <p className="text-xs text-vellum-400 mt-1">Max HP: {maxHP}</p>
             </div>
 
-            <div className="space-y-1">
-              <label className="font-ui text-xs tracking-wider text-vellum-300">HP Custom Modifier</label>
-              <input
+            <div>
+              <Input
+                label="HP Custom Modifier"
                 type="number"
                 value={form.hp_custom_modifier}
                 onChange={(e) => updateHpCustomModifier(parseInt(e.target.value) || 0)}
-                className="w-24 px-3 py-2 rounded-lg font-body bg-grimoire-950 border border-sepia-700/50 text-vellum-50 text-center focus:outline-none focus:border-bronze-muted"
+                className="!w-24 text-center"
               />
-              <p className="text-xs text-vellum-400">Extra HP from feats, items, etc.</p>
+              <p className="text-xs text-vellum-400 mt-1">Extra HP from feats, items, etc.</p>
             </div>
           </div>
 
           {/* Money row */}
           <div className="grid grid-cols-4 gap-3">
-            <div className="space-y-1">
-              <label className="font-ui text-xs tracking-wider text-amber-300 uppercase">
-                Platinum
-              </label>
-              <input
-                type="number"
-                min={0}
-                value={form.platinum}
-                onChange={(e) => updateField('platinum', parseInt(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded-lg bg-grimoire-950 border border-sepia-700/50 text-vellum-50 text-center font-bold focus:outline-none focus:border-amber-500"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="font-ui text-xs tracking-wider text-yellow-400 uppercase">
-                Gold
-              </label>
-              <input
-                type="number"
-                min={0}
-                value={form.gold}
-                onChange={(e) => updateField('gold', parseInt(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded-lg bg-grimoire-950 border border-sepia-700/50 text-vellum-50 text-center font-bold focus:outline-none focus:border-yellow-500"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="font-ui text-xs tracking-wider text-zinc-300 uppercase">
-                Silver
-              </label>
-              <input
-                type="number"
-                min={0}
-                value={form.silver}
-                onChange={(e) => updateField('silver', parseInt(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded-lg bg-grimoire-950 border border-sepia-700/50 text-vellum-50 text-center font-bold focus:outline-none focus:border-zinc-400"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="font-ui text-xs tracking-wider text-amber-600 uppercase">
-                Copper
-              </label>
-              <input
-                type="number"
-                min={0}
-                value={form.copper}
-                onChange={(e) => updateField('copper', parseInt(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded-lg bg-grimoire-950 border border-sepia-700/50 text-vellum-50 text-center font-bold focus:outline-none focus:border-amber-600"
-              />
-            </div>
+            <Input
+              label="Platinum"
+              type="number"
+              min={0}
+              value={form.platinum}
+              onChange={(e) => updateField('platinum', parseInt(e.target.value) || 0)}
+              className="text-center font-bold focus:!border-amber-500"
+            />
+            <Input
+              label="Gold"
+              type="number"
+              min={0}
+              value={form.gold}
+              onChange={(e) => updateField('gold', parseInt(e.target.value) || 0)}
+              className="text-center font-bold focus:!border-yellow-500"
+            />
+            <Input
+              label="Silver"
+              type="number"
+              min={0}
+              value={form.silver}
+              onChange={(e) => updateField('silver', parseInt(e.target.value) || 0)}
+              className="text-center font-bold focus:!border-zinc-400"
+            />
+            <Input
+              label="Copper"
+              type="number"
+              min={0}
+              value={form.copper}
+              onChange={(e) => updateField('copper', parseInt(e.target.value) || 0)}
+              className="text-center font-bold focus:!border-amber-600"
+            />
           </div>
         </GrimoireCard>
 
@@ -593,15 +631,13 @@ export default function SettingsPage() {
           This cannot be undone.
         </p>
         <div className="mb-4">
-          <label className="block font-ui text-xs tracking-wider text-vellum-300 mb-2">
-            Type DELETE to confirm
-          </label>
-          <input
+          <Input
+            label="Type DELETE to confirm"
             type="text"
             value={deleteConfirmText}
             onChange={(e) => setDeleteConfirmText(e.target.value)}
             placeholder="DELETE"
-            className="w-full px-3 py-2 rounded-lg font-body bg-grimoire-950 border border-red-800/50 text-vellum-50 placeholder:text-vellum-400/30 focus:outline-none focus:border-red-600"
+            className="!border-red-800/50 focus:!border-red-600"
           />
         </div>
         <div className="flex gap-3 justify-end">

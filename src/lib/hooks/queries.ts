@@ -439,6 +439,11 @@ export function useInvalidateQueries() {
     invalidateCharacterArmor: (characterId: string) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.characterArmor(characterId) })
     },
+
+    /** Invalidate character skills after editing proficiencies */
+    invalidateCharacterSkills: (characterId: string) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.characterSkills(characterId) })
+    },
     
     /** Invalidate weapon slots after equipping/removing weapons */
     invalidateWeaponSlots: (characterId: string) => {

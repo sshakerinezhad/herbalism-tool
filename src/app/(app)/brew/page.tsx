@@ -2,16 +2,15 @@
 
 /**
  * Brew Page
- * 
+ *
  * Allows herbalists to combine herbs into elixirs, bombs, and oils.
  * Supports two modes:
  * - "By Herbs": Select herbs first, then pair elements to create effects
  * - "By Recipe": Select recipes first, then find matching herbs
- */                                       
+ */
 
 import { useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useProfile } from '@/lib/profile'
 import { useAuth } from '@/lib/auth'
 import {
@@ -36,7 +35,7 @@ import { Recipe } from '@/lib/types'
 import { rollD20 } from '@/lib/dice'
 import { BREWING_DC, MAX_HERBS_PER_BREW } from '@/lib/constants'
 import { computeBrewingModifier } from '@/lib/characterUtils'
-import { PageLayout, ErrorDisplay, BrewSkeleton } from '@/components/ui'
+import { ErrorDisplay, BrewSkeleton } from '@/components/ui'
 import {
   HerbSelector,
   SelectedHerbsSummary,
@@ -57,8 +56,7 @@ import {
 // ============ Main Component ============
 
 export default function BrewPage() {
-  const router = useRouter()
-  const { user, isLoading: authLoading } = useAuth()
+  const { user } = useAuth()
   const { profile, isLoaded: profileLoaded } = useProfile()
   const { invalidateCharacterHerbs, invalidateCharacterBrewedItems } = useInvalidateQueries()
 
@@ -106,17 +104,10 @@ export default function BrewPage() {
     herbsSatisfyRecipes,
     actions
   } = brewState
-  
+
   // Derived loading and error state
   const loading = !profileLoaded || inventoryLoading || recipesLoading
   const error = inventoryError?.message || recipesError?.message || mutationError
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login')
-    }
-  }, [authLoading, user, router])
 
   // ============ Browser History ============
 
@@ -208,7 +199,7 @@ export default function BrewPage() {
       invalidateCharacterHerbs(characterId)
     }
   }
-  
+
   async function executeBrewWithEffects(effects: PairedEffect[], choicesData: Record<string, string>, batch: number = 1) {
     if (!characterId) return
 
@@ -300,47 +291,51 @@ export default function BrewPage() {
 
   // ============ Render ============
 
-  if (!profileLoaded || loading || authLoading || characterLoading) {
+  if (!profileLoaded || loading || characterLoading) {
     return <BrewSkeleton />
   }
 
   // Gate: require character for herbalism
   if (!character) {
     return (
-      <PageLayout>
-        <h1 className="text-3xl font-bold mb-4">Brew</h1>
-        <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-6">
-          <p className="text-amber-200 mb-4">
-            You need to create a character before you can brew elixirs and bombs.
-          </p>
-          <Link
-            href="/profile"
-            className="inline-block px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors"
-          >
-            Create Character
-          </Link>
+      <div className="p-8">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold mb-4">Brew</h1>
+          <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-6">
+            <p className="text-amber-200 mb-4">
+              You need to create a character before you can brew elixirs and bombs.
+            </p>
+            <Link
+              href="/profile"
+              className="inline-block px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors"
+            >
+              Create Character
+            </Link>
+          </div>
         </div>
-      </PageLayout>
+      </div>
     )
   }
 
   // Gate: require herbalist vocation for brewing
   if (character.vocation !== 'herbalist') {
     return (
-      <PageLayout>
-        <h1 className="text-3xl font-bold mb-4">Brew</h1>
-        <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-6">
-          <p className="text-amber-200">
-            Only characters with the Herbalist vocation can brew elixirs and bombs.
-          </p>
-          <Link
-            href="/profile"
-            className="inline-block mt-4 px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors"
-          >
-            View Profile
-          </Link>
+      <div className="p-8">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold mb-4">Brew</h1>
+          <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-6">
+            <p className="text-amber-200">
+              Only characters with the Herbalist vocation can brew elixirs and bombs.
+            </p>
+            <Link
+              href="/profile"
+              className="inline-block mt-4 px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors"
+            >
+              View Profile
+            </Link>
+          </div>
         </div>
-      </PageLayout>
+      </div>
     )
   }
 
@@ -348,216 +343,218 @@ export default function BrewPage() {
   const brewingMod = computeBrewingModifier(character.int, character.level, true)
 
   return (
-    <PageLayout maxWidth="max-w-3xl">
-      <h1 className="text-3xl font-bold mb-1">⚗️ Brew</h1>
-      <p className="text-zinc-500 text-sm mb-4">
-        Brewing modifier: {brewingMod >= 0 ? '+' : ''}{brewingMod}
-      </p>
+    <div className="p-8">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-3xl font-bold mb-1">⚗️ Brew</h1>
+        <p className="text-zinc-500 text-sm mb-4">
+          Brewing modifier: {brewingMod >= 0 ? '+' : ''}{brewingMod}
+        </p>
 
-      {/* Mode Toggle */}
-      {(phase.phase === 'select-herbs' || phase.phase === 'select-recipes') && (
-        <ModeToggle brewMode={brewMode} onModeChange={actions.switchBrewMode} />
-      )}
+        {/* Mode Toggle */}
+        {(phase.phase === 'select-herbs' || phase.phase === 'select-recipes') && (
+          <ModeToggle brewMode={brewMode} onModeChange={actions.switchBrewMode} />
+        )}
 
-      {error && <ErrorDisplay message={error} className="mb-6" />}
+        {error && <ErrorDisplay message={error} className="mb-6" />}
 
-      {/* Phase: Select Herbs (by-herbs mode) */}
-      {phase.phase === 'select-herbs' && (
-        <div className="space-y-6">
-          <SelectedHerbsSummary
-            selectedHerbs={selectedHerbs}
-            selectedQuantities={selectedHerbQuantities}
-            elementPool={elementPool}
-            totalSelected={totalHerbsSelected}
-            maxHerbs={MAX_HERBS_PER_BREW}
-            onRemove={actions.removeHerb}
-          />
-
-          <div>
-            <h2 className="font-semibold mb-3">Your Inventory</h2>
-            <HerbSelector
-              inventory={inventory}
+        {/* Phase: Select Herbs (by-herbs mode) */}
+        {phase.phase === 'select-herbs' && (
+          <div className="space-y-6">
+            <SelectedHerbsSummary
+              selectedHerbs={selectedHerbs}
               selectedQuantities={selectedHerbQuantities}
+              elementPool={elementPool}
               totalSelected={totalHerbsSelected}
               maxHerbs={MAX_HERBS_PER_BREW}
-              onAdd={actions.addHerb}
               onRemove={actions.removeHerb}
             />
+
+            <div>
+              <h2 className="font-semibold mb-3">Your Inventory</h2>
+              <HerbSelector
+                inventory={inventory}
+                selectedQuantities={selectedHerbQuantities}
+                totalSelected={totalHerbsSelected}
+                maxHerbs={MAX_HERBS_PER_BREW}
+                onAdd={actions.addHerb}
+                onRemove={actions.removeHerb}
+              />
+            </div>
+
+            <button
+              onClick={actions.proceedToPairing}
+              disabled={totalHerbsSelected === 0}
+              className="w-full py-3 bg-purple-700 hover:bg-purple-600 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
+            >
+              {totalHerbsSelected === 0
+                ? 'Select Herbs to Continue'
+                : `Continue with ${totalHerbsSelected} Herb${totalHerbsSelected > 1 ? 's' : ''}`
+              }
+            </button>
           </div>
+        )}
 
-          <button
-            onClick={actions.proceedToPairing}
-            disabled={totalHerbsSelected === 0}
-            className="w-full py-3 bg-purple-700 hover:bg-purple-600 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
-          >
-            {totalHerbsSelected === 0
-              ? 'Select Herbs to Continue'
-              : `Continue with ${totalHerbsSelected} Herb${totalHerbsSelected > 1 ? 's' : ''}`
-            }
-          </button>
-        </div>
-      )}
-
-      {/* Phase: Select Recipes (by-recipe mode) */}
-      {phase.phase === 'select-recipes' && (
-        <RecipeSelector
-          recipes={recipes}
-          selectedRecipes={selectedRecipes}
-          batchCount={batchCount}
-          requiredElements={requiredElements}
-          onAddRecipe={actions.addRecipeSelection}
-          onRemoveRecipe={actions.removeRecipeSelection}
-          onBatchCountChange={actions.setBatchCount}
-          onProceed={actions.proceedToHerbSelection}
-        />
-      )}
-
-      {/* Phase: Select Herbs for Recipes (by-recipe mode) */}
-      {phase.phase === 'select-herbs-for-recipes' && (
-        <div className="space-y-6">
-          {/* Requirements */}
-          <RecipeRequirements
+        {/* Phase: Select Recipes (by-recipe mode) */}
+        {phase.phase === 'select-recipes' && (
+          <RecipeSelector
+            recipes={recipes}
             selectedRecipes={selectedRecipes}
-            requiredElements={requiredElements}
-            selectedHerbQuantities={selectedHerbQuantities}
-            inventory={inventory}
             batchCount={batchCount}
+            requiredElements={requiredElements}
+            onAddRecipe={actions.addRecipeSelection}
+            onRemoveRecipe={actions.removeRecipeSelection}
+            onBatchCountChange={actions.setBatchCount}
+            onProceed={actions.proceedToHerbSelection}
           />
+        )}
 
-          {/* Herb selector */}
-          <div>
-            <h2 className="font-semibold mb-3">Available Herbs</h2>
-            <HerbSelector
-              inventory={matchingHerbs}
-              selectedQuantities={selectedHerbQuantities}
-              totalSelected={totalHerbsSelected}
-              maxHerbs={MAX_HERBS_PER_BREW * batchCount}
-              onAdd={actions.addHerb}
-              onRemove={actions.removeHerb}
-              highlightElements={new Set(requiredElements.keys())}
+        {/* Phase: Select Herbs for Recipes (by-recipe mode) */}
+        {phase.phase === 'select-herbs-for-recipes' && (
+          <div className="space-y-6">
+            {/* Requirements */}
+            <RecipeRequirements
+              selectedRecipes={selectedRecipes}
+              requiredElements={requiredElements}
+              selectedHerbQuantities={selectedHerbQuantities}
+              inventory={inventory}
+              batchCount={batchCount}
             />
+
+            {/* Herb selector */}
+            <div>
+              <h2 className="font-semibold mb-3">Available Herbs</h2>
+              <HerbSelector
+                inventory={matchingHerbs}
+                selectedQuantities={selectedHerbQuantities}
+                totalSelected={totalHerbsSelected}
+                maxHerbs={MAX_HERBS_PER_BREW * batchCount}
+                onAdd={actions.addHerb}
+                onRemove={actions.removeHerb}
+                highlightElements={new Set(requiredElements.keys())}
+              />
+            </div>
+
+            <div className="text-sm text-zinc-400 text-center">
+              {totalHerbsSelected} / {MAX_HERBS_PER_BREW * batchCount} herbs selected
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => actions.setPhase({ phase: 'select-recipes' })}
+                className="px-6 py-3 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium transition-colors"
+              >
+                ← Back
+              </button>
+              <button
+                onClick={() => {
+                  const result = actions.proceedFromRecipeMode()
+                  if (result) {
+                    // No choices needed - brew immediately
+                    actions.setPhase({ phase: 'brewing', selectedHerbs, pairedEffects: result.pairedEffects, choices: result.choices })
+                    executeBrewWithEffects(result.pairedEffects, result.choices, batchCount)
+                  }
+                  // If void returned, hook already set phase to make-choices
+                }}
+                disabled={!herbsSatisfyRecipes}
+                className="flex-1 py-3 bg-purple-700 hover:bg-purple-600 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
+              >
+                {herbsSatisfyRecipes ? 'Brew!' : 'Select herbs to fulfill requirements'}
+              </button>
+            </div>
           </div>
+        )}
 
-          <div className="text-sm text-zinc-400 text-center">
-            {totalHerbsSelected} / {MAX_HERBS_PER_BREW * batchCount} herbs selected
+        {/* Phase: Pair Elements */}
+        {phase.phase === 'pair-elements' && (
+          <PairingPhase
+            elementPool={elementPool}
+            remainingElements={remainingElements}
+            assignedPairs={assignedPairs}
+            pairedEffects={pairedEffects}
+            recipes={recipes}
+            pairingValidation={pairingValidation}
+            onAddPair={actions.addPair}
+            onRemovePair={actions.removePair}
+            onProceed={actions.proceedToChoices}
+            onBack={() => actions.setPhase({ phase: 'select-herbs' })}
+          />
+        )}
+
+        {/* Phase: Make Choices */}
+        {phase.phase === 'make-choices' && (
+          <ChoicesPhase
+            pairedEffects={phase.pairedEffects}
+            choices={choices}
+            onUpdateChoice={actions.setChoice}
+            onProceed={() => {
+              if (brewMode === 'by-recipe') {
+                actions.setPhase({ phase: 'brewing', selectedHerbs: phase.selectedHerbs, pairedEffects: phase.pairedEffects, choices })
+                executeBrewWithEffects(phase.pairedEffects, choices, batchCount)
+              } else {
+                proceedToBrewing()
+              }
+            }}
+            onBack={() => {
+              if (brewMode === 'by-recipe') {
+                actions.setPhase({ phase: 'select-herbs-for-recipes', selectedRecipes })
+              } else {
+                actions.setPhase({ phase: 'pair-elements', selectedHerbs })
+              }
+            }}
+          />
+        )}
+
+        {/* Phase: Brewing */}
+        {phase.phase === 'brewing' && (
+          <div className="flex items-center justify-center py-16">
+            <div className="text-center">
+              {mutationError ? (
+                <>
+                  <div className="text-4xl mb-4">💥</div>
+                  <p className="text-xl text-red-400 mb-2">Brewing failed</p>
+                  <p className="text-sm text-stone-500 mb-4">{mutationError}</p>
+                  <button
+                    onClick={reset}
+                    className="px-4 py-2 bg-stone-700 hover:bg-stone-600 rounded-lg text-stone-200 transition-colors"
+                  >
+                    Start Over
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="text-4xl mb-4">⚗️</div>
+                  <p className="text-xl">Brewing...</p>
+                </>
+              )}
+            </div>
           </div>
+        )}
 
-          <div className="flex gap-4">
-            <button
-              onClick={() => actions.setPhase({ phase: 'select-recipes' })}
-              className="px-6 py-3 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium transition-colors"
-            >
-              ← Back
-            </button>
-            <button
-              onClick={() => {
-                const result = actions.proceedFromRecipeMode()
-                if (result) {
-                  // No choices needed - brew immediately
-                  actions.setPhase({ phase: 'brewing', selectedHerbs, pairedEffects: result.pairedEffects, choices: result.choices })
-                  executeBrewWithEffects(result.pairedEffects, result.choices, batchCount)
-                }
-                // If void returned, hook already set phase to make-choices
-              }}
-              disabled={!herbsSatisfyRecipes}
-              className="flex-1 py-3 bg-purple-700 hover:bg-purple-600 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
-            >
-              {herbsSatisfyRecipes ? 'Brew!' : 'Select herbs to fulfill requirements'}
-            </button>
-          </div>
-        </div>
-      )}
+        {/* Phase: Result */}
+        {phase.phase === 'result' && (
+          <ResultPhase
+            success={phase.success}
+            roll={phase.roll}
+            total={phase.total}
+            brewingMod={brewingMod}
+            type={phase.type}
+            description={phase.description}
+            onReset={reset}
+          />
+        )}
 
-      {/* Phase: Pair Elements */}
-      {phase.phase === 'pair-elements' && (
-        <PairingPhase
-          elementPool={elementPool}
-          remainingElements={remainingElements}
-          assignedPairs={assignedPairs}
-          pairedEffects={pairedEffects}
-          recipes={recipes}
-          pairingValidation={pairingValidation}
-          onAddPair={actions.addPair}
-          onRemovePair={actions.removePair}
-          onProceed={actions.proceedToChoices}
-          onBack={() => actions.setPhase({ phase: 'select-herbs' })}
-        />
-      )}
-
-      {/* Phase: Make Choices */}
-      {phase.phase === 'make-choices' && (
-        <ChoicesPhase
-          pairedEffects={phase.pairedEffects}
-          choices={choices}
-          onUpdateChoice={actions.setChoice}
-          onProceed={() => {
-            if (brewMode === 'by-recipe') {
-              actions.setPhase({ phase: 'brewing', selectedHerbs: phase.selectedHerbs, pairedEffects: phase.pairedEffects, choices })
-              executeBrewWithEffects(phase.pairedEffects, choices, batchCount)
-            } else {
-              proceedToBrewing()
-            }
-          }}
-          onBack={() => {
-            if (brewMode === 'by-recipe') {
-              actions.setPhase({ phase: 'select-herbs-for-recipes', selectedRecipes })
-            } else {
-              actions.setPhase({ phase: 'pair-elements', selectedHerbs })
-            }
-          }}
-        />
-      )}
-
-      {/* Phase: Brewing */}
-      {phase.phase === 'brewing' && (
-        <div className="flex items-center justify-center py-16">
-          <div className="text-center">
-            {mutationError ? (
-              <>
-                <div className="text-4xl mb-4">💥</div>
-                <p className="text-xl text-red-400 mb-2">Brewing failed</p>
-                <p className="text-sm text-stone-500 mb-4">{mutationError}</p>
-                <button
-                  onClick={reset}
-                  className="px-4 py-2 bg-stone-700 hover:bg-stone-600 rounded-lg text-stone-200 transition-colors"
-                >
-                  Start Over
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="text-4xl mb-4">⚗️</div>
-                <p className="text-xl">Brewing...</p>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Phase: Result */}
-      {phase.phase === 'result' && (
-        <ResultPhase
-          success={phase.success}
-          roll={phase.roll}
-          total={phase.total}
-          brewingMod={brewingMod}
-          type={phase.type}
-          description={phase.description}
-          onReset={reset}
-        />
-      )}
-
-      {/* Phase: Batch Result */}
-      {phase.phase === 'batch-result' && (
-        <BatchResultPhase
-          results={phase.results}
-          brewingMod={brewingMod}
-          type={phase.type}
-          description={phase.description}
-          successCount={phase.successCount}
-          onReset={reset}
-        />
-      )}
-    </PageLayout>
+        {/* Phase: Batch Result */}
+        {phase.phase === 'batch-result' && (
+          <BatchResultPhase
+            results={phase.results}
+            brewingMod={brewingMod}
+            type={phase.type}
+            description={phase.description}
+            successCount={phase.successCount}
+            onReset={reset}
+          />
+        )}
+      </div>
+    </div>
   )
 }

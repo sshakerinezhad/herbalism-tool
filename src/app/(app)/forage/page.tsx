@@ -2,14 +2,13 @@
 
 /**
  * Forage Page
- * 
+ *
  * Allows players to allocate foraging sessions to biomes and roll for herbs.
  * Supports multi-biome session allocation and tracks daily session usage.
  */
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useProfile } from '@/lib/profile'
 import { useAuth } from '@/lib/auth'
 import { useBiomes, useInvalidateQueries, useCharacter, useCharacterSkills } from '@/lib/hooks'
@@ -19,15 +18,14 @@ import { addCharacterHerbs, removeCharacterHerbs } from '@/lib/db/characterInven
 import { fetchBiomeHerbs } from '@/lib/db/biomes'
 import { FORAGING_DC } from '@/lib/constants'
 import { computeMaxForagingSessions, computeForagingModifier } from '@/lib/characterUtils'
-import { PageLayout, ErrorDisplay, ForageSkeleton } from '@/components/ui'
+import { ErrorDisplay, ForageSkeleton } from '@/components/ui'
 import { SetupPhase, ResultsPhase } from '@/components/forage'
 import type { ForagedHerb } from '@/components/forage'
 
 // ============ Main Component ============
 
 export default function ForagePage() {
-  const router = useRouter()
-  const { user, isLoading: authLoading } = useAuth()
+  const { user } = useAuth()
   const {
     profile,
     isLoaded: profileLoaded,
@@ -40,21 +38,21 @@ export default function ForagePage() {
   // Character data - herbalism is now character-based
   const { data: character, isLoading: characterLoading } = useCharacter(user?.id ?? null)
   const characterId = character?.id ?? null
-  
+
   // Character skills (for computing foraging modifier from Nature proficiency)
   const { data: characterSkills = [], isLoading: skillsLoading } = useCharacterSkills(character?.id ?? null)
 
   // React Query handles biome data fetching and caching
   const { data: biomes = [], isLoading: biomesLoading, error: biomesError } = useBiomes()
-  
+
   // Local error state for mutations
   const [mutationError, setMutationError] = useState<string | null>(null)
-  
+
   // Foraging state
   const [biomeAllocations, setBiomeAllocations] = useState<Record<number, number>>({})
   const [state, setState] = useState<ForageState>({ phase: 'setup' })
   const [foragedHerbs, setForagedHerbs] = useState<ForagedHerb[]>([])
-  
+
   // Removal state
   const [removingHerb, setRemovingHerb] = useState<string | null>(null)
   const [removingAll, setRemovingAll] = useState(false)
@@ -67,13 +65,6 @@ export default function ForagePage() {
   const totalAllocated = Object.values(biomeAllocations).reduce((sum, n) => sum + n, 0)
   const canAllocateMore = totalAllocated < sessionsRemaining
   const error = biomesError?.message || mutationError
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login')
-    }
-  }, [authLoading, user, router])
 
   // Reset allocations if sessions remaining decreases
   useEffect(() => {
@@ -284,87 +275,91 @@ export default function ForagePage() {
   const remainingHerbs = foragedHerbs.filter(h => !h.removed)
   const removedCount = foragedHerbs.filter(h => h.removed).length
 
-  if (biomesLoading || !profileLoaded || authLoading || characterLoading || skillsLoading) {
+  if (biomesLoading || !profileLoaded || characterLoading || skillsLoading) {
     return <ForageSkeleton />
   }
 
   // Gate: require character for herbalism
   if (!character) {
     return (
-      <PageLayout maxWidth="max-w-4xl">
-        <h1 className="text-3xl font-bold mb-2">Forage for Herbs</h1>
-        <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-6">
-          <p className="text-amber-200 mb-4">
-            You need to create a character before you can forage for herbs.
-          </p>
-          <Link
-            href="/profile"
-            className="inline-block px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors"
-          >
-            Create Character
-          </Link>
+      <div className="p-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold mb-2">Forage for Herbs</h1>
+          <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-6">
+            <p className="text-amber-200 mb-4">
+              You need to create a character before you can forage for herbs.
+            </p>
+            <Link
+              href="/profile"
+              className="inline-block px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors"
+            >
+              Create Character
+            </Link>
+          </div>
         </div>
-      </PageLayout>
+      </div>
     )
   }
 
   return (
-    <PageLayout maxWidth="max-w-4xl">
-      <h1 className="text-3xl font-bold mb-2">🔍 Forage for Herbs</h1>
-      {profile.name && (
-        <p className="text-zinc-400 mb-6">
-          {profile.name} • Foraging: {foragingMod >= 0 ? '+' : ''}{foragingMod}
-        </p>
-      )}
+    <div className="p-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold mb-2">🔍 Forage for Herbs</h1>
+        {profile.name && (
+          <p className="text-zinc-400 mb-6">
+            {profile.name} • Foraging: {foragingMod >= 0 ? '+' : ''}{foragingMod}
+          </p>
+        )}
 
-      {error && <ErrorDisplay message={error} onDismiss={() => setMutationError(null)} className="mb-6" />}
+        {error && <ErrorDisplay message={error} onDismiss={() => setMutationError(null)} className="mb-6" />}
 
-      {/* Setup Phase */}
-      {state.phase === 'setup' && (
-        <SetupPhase
-          profile={profile}
-          maxForagingSessions={maxForagingSessions}
-          biomes={biomes}
-          biomeAllocations={biomeAllocations}
-          sessionsRemaining={sessionsRemaining}
-          sessionsUsedToday={sessionsUsedToday}
-          totalAllocated={totalAllocated}
-          canAllocateMore={canAllocateMore}
-          onIncrement={incrementBiome}
-          onDecrement={decrementBiome}
-          onClear={clearAllocations}
-          onStart={startForaging}
-          onLongRest={longRest}
-        />
-      )}
+        {/* Setup Phase */}
+        {state.phase === 'setup' && (
+          <SetupPhase
+            profile={profile}
+            maxForagingSessions={maxForagingSessions}
+            biomes={biomes}
+            biomeAllocations={biomeAllocations}
+            sessionsRemaining={sessionsRemaining}
+            sessionsUsedToday={sessionsUsedToday}
+            totalAllocated={totalAllocated}
+            canAllocateMore={canAllocateMore}
+            onIncrement={incrementBiome}
+            onDecrement={decrementBiome}
+            onClear={clearAllocations}
+            onStart={startForaging}
+            onLongRest={longRest}
+          />
+        )}
 
-      {/* Rolling Phase */}
-      {state.phase === 'rolling' && (
-        <div className="flex items-center justify-center py-16">
-          <div className="text-center">
-            <div className="text-4xl mb-4">🎲</div>
-            <p className="text-xl">
-              Rolling session {state.currentSession} of {state.totalSessions}...
-            </p>
+        {/* Rolling Phase */}
+        {state.phase === 'rolling' && (
+          <div className="flex items-center justify-center py-16">
+            <div className="text-center">
+              <div className="text-4xl mb-4">🎲</div>
+              <p className="text-xl">
+                Rolling session {state.currentSession} of {state.totalSessions}...
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Results Phase */}
-      {state.phase === 'results' && (
-        <ResultsPhase
-          sessionResults={state.sessionResults}
-          foragingMod={foragingMod}
-          foragedHerbs={foragedHerbs}
-          remainingHerbs={remainingHerbs}
-          removedCount={removedCount}
-          removingHerb={removingHerb}
-          removingAll={removingAll}
-          onRemoveHerb={handleRemoveHerb}
-          onRemoveAll={handleRemoveAll}
-          onReset={reset}
-        />
-      )}
-    </PageLayout>
+        {/* Results Phase */}
+        {state.phase === 'results' && (
+          <ResultsPhase
+            sessionResults={state.sessionResults}
+            foragingMod={foragingMod}
+            foragedHerbs={foragedHerbs}
+            remainingHerbs={remainingHerbs}
+            removedCount={removedCount}
+            removingHerb={removingHerb}
+            removingAll={removingAll}
+            onRemoveHerb={handleRemoveHerb}
+            onRemoveAll={handleRemoveAll}
+            onReset={reset}
+          />
+        )}
+      </div>
+    </div>
   )
 }

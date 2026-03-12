@@ -34,6 +34,7 @@ import { calculateMaxHP, calculateMaxHitDice } from '../constants'
  */
 type CharacterUpdate = Partial<Pick<Character,
   | 'name' | 'appearance' | 'level' | 'vocation'
+  | 'race' | 'class' | 'background' | 'knight_order'        // Identity
   | 'str' | 'dex' | 'con' | 'int' | 'wis' | 'cha' | 'hon'  // Stats
   | 'hp_current' | 'hp_custom_modifier'                     // HP
   | 'platinum' | 'gold' | 'silver' | 'copper'               // Money

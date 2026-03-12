@@ -27,7 +27,7 @@ import {
   Modal,
   Button,
 } from '@/components/ui'
-import { updateCharacter } from '@/lib/db/characters'
+import { updateCharacter, deleteCharacter } from '@/lib/db/characters'
 import {
   ABILITY_NAMES,
   getAbilityModifier,
@@ -78,12 +78,15 @@ export default function SettingsPage() {
   const { user, signOut } = useAuth()
   const router = useRouter()
   const { data: character, isLoading, error } = useCharacter(user?.id ?? null)
-  const { invalidateCharacter } = useInvalidateQueries()
+  const { invalidateCharacter, invalidateAllUserData } = useInvalidateQueries()
 
   const [form, setForm] = useState<FormState | null>(null)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [showIdentityConfirm, setShowIdentityConfirm] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deleting, setDeleting] = useState(false)
 
   // Initialize form when character loads
   useEffect(() => {
@@ -227,6 +230,21 @@ export default function SettingsPage() {
 
     invalidateCharacter(user.id)
     router.push('/')
+  }
+
+  // ============ Delete Character ============
+
+  async function handleDelete() {
+    if (!character || deleteConfirmText !== 'DELETE') return
+    setDeleting(true)
+    const { error: deleteError } = await deleteCharacter(character.id)
+    if (deleteError) {
+      setSaveError(`Failed to delete: ${deleteError}`)
+      setDeleting(false)
+      return
+    }
+    invalidateAllUserData()
+    router.push('/create-character')
   }
 
   // ============ Loading / Error States ============
@@ -513,13 +531,23 @@ export default function SettingsPage() {
         {/* 5. Account */}
         <GrimoireCard padding="lg">
           <SectionHeader>Account</SectionHeader>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => signOut()}
-          >
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => signOut()}
+            >
+              Sign Out
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowDeleteModal(true)}
+              className="!border-red-800/50 !text-red-400 hover:!bg-red-900/20 hover:!border-red-700/60"
+            >
+              Delete Character
+            </Button>
+          </div>
         </GrimoireCard>
       </div>
 
@@ -547,6 +575,52 @@ export default function SettingsPage() {
             loading={saving}
           >
             Confirm
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Delete Character Modal */}
+      <Modal
+        open={showDeleteModal}
+        onClose={() => { setShowDeleteModal(false); setDeleteConfirmText('') }}
+        title="Delete Character"
+      >
+        <p className="text-vellum-200 font-body mb-2">
+          This will <strong className="text-red-400">permanently delete</strong> your
+          character and ALL associated data (inventory, recipes, herbs, weapons, equipment).
+        </p>
+        <p className="text-vellum-300 font-body text-sm mb-4">
+          This cannot be undone.
+        </p>
+        <div className="mb-4">
+          <label className="block font-ui text-xs tracking-wider text-vellum-300 mb-2">
+            Type DELETE to confirm
+          </label>
+          <input
+            type="text"
+            value={deleteConfirmText}
+            onChange={(e) => setDeleteConfirmText(e.target.value)}
+            placeholder="DELETE"
+            className="w-full px-3 py-2 rounded-lg font-body bg-grimoire-950 border border-red-800/50 text-vellum-50 placeholder:text-vellum-400/30 focus:outline-none focus:border-red-600"
+          />
+        </div>
+        <div className="flex gap-3 justify-end">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => { setShowDeleteModal(false); setDeleteConfirmText('') }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleDelete}
+            loading={deleting}
+            disabled={deleteConfirmText !== 'DELETE'}
+            className="!bg-red-700 hover:!bg-red-600"
+          >
+            Delete Forever
           </Button>
         </div>
       </Modal>

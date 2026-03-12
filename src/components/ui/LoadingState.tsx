@@ -11,8 +11,8 @@ type LoadingStateProps = {
 
 export function LoadingState({ message = 'Loading...' }: LoadingStateProps) {
   return (
-    <div className="min-h-screen bg-zinc-900 text-zinc-100 p-8">
-      <p>{message}</p>
+    <div className="min-h-screen bg-background text-vellum-50 p-8 flex items-center justify-center">
+      <p className="font-body text-vellum-300 animate-warm-pulse">{message}</p>
     </div>
   )
 }
@@ -22,9 +22,9 @@ export function LoadingState({ message = 'Loading...' }: LoadingStateProps) {
  */
 export function InlineLoading({ message = 'Loading...' }: LoadingStateProps) {
   return (
-    <div className="flex items-center gap-2 text-zinc-400">
-      <span className="animate-pulse">●</span>
-      <span>{message}</span>
+    <div className="flex items-center gap-2 text-vellum-400">
+      <span className="text-bronze-muted animate-warm-pulse">●</span>
+      <span className="font-body">{message}</span>
     </div>
   )
 }

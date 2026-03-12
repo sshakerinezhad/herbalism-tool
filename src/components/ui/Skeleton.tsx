@@ -20,7 +20,7 @@ type SkeletonProps = {
 export function Skeleton({ className = 'h-4 w-full' }: SkeletonProps) {
   return (
     <div 
-      className={`animate-pulse bg-zinc-700/50 rounded ${className}`}
+      className={`animate-warm-pulse bg-sepia-800/40 rounded ${className}`}
       aria-hidden="true"
     />
   )
@@ -43,7 +43,7 @@ export function SkeletonText({ lines = 1, className = '' }: { lines?: number; cl
 
 export function SkeletonCard({ children, className = '' }: { children?: ReactNode; className?: string }) {
   return (
-    <div className={`bg-zinc-800/50 border border-zinc-700 rounded-lg p-4 ${className}`}>
+    <div className={`bg-grimoire-900 border border-sepia-700/50 rounded-lg p-4 ${className}`}>
       {children || (
         <div className="space-y-3">
           <Skeleton className="h-5 w-1/3" />
@@ -59,7 +59,7 @@ export function SkeletonCard({ children, className = '' }: { children?: ReactNod
 
 export function InventorySkeleton() {
   return (
-    <div className="min-h-screen bg-zinc-900 text-zinc-100 p-8">
+    <div className="min-h-screen bg-background text-vellum-50 p-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -89,7 +89,7 @@ export function InventorySkeleton() {
         {/* Item List */}
         <div className="space-y-3">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 p-4 bg-zinc-800/50 rounded-lg border border-zinc-700">
+            <div key={i} className="flex items-center gap-4 p-4 bg-grimoire-900 rounded-lg border border-sepia-700/50">
               <Skeleton className="h-10 w-10 rounded-lg" />
               <div className="flex-1 space-y-2">
                 <Skeleton className="h-5 w-48" />
@@ -106,7 +106,7 @@ export function InventorySkeleton() {
 
 export function ForageSkeleton() {
   return (
-    <div className="min-h-screen bg-zinc-900 text-zinc-100 p-8">
+    <div className="min-h-screen bg-background text-vellum-50 p-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -115,7 +115,7 @@ export function ForageSkeleton() {
         </div>
         
         {/* Sessions info */}
-        <div className="bg-zinc-800/50 rounded-lg p-4 mb-6">
+        <div className="bg-grimoire-900 rounded-lg p-4 mb-6">
           <div className="flex justify-between items-center">
             <Skeleton className="h-6 w-48" />
             <Skeleton className="h-6 w-24" />
@@ -133,7 +133,7 @@ export function ForageSkeleton() {
         </div>
         
         {/* Sessions Allocation */}
-        <div className="bg-zinc-800/50 rounded-lg p-4">
+        <div className="bg-grimoire-900 rounded-lg p-4">
           <Skeleton className="h-6 w-48 mb-4" />
           <Skeleton className="h-12 w-full" />
         </div>
@@ -144,7 +144,7 @@ export function ForageSkeleton() {
 
 export function BrewSkeleton() {
   return (
-    <div className="min-h-screen bg-zinc-900 text-zinc-100 p-8">
+    <div className="min-h-screen bg-background text-vellum-50 p-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -159,7 +159,7 @@ export function BrewSkeleton() {
         </div>
         
         {/* Herb Selection Grid */}
-        <div className="bg-zinc-800/50 rounded-lg p-6 border border-zinc-700">
+        <div className="bg-grimoire-900 rounded-lg p-6 border border-sepia-700/50">
           <Skeleton className="h-6 w-48 mb-4" />
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {Array.from({ length: 9 }).map((_, i) => (
@@ -174,7 +174,7 @@ export function BrewSkeleton() {
 
 export function RecipesSkeleton() {
   return (
-    <div className="min-h-screen bg-zinc-900 text-zinc-100 p-8">
+    <div className="min-h-screen bg-background text-vellum-50 p-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -183,7 +183,7 @@ export function RecipesSkeleton() {
         </div>
         
         {/* Stats */}
-        <div className="bg-zinc-800/50 rounded-lg p-4 mb-6 flex gap-8">
+        <div className="bg-grimoire-900 rounded-lg p-4 mb-6 flex gap-8">
           <Skeleton className="h-6 w-32" />
           <Skeleton className="h-6 w-32" />
         </div>
@@ -208,7 +208,7 @@ export function RecipesSkeleton() {
 
 export function ProfileSkeleton() {
   return (
-    <div className="min-h-screen bg-zinc-900 text-zinc-100 p-8">
+    <div className="min-h-screen bg-background text-vellum-50 p-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -217,7 +217,7 @@ export function ProfileSkeleton() {
         </div>
         
         {/* Character Info Card */}
-        <div className="bg-zinc-800/50 rounded-lg p-6 border border-zinc-700 mb-6">
+        <div className="bg-grimoire-900 rounded-lg p-6 border border-sepia-700/50 mb-6">
           <div className="flex items-start gap-4 mb-4">
             <Skeleton className="h-16 w-16 rounded-lg" />
             <div className="flex-1 space-y-2">
@@ -238,7 +238,7 @@ export function ProfileSkeleton() {
         </div>
         
         {/* Herbalism Settings */}
-        <div className="bg-zinc-800/50 rounded-lg p-6 border border-zinc-700">
+        <div className="bg-grimoire-900 rounded-lg p-6 border border-sepia-700/50">
           <Skeleton className="h-6 w-48 mb-4" />
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (

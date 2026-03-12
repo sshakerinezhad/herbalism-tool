@@ -16,12 +16,12 @@ type ErrorDisplayProps = {
 
 export function ErrorDisplay({ message, onDismiss, className = '' }: ErrorDisplayProps) {
   return (
-    <div className={`bg-red-900/30 border border-red-700 rounded-lg p-4 ${className}`}>
-      <p className="text-red-300">{message}</p>
+    <div className={`bg-red-950/20 border border-red-900/50 rounded-lg p-4 elevation-raised ${className}`}>
+      <p className="text-red-300 font-body">{message}</p>
       {onDismiss && (
         <button 
           onClick={onDismiss}
-          className="text-red-400 hover:text-red-200 text-sm mt-2"
+          className="text-red-400 hover:text-red-200 text-sm mt-2 font-body"
         >
           Dismiss
         </button>

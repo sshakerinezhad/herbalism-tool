@@ -35,25 +35,27 @@ Evolved the grimoire-themed foundation into a polished dark fantasy design syste
 
 **Plan:** `.claude/work-plan.md` | **Spec:** `docs/superpowers/specs/2026-03-11-design-system-evolution.md`
 
-### 2A — Profile & Navigation Restructure
+### 2A — Profile & Navigation Restructure ✓ COMPLETE
 
-The app's navigation model changes: home page becomes the profile/character sheet with a tab system for subsystems. This defines WHERE content lives for all subsequent pieces.
+Replaced hub-and-spoke navigation with persistent Ember & Silence nav bar and profile-as-home.
 
-**Functional:**
-- Profile becomes the main page (replaces current home hub at `/`)
-- Tab system for subsystems (exact tabs determined during brainstorm — initial thinking: inventory, herbalism, alchemy, martial mastery, archemancy, with Wave 3 tabs as placeholders)
-- Settings page overhaul (back button, proper styling, all options)
-- Allow changing race/class/background/order/vocation in settings
-- Remove armor editing from settings (keep in character sheet only)
-- Character bar improvements (animation/modal popups explaining traits)
-- Skill proficiencies in character bar
-- Reset character feature
+**What shipped:**
+- **NavBar:** Persistent Ember & Silence nav bar with bonfire active indicators (bronze for Profile, green for Herbalism), locked tab tooltips, HP breathing dot, gear icon → settings
+- **Route group `(app)/`:** Centralized auth guard + NavBar layout, persists across navigations
+- **Profile home at `/`:** Sub-tabs (Character | Inventory | Journal) using extracted panel components
+- **Herbalism hub at `/herbalism`:** Overview with foraging sessions, recent brews, quick links
+- **Settings at `/settings`:** Replaces /edit-character with editable identity fields (race, class, background, order, vocation) + confirmation modal, CON→HP auto-adjust, sign out, delete character flow
+- **Delete character:** Type-DELETE confirmation modal with cascade delete
+- **Forage/Brew:** Moved into route group (auth guards stripped, nav bar inherited)
+- **Link cleanup:** All stale route references updated (/profile→/, /inventory→/, /recipes→/, /edit-character→/settings)
 
-**Visual:** Apply design system to profile, settings, character creation wizard, edit character
+**Deferred (brainstorm separately):**
+- Character bar improvements (trait modals, skill proficiencies)
+- Mobile responsive nav collapse
+- Character creation wizard restyling
+- Design system application to existing page content
 
-**Open questions for brainstorm:**
-- What happens to standalone pages (`/forage`, `/brew`, `/recipes`)? Stay as pages or become sub-views within tabs?
-- How do placeholder tabs for Wave 3 systems look?
+**Plan:** `.claude/work-plan.md` | **Spec:** `docs/superpowers/specs/2026-03-12-profile-navigation-restructure.md` | **Nav mockup:** `.claude/ember-refined-v3.html`
 
 ### 2B — Herbalism & Inventory
 

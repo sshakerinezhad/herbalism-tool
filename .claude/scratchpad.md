@@ -1,57 +1,48 @@
 # Scratchpad
 
 **Branch:** `knights-of-belyar`
-**Last session:** 2026-03-12 (session 5)
+**Last session:** 2026-03-12 (session 9 — planning only)
 
-## What was done
+## Prior uncommitted work (session 8)
 
-### Design System 2.0 (Piece 2.0) — COMPLETE
+The full 2A Visual Pass is implemented but **still uncommitted**. All changes listed below are sitting in the working tree:
+- 4 new files: `Textarea.tsx`, `SkillsPanel.tsx`, `ChapterProgress.tsx`, `SelectionCard.tsx`
+- 12 modified files across Settings, Wizard, Profile, db, hooks
+- Build was passing as of session 8. Needs commit + visual testing.
 
-All 9 tasks executed. See `wave2.md` for full summary.
+## What was done this session (session 9)
 
-### Piece 2A — Profile & Navigation Restructure — NAVIGATION DONE, VISUAL PASS DEFERRED
+**Planning session only — no code changes.** Investigated 3 user-reported issues and designed fixes:
 
-Sessions 1-3: brainstorm. Session 4: plan. Session 5: implementation (14 tasks across 5 chunks, 9 commits).
+### 1. Brewing bug (confirmed)
+- **Root cause:** `src/lib/hooks/useBrewState.ts` ~line 380 — `count: count * batchCount` multiplies effect potency by batch count. "Brew 3 single-power" becomes "1 triple-power × dice results."
+- **Fix:** Remove `* batchCount` — batch count already controls repetition at the DB layer.
 
-**What shipped:** Persistent Ember & Silence nav bar with bonfire indicators, route group `(app)/` with centralized auth, profile-as-home with sub-tabs (Character|Inventory|Journal), herbalism hub, settings page with editable identity + delete character, forage/brew moved into route group, all stale route references updated.
+### 2. CoinPurse debounce (confirmed)
+- **Root cause:** `src/components/character/CoinPurse.tsx` — no pending state guard, so rapid clicks fire concurrent async DB calls that race. The `useEffect` on `propCoins` can reset optimistic state mid-flight.
+- **Fix:** Add `pendingCoin` state to block concurrent mutations + guard the useEffect sync.
 
-**What's still in 2A scope but deferred (needs separate brainstorm):**
-- Character bar improvements (trait modals, skill proficiencies)
-- Mobile responsive nav collapse
-- Character creation wizard restyling
-- Design system application to profile/settings/character creation page content (pages moved as-is, no visual polish yet)
+### 3. Add Elixir feature (new)
+- User wants to manually add elixirs from known recipes (not free-text).
+- **New file:** `AddElixirModal.tsx` in `src/components/inventory/herbalism/` — mirrors AddHerbModal pattern.
+- Pick from unlocked recipes → set potency (1–4) → handle template variable choices → set quantity → calls existing `addCharacterBrewedItem()`.
+- Reuses: `parseTemplateVariables` + `fillTemplate` from `src/lib/brewing.ts`, `useCharacterRecipes` hook, `addCharacterBrewedItem` from `characterInventory.ts`.
 
-**Route structure:**
-- `/` — Profile home (Character | Inventory | Journal sub-tabs)
-- `/herbalism` — Hub with sessions, brews, quick links
-- `/forage` — Forage page (in route group)
-- `/brew` — Brew page (in route group)
-- `/settings` — Settings (identity, character, stats, HP, account + delete)
-- `/login` — Outside route group (no nav bar)
-- `/create-character` — Outside route group (no nav bar)
+### 4. Honour stat — already works
+- User didn't realize honour is already editable on Settings page. No changes needed.
 
 ## Current state
 
-- **Build passes cleanly** — zero errors
-- **Branch not yet merged** — still on `knights-of-belyar`
-- **2A navigation work done** — deferred items still need brainstorming
+- **Work plan written** at `.claude/work-plan.md` — covers all 3 items above
+- **No code changes made this session** — plan mode only
+- **Prior 2A visual pass still uncommitted**
 
 ## What the next session needs to do
 
-1. **Manual testing** — verify all routes work with real data (`npm run dev`)
-2. **Decide on deferred 2A items** — brainstorm those separately, or fold into 2B/later
-3. **Brainstorm 2B** — Herbalism & Inventory piece (see `wave2.md`)
-4. Or **merge branch** if testing looks good
-
-## Key files
-
-- **Wave 2 roadmap:** `.claude/wave2.md`
-- **2A spec:** `docs/superpowers/specs/2026-03-12-profile-navigation-restructure.md`
-- **Nav bar V3 mockup:** `.claude/ember-refined-v3.html`
-- **Key new files:**
-  - `src/app/(app)/layout.tsx` — Auth guard + NavBar
-  - `src/app/(app)/page.tsx` — Profile home with sub-tabs
-  - `src/app/(app)/herbalism/page.tsx` — Herbalism hub
-  - `src/app/(app)/settings/page.tsx` — Settings with delete character
-  - `src/components/NavBar.tsx` — Ember & Silence nav bar
-  - `src/components/profile/` — CharacterSheet, InventoryPanel, JournalPanel
+1. **Commit the 2A visual pass first** (large commit, all uncommitted changes from session 8)
+2. **Implement work plan** — 3 items in order:
+   - Brewing bug fix (1 line)
+   - CoinPurse debounce (~15 lines)
+   - AddElixirModal (new file + 2 modified files)
+3. **Verify:** `npm run build` + manual testing per work-plan.md verification section
+4. **Commit** the bug fixes + feature

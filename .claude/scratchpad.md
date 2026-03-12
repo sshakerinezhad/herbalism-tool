@@ -46,6 +46,10 @@ See `.claude/wave2.md` for the 6 cross-cutting decisions.
 1. ~~Kickoff brainstorm~~ ✓
 2. ~~Brainstorm Piece 2.0~~ ✓
 3. **Get final sign-off on full design** ← NEXT (user approved each piece but needs formal "yes" on the combined doc)
-4. Write implementation plan (invoke `writing-plans` skill)
-5. Run `/verify` to generate tests
-6. Execute plan for Piece 2.0
+4. Write implementation plan (invoke `writing-plans` skill → save to `.claude/work-plan.md`)
+5. Run `/verify` to generate tests from work-plan
+6. Execute plan for Piece 2.0 (invoke `executing-plans` skill)
+
+**Workflow:** brainstorm(done) → spec(done) → writing-plans → verify → executing-plans
+
+**Reference CSS values:** The spec describes aesthetics in words. For exact hex/rgba values, read the approved mockup HTML files in `.superpowers/brainstorm/6248-1773275198/` — especially `dazzle-accents.html` (element colors) and `palette-evolution.html` (elevation system CSS).

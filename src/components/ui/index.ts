@@ -24,6 +24,13 @@ export {
   RecipesSkeleton,
   ProfileSkeleton,
 } from './Skeleton'
+export { Button } from './Button'
+export { Modal } from './Modal'
+export { Tabs, TabList, Tab, TabPanel } from './Tabs'
+export { Input } from './Input'
+export { Select } from './Select'
+export { Checkbox } from './Checkbox'
+export { ElementChip } from './ElementChip'
 export { PrefetchLink } from '../PrefetchLink'
 export { ItemTooltip } from './ItemTooltip'
 export type { ItemDetails, ItemTooltipProps } from './ItemTooltip'

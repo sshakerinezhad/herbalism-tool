@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Palette Evolution</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@400;600;700;900&family=Almendra:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;600;700&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0d0c0a; color: #f5f0e6; font-family: 'Almendra', serif; padding: 2rem; }
+
+h1 { font-family: 'Grenze Gotisch', cursive; font-size: 2rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem; }
+.subtitle { text-align: center; color: #8b7355; font-size: 0.95rem; margin-bottom: 2.5rem; }
+
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; max-width: 1000px; margin: 0 auto 3rem; }
+.compare-label { font-family: 'Cinzel', serif; font-weight: 400; font-size: 0.7rem; letter-spacing: 0.15em; color: #8b7355; text-align: center; margin-bottom: 1rem; }
+
+/* === CURRENT (flat) === */
+.card-current {
+  background: #151311;
+  border: 1px solid rgba(61,52,42,0.5);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+/* === EVOLVED (layered) === */
+.card-evolved {
+  background: linear-gradient(160deg, #17140f, #151311 40%, #131110);
+  border: 1px solid rgba(61,52,42,0.4);
+  border-radius: 10px;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.02);
+}
+.card-evolved::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201,166,107,0.15), transparent);
+}
+
+.title { font-family: 'Grenze Gotisch', cursive; font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
+.body { color: #9a8a70; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem; }
+.divider-flat { border: none; border-top: 1px solid rgba(61,52,42,0.5); margin: 1rem 0; }
+.divider-evolved {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(61,52,42,0.5), transparent);
+  margin: 1rem 0;
+}
+
+.stat-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.stat { font-family: 'Cinzel', serif; font-weight: 400; font-size: 0.7rem; letter-spacing: 0.05em; color: #c9a66b; padding: 0.2rem 0.6rem; border: 1px solid rgba(139,115,85,0.25); border-radius: 3px; }
+
+/* Button styles */
+.btn-current {
+  font-family: 'Almendra', serif; font-size: 0.85rem; font-weight: 700;
+  color: #f5f0e6; background: #6b5d4a; border: none;
+  padding: 0.45rem 1.5rem; border-radius: 999px; margin-top: 1rem;
+}
+.btn-evolved {
+  font-family: 'Almendra', serif; font-size: 0.85rem; font-weight: 700;
+  color: #151311;
+  background: linear-gradient(to bottom, #d4b87a, #b89a5a);
+  border: none; border-radius: 999px;
+  padding: 0.5rem 1.75rem; margin-top: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+  position: relative;
+}
+
+/* === SECTION 2: Surface depth === */
+.depth-demo { max-width: 1000px; margin: 0 auto 3rem; }
+.depth-demo h2 { font-family: 'Grenze Gotisch', cursive; font-size: 1.5rem; text-align: center; margin-bottom: 1rem; }
+
+.surfaces {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.surface {
+  padding: 1.25rem;
+  border-radius: 10px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.surface::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+}
+.surface .level { font-family: 'Cinzel', serif; font-weight: 400; font-size: 0.6rem; letter-spacing: 0.15em; color: #8b7355; margin-bottom: 0.5rem; }
+.surface .hex { font-family: 'Cinzel', serif; font-weight: 400; font-size: 0.65rem; color: #6b5d4a; margin-top: 0.5rem; }
+
+.s-base {
+  background: linear-gradient(160deg, #0f0e0b, #0d0c0a);
+  border: 1px solid rgba(45,41,35,0.5);
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+}
+.s-raised {
+  background: linear-gradient(160deg, #17140f, #151311);
+  border: 1px solid rgba(61,52,42,0.35);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.02);
+}
+.s-elevated {
+  background: linear-gradient(160deg, #1d1a14, #1a1815);
+  border: 1px solid rgba(61,52,42,0.4);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.03);
+}
+.s-floating {
+  background: linear-gradient(160deg, #231f18, #211e1a);
+  border: 1px solid rgba(61,52,42,0.5);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+/* === SECTION 3: Typography hierarchy === */
+.typo-demo { max-width: 800px; margin: 0 auto; }
+.typo-demo h2 { font-family: 'Grenze Gotisch', cursive; font-size: 1.5rem; text-align: center; margin-bottom: 1.5rem; }
+.typo-card {
+  background: linear-gradient(160deg, #17140f, #151311 40%, #131110);
+  border: 1px solid rgba(61,52,42,0.4);
+  border-radius: 10px;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.02);
+}
+.typo-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201,166,107,0.15), transparent);
+}
+
+.t-page { font-family: 'Grenze Gotisch', cursive; font-size: 1.8rem; font-weight: 700; color: #f5f0e6; text-shadow: 0 1px 0 rgba(0,0,0,0.4); margin-bottom: 0.75rem; }
+.t-section { font-family: 'Grenze Gotisch', cursive; font-size: 1.2rem; font-weight: 600; color: #e8e0d0; margin-bottom: 0.5rem; margin-top: 1.25rem; }
+.t-body { font-family: 'Almendra', serif; font-size: 0.95rem; color: #9a8a70; line-height: 1.7; margin-bottom: 0.5rem; }
+.t-label { font-family: 'Cinzel', serif; font-weight: 400; font-size: 0.6rem; letter-spacing: 0.15em; color: #8b7355; margin-top: 1rem; margin-bottom: 0.25rem; }
+.t-caption { font-family: 'Almendra', serif; font-size: 0.8rem; color: #6b5d4a; font-style: italic; }
+
+/* Nav demo */
+.nav-glow { display: flex; gap: 0; margin-bottom: 1.5rem; }
+.nav-glow .tab {
+  font-family: 'Almendra', serif; font-size: 0.9rem; color: #6b5d4a;
+  padding: 0.5rem 1.25rem; cursor: pointer;
+  border-bottom: 1px solid rgba(61,52,42,0.25);
+  transition: all 0.3s;
+}
+.nav-glow .tab.active {
+  color: #c9a66b;
+  border-bottom: 1px solid rgba(201,166,107,0.5);
+  background: linear-gradient(to top, rgba(201,166,107,0.06), transparent 70%);
+  text-shadow: 0 0 12px rgba(201,166,107,0.3);
+}
+
+/* Pill buttons */
+.btn-primary {
+  font-family: 'Almendra', serif; font-size: 0.85rem; font-weight: 700;
+  color: #151311;
+  background: linear-gradient(to bottom, #d4b87a, #b89a5a);
+  border: none; border-radius: 999px;
+  padding: 0.5rem 1.75rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+  display: inline-block;
+}
+.btn-secondary {
+  font-family: 'Almendra', serif; font-size: 0.85rem;
+  color: #b8a890; background: rgba(139,115,85,0.12);
+  border: 1px solid rgba(139,115,85,0.2); border-radius: 999px;
+  padding: 0.45rem 1.5rem; display: inline-block; margin-left: 0.5rem;
+}
+.btn-text {
+  font-family: 'Almendra', serif; font-size: 0.85rem;
+  color: #c9a66b; background: none; border: none;
+  display: inline-block; margin-left: 0.75rem;
+}
+
+/* Element chips */
+.chip { font-family: 'Cinzel', serif; font-weight: 400; font-size: 0.65rem; letter-spacing: 0.05em; padding: 0.2rem 0.6rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.3rem; }
+.chip-light { color: #ffd966; background: rgba(255,210,80,0.08); border: 1px solid rgba(255,210,80,0.2); box-shadow: 0 0 8px rgba(255,210,80,0.08); }
+.chip-dark { color: #c88aff; background: rgba(140,60,200,0.08); border: 1px solid rgba(140,60,200,0.2); box-shadow: 0 0 8px rgba(140,60,200,0.08); }
+</style>
+</head>
+<body>
+
+<h1>Palette Evolution</h1>
+<p class="subtitle">Same colors, next-level treatment. The difference between flat surfaces and materials with depth.</p>
+
+<div class="compare">
+  <div>
+    <div class="compare-label">CURRENT — FLAT</div>
+    <div class="card-current">
+      <div class="title">Elixir of Restoration</div>
+      <div class="body">Combine Sunpetal and Nightshade to restore 2d8 hit points to the drinker.</div>
+      <hr class="divider-flat">
+      <div class="stat-row">
+        <span class="stat">INT +3</span>
+        <span class="stat">DC 12</span>
+      </div>
+      <button class="btn-current">Brew This</button>
+    </div>
+  </div>
+  <div>
+    <div class="compare-label">EVOLVED — MATERIAL</div>
+    <div class="card-evolved">
+      <div class="title">Elixir of Restoration</div>
+      <div class="body">Combine Sunpetal and Nightshade to restore 2d8 hit points to the drinker.</div>
+      <hr class="divider-evolved">
+      <div class="stat-row">
+        <span class="stat">INT +3</span>
+        <span class="stat">DC 12</span>
+      </div>
+      <button class="btn-evolved">Brew This</button>
+    </div>
+  </div>
+</div>
+
+<div class="depth-demo">
+  <h2>Surface Elevation System</h2>
+  <p style="text-align: center; color: #8b7355; font-size: 0.9rem; margin-bottom: 1.5rem;">Apple uses elevation to show hierarchy — higher = more important. Each level gets a subtle gradient, a top-edge highlight, and increasing shadow depth.</p>
+  <div class="surfaces">
+    <div class="surface s-base">
+      <div class="level">BASE</div>
+      <div style="color: #b8a890; font-size: 0.9rem;">Page background</div>
+      <div class="hex">Recessed, shadowed inward</div>
+    </div>
+    <div class="surface s-raised">
+      <div class="level">RAISED</div>
+      <div style="color: #b8a890; font-size: 0.9rem;">Standard cards</div>
+      <div class="hex">Subtle lift, gentle shadow</div>
+    </div>
+    <div class="surface s-elevated">
+      <div class="level">ELEVATED</div>
+      <div style="color: #b8a890; font-size: 0.9rem;">Active sections</div>
+      <div class="hex">Clear lift, medium shadow</div>
+    </div>
+    <div class="surface s-floating">
+      <div class="level">FLOATING</div>
+      <div style="color: #b8a890; font-size: 0.9rem;">Modals, tooltips</div>
+      <div class="hex">Strong lift, deep shadow</div>
+    </div>
+  </div>
+</div>
+
+<div class="typo-demo">
+  <h2>Everything Together</h2>
+  <div class="typo-card">
+    <div class="t-page">Herbalism</div>
+    <div class="nav-glow">
+      <span class="tab active">Forage</span>
+      <span class="tab">Brew</span>
+      <span class="tab">Recipes</span>
+      <span class="tab">Inventory</span>
+    </div>
+
+    <div class="t-section">Deepwood — Session 1 of 3</div>
+    <div class="t-body">The Deepwood stretches before you, its canopy thick with the scent of wild herbs. Your trained eye spots several promising specimens among the undergrowth.</div>
+
+    <div class="t-label">ELEMENT POOL</div>
+    <div class="stat-row">
+      <span class="chip chip-light">🔆 Light ×3</span>
+      <span class="chip chip-dark">🌑 Dark ×2</span>
+    </div>
+
+    <div class="t-label">MODIFIERS</div>
+    <div class="stat-row" style="margin-bottom: 0.75rem;">
+      <span class="stat">INT +3</span>
+      <span class="stat">Nature +5</span>
+      <span class="stat">DC 12</span>
+    </div>
+
+    <div class="t-caption">3 foraging sessions remaining today. Your Intelligence modifier grants additional herbs on critical rolls.</div>
+
+    <div style="margin-top: 1.25rem;">
+      <span class="btn-primary">Begin Foraging</span>
+      <span class="btn-secondary">Change Biome</span>
+      <span class="btn-text">Back</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

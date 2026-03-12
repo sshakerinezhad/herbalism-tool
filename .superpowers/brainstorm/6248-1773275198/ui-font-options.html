@@ -1,0 +1,168 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@400;600;700;900&family=Almendra:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;600;700&family=Marcellus&family=Spectral:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+.demo-card {
+  background: #151311;
+  border: 1px solid #3d342a;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+.gg-title { font-family: 'Grenze Gotisch', cursive; font-size: 1.5rem; font-weight: 700; color: #f5f0e6; text-shadow: 0 1px 0 rgba(0,0,0,0.4); margin-bottom: 0.5rem; }
+.alm-body { font-family: 'Almendra', serif; font-size: 1rem; color: #9a8a70; line-height: 1.7; margin-bottom: 0.75rem; }
+.demo-row { display: flex; gap: 0.6rem; margin-top: 0.5rem; flex-wrap: wrap; align-items: center; }
+.demo-stat {
+  color: #c9a66b;
+  padding: 0.25rem 0.7rem;
+  border: 1px solid rgba(139,115,85,0.4);
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+.demo-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.2em; color: #8b7355; margin-top: 0.5rem; }
+.demo-btn {
+  display: inline-block; color: #f5f0e6; background: rgba(139,115,85,0.3);
+  border: 1px solid rgba(139,115,85,0.5); padding: 0.4rem 1.2rem;
+  border-radius: 4px; margin-top: 0.75rem; font-size: 0.85rem;
+}
+.demo-btn-secondary {
+  display: inline-block; color: #b8a890; background: rgba(45,41,35,0.6);
+  border: 1px solid rgba(61,52,42,0.6); padding: 0.4rem 1rem;
+  border-radius: 4px; margin-top: 0.75rem; font-size: 0.8rem; margin-left: 0.5rem;
+}
+.demo-nav { color: #b8a890; font-size: 0.75rem; margin-bottom: 0.75rem; }
+.demo-tab-active { color: #c9a66b; border-bottom: 2px solid #c9a66b; padding-bottom: 0.25rem; }
+.demo-tab { color: #8b7355; padding-bottom: 0.25rem; }
+</style>
+
+<h2>UI Font — Buttons, Stats & Labels</h2>
+<p class="subtitle">Title: Grenze Gotisch. Body: Almendra. Now pick a third font for interactive/compact UI elements — buttons, stat badges, labels, nav tabs. This font needs to be crisp and functional.</p>
+
+<div class="cards">
+  <div class="card" data-choice="cinzel" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div class="gg-title">Foraging — Deepwood</div>
+        <div class="demo-nav" style="font-family: 'Cinzel', serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em;">
+          <span class="demo-tab-active">Herbs</span> &nbsp;&nbsp;
+          <span class="demo-tab">Brewed</span> &nbsp;&nbsp;
+          <span class="demo-tab">Weapons</span> &nbsp;&nbsp;
+          <span class="demo-tab">Items</span>
+        </div>
+        <div class="alm-body">Roll your Nature check to search for herbs in the Deepwood biome. Found herbs are added to your inventory.</div>
+        <div class="demo-row">
+          <div class="demo-stat" style="font-family: 'Cinzel', serif; font-weight: 600;">INT +3</div>
+          <div class="demo-stat" style="font-family: 'Cinzel', serif; font-weight: 600;">DC 12</div>
+          <div class="demo-stat" style="font-family: 'Cinzel', serif; font-weight: 600;">🔆 Light</div>
+          <div class="demo-stat" style="font-family: 'Cinzel', serif; font-weight: 600;">🌑 Dark</div>
+        </div>
+        <div class="demo-label" style="font-family: 'Cinzel', serif; font-weight: 600;">Brewing Modifier</div>
+        <div>
+          <span class="demo-btn" style="font-family: 'Cinzel', serif; font-weight: 600;">Begin Foraging</span>
+          <span class="demo-btn-secondary" style="font-family: 'Cinzel', serif; font-weight: 600;">Cancel</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Cinzel</h3>
+      <p>Roman imperial capitals. Authoritative, structured, made for small labels. All-caps by nature — great for buttons and stat badges. Creates a "carved inscription" vibe for UI chrome. Dark Souls energy.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="marcellus" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div class="gg-title">Foraging — Deepwood</div>
+        <div class="demo-nav" style="font-family: 'Marcellus', serif; text-transform: uppercase; letter-spacing: 0.15em;">
+          <span class="demo-tab-active">Herbs</span> &nbsp;&nbsp;
+          <span class="demo-tab">Brewed</span> &nbsp;&nbsp;
+          <span class="demo-tab">Weapons</span> &nbsp;&nbsp;
+          <span class="demo-tab">Items</span>
+        </div>
+        <div class="alm-body">Roll your Nature check to search for herbs in the Deepwood biome. Found herbs are added to your inventory.</div>
+        <div class="demo-row">
+          <div class="demo-stat" style="font-family: 'Marcellus', serif;">INT +3</div>
+          <div class="demo-stat" style="font-family: 'Marcellus', serif;">DC 12</div>
+          <div class="demo-stat" style="font-family: 'Marcellus', serif;">🔆 Light</div>
+          <div class="demo-stat" style="font-family: 'Marcellus', serif;">🌑 Dark</div>
+        </div>
+        <div class="demo-label" style="font-family: 'Marcellus', serif;">Brewing Modifier</div>
+        <div>
+          <span class="demo-btn" style="font-family: 'Marcellus', serif;">Begin Foraging</span>
+          <span class="demo-btn-secondary" style="font-family: 'Marcellus', serif;">Cancel</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Marcellus</h3>
+      <p>Roman inscriptional — similar vibe to Cinzel but softer, more hand-chiseled. Slightly less commanding, slightly more approachable. Only regular weight (no bold), so relies on letter-spacing and caps for emphasis.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="spectral" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div class="gg-title">Foraging — Deepwood</div>
+        <div class="demo-nav" style="font-family: 'Spectral', serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em;">
+          <span class="demo-tab-active">Herbs</span> &nbsp;&nbsp;
+          <span class="demo-tab">Brewed</span> &nbsp;&nbsp;
+          <span class="demo-tab">Weapons</span> &nbsp;&nbsp;
+          <span class="demo-tab">Items</span>
+        </div>
+        <div class="alm-body">Roll your Nature check to search for herbs in the Deepwood biome. Found herbs are added to your inventory.</div>
+        <div class="demo-row">
+          <div class="demo-stat" style="font-family: 'Spectral', serif; font-weight: 600;">INT +3</div>
+          <div class="demo-stat" style="font-family: 'Spectral', serif; font-weight: 600;">DC 12</div>
+          <div class="demo-stat" style="font-family: 'Spectral', serif; font-weight: 600;">🔆 Light</div>
+          <div class="demo-stat" style="font-family: 'Spectral', serif; font-weight: 600;">🌑 Dark</div>
+        </div>
+        <div class="demo-label" style="font-family: 'Spectral', serif; font-weight: 600;">Brewing Modifier</div>
+        <div>
+          <span class="demo-btn" style="font-family: 'Spectral', serif; font-weight: 600;">Begin Foraging</span>
+          <span class="demo-btn-secondary" style="font-family: 'Spectral', serif; font-weight: 600;">Cancel</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Spectral</h3>
+      <p>Sharp, precise serif. Wide weight range (200-800). Designed for digital screens — crisp at all sizes. Slightly more modern than Cinzel/Marcellus but still old-world. Best readability of the three.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="mono" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div class="gg-title">Foraging — Deepwood</div>
+        <div class="demo-nav" style="font-family: 'Cinzel', serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em;">
+          <span class="demo-tab-active">Herbs</span> &nbsp;&nbsp;
+          <span class="demo-tab">Brewed</span> &nbsp;&nbsp;
+          <span class="demo-tab">Weapons</span> &nbsp;&nbsp;
+          <span class="demo-tab">Items</span>
+        </div>
+        <div class="alm-body">Roll your Nature check to search for herbs in the Deepwood biome. Found herbs are added to your inventory.</div>
+        <div class="demo-row">
+          <div class="demo-stat" style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 0.8rem;">INT +3</div>
+          <div class="demo-stat" style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 0.8rem;">DC 12</div>
+          <div class="demo-stat" style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 0.8rem;">🔆 Light</div>
+          <div class="demo-stat" style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 0.8rem;">🌑 Dark</div>
+        </div>
+        <div class="demo-label" style="font-family: 'Cinzel', serif; font-weight: 600;">Brewing Modifier</div>
+        <div>
+          <span class="demo-btn" style="font-family: 'Cinzel', serif; font-weight: 600;">Begin Foraging</span>
+          <span class="demo-btn-secondary" style="font-family: 'Cinzel', serif; font-weight: 600;">Cancel</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Cinzel (buttons/labels) + Mono (stats only)</h3>
+      <p>Hybrid: Cinzel for buttons, labels, and nav. Monospace for numeric stats (INT, DC, quantities). The mono gives stats a "game HUD" feel — mechanical precision amid the fantasy aesthetic. 4-font stack but each has a clear role.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 1.5rem; padding: 1rem; border: 1px solid #333; border-radius: 8px;">
+  <h3>The font stack so far</h3>
+  <p style="font-size: 0.9rem; line-height: 1.8;">
+    <strong>🏰 Titles:</strong> Grenze Gotisch — gothic blackletter, the dark fantasy anchor<br>
+    <strong>📖 Body:</strong> Almendra — calligraphic fantasy serif, flowing narrative text<br>
+    <strong>⚔️ UI (picking now):</strong> Buttons, stat badges, labels, nav tabs, form elements
+  </p>
+</div>

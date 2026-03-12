@@ -20,14 +20,20 @@
 | 5 | Access → **Recipe-based** | Remove herbalist-only gate. Anyone with recipes can brew. Herbalists get full library + can learn more. Non-herbalists get Order-based recipes (future wave). Empty state message for no recipes. | 2B |
 | 6 | Alchemy → **Separate system, deferred** | Completely different system (creature organs, own interface). Not Wave 2. | Future wave |
 
-### 2.0 — Design System Evolution
+### 2.0 — Design System Evolution ✓ COMPLETE
 
-The app already has a grimoire-themed foundation (CSS custom properties for grimoire/vellum/sepia/bronze palettes, GrimoireCard component, decorative utilities like `.text-embossed`, `.border-ornate`, `.texture-paper`). This piece evolves it — not starts from scratch.
+Evolved the grimoire-themed foundation into a polished dark fantasy design system.
 
-- **Aesthetic direction:** Dark fantasy retro pulp fiction. NOT generic fantasy, NOT clean modern minimalism, NOT AI slop.
-- **Deliverables:** Color palette, typography system, component library (buttons, cards, modals, form elements, navigation), animation patterns, layout grid
-- **Tool:** Use `frontend-design` skill for distinctive, high-quality output
-- **Scope:** `src/components/ui/`, `src/app/globals.css`, Tailwind config, fonts in `src/app/layout.tsx`
+**What shipped (9 commits on `knights-of-belyar`):**
+- **Typography:** Grenze Gotisch (headings), Almendra (body), Cinzel (UI labels) replace Geist Sans
+- **Elevation system:** 4-tier material surfaces (base → raised → elevated → floating) with top-edge bronze highlights
+- **Element accents:** Illuminated gemstone technique — 6 elements with gradient bg, inner/outer glow, text glow, shimmer hover
+- **Element rename:** positive→light (🔆), negative→dark (🌑). Air upgraded from zinc to indigo. DB migration pushed.
+- **Component evolution:** GrimoireCard/OrnateFrame → elevation classes, SectionHeader → Cinzel, Divider → gradient-fade, Skeletons/Loading/Error/Warning → grimoire palette (no more zinc)
+- **New components:** Button (pill, 3 tiers), Modal (floating portal), Tabs (composable context API), Input, Select, Checkbox, ElementChip
+- **CSS foundation:** Animation keyframes, button/tab utility classes, element badge/chip classes
+
+**Plan:** `.claude/work-plan.md` | **Spec:** `docs/superpowers/specs/2026-03-11-design-system-evolution.md`
 
 ### 2A — Profile & Navigation Restructure
 

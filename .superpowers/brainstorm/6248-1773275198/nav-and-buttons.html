@@ -1,0 +1,256 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@400;600;700;900&family=Almendra:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap');
+
+.demo-card {
+  background: #151311;
+  border: 1px solid #3d342a;
+  border-radius: 8px;
+  padding: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+.gg-title { font-family: 'Grenze Gotisch', cursive; font-size: 1.6rem; font-weight: 700; color: #f5f0e6; text-shadow: 0 1px 0 rgba(0,0,0,0.4); margin-bottom: 1rem; }
+
+/* === NAV STYLE A: Ornamental underline === */
+.nav-a { display: flex; gap: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(61,52,42,0.3); margin-bottom: 1rem; }
+.nav-a .tab {
+  font-family: 'Almendra', serif; font-size: 0.95rem; color: #8b7355;
+  position: relative; cursor: pointer; padding-bottom: 0.5rem;
+  transition: color 0.2s;
+}
+.nav-a .tab.active {
+  color: #c9a66b;
+}
+.nav-a .tab.active::after {
+  content: '';
+  position: absolute; bottom: -0.8rem; left: 10%; right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #c9a66b, transparent);
+}
+.nav-a .tab::before {
+  content: '✧';
+  font-size: 0.5rem;
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  bottom: -1.1rem;
+  color: #c9a66b;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.nav-a .tab.active::before { opacity: 1; }
+
+/* === NAV STYLE B: Arcane glow === */
+.nav-b { display: flex; gap: 0; margin-bottom: 1rem; }
+.nav-b .tab {
+  font-family: 'Almendra', serif; font-size: 0.95rem; color: #6b5d4a;
+  padding: 0.5rem 1.25rem; cursor: pointer;
+  border-bottom: 1px solid rgba(61,52,42,0.25);
+  transition: all 0.3s;
+}
+.nav-b .tab.active {
+  color: #c9a66b;
+  border-bottom: 1px solid rgba(201,166,107,0.5);
+  background: linear-gradient(to top, rgba(201,166,107,0.06), transparent 70%);
+  text-shadow: 0 0 12px rgba(201,166,107,0.3);
+}
+
+/* === NAV STYLE C: Spaced elegance === */
+.nav-c { display: flex; align-items: center; gap: 0; margin-bottom: 1rem; }
+.nav-c .tab {
+  font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 1.05rem; color: #6b5d4a;
+  padding: 0.3rem 0; cursor: pointer;
+  transition: color 0.2s;
+  letter-spacing: 0.02em;
+}
+.nav-c .tab.active {
+  color: #d4b87a;
+  font-weight: 600;
+}
+.nav-c .sep {
+  color: rgba(139,115,85,0.3); margin: 0 1rem;
+  font-size: 0.4rem;
+}
+
+/* === BUTTONS === */
+.btn-section { margin-top: 1.25rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+
+.btn-apple-primary {
+  font-family: 'Almendra', serif; font-weight: 700; font-size: 0.9rem;
+  color: #151311; background: linear-gradient(to bottom, #d4b87a, #b89a5a);
+  border: none; border-radius: 999px; padding: 0.5rem 1.75rem;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.btn-apple-secondary {
+  font-family: 'Almendra', serif; font-size: 0.85rem;
+  color: #b8a890; background: rgba(139,115,85,0.12);
+  border: 1px solid rgba(139,115,85,0.2); border-radius: 999px;
+  padding: 0.45rem 1.5rem; cursor: pointer; transition: all 0.2s;
+}
+.btn-apple-text {
+  font-family: 'Almendra', serif; font-size: 0.85rem;
+  color: #c9a66b; background: none; border: none;
+  cursor: pointer; padding: 0.45rem 0.5rem;
+}
+
+.btn-flat-primary {
+  font-family: 'Almendra', serif; font-weight: 700; font-size: 0.9rem;
+  color: #151311; background: #c9a66b;
+  border: none; border-radius: 6px; padding: 0.5rem 1.75rem;
+  cursor: pointer;
+}
+.btn-flat-secondary {
+  font-family: 'Almendra', serif; font-size: 0.85rem;
+  color: #b8a890; background: rgba(139,115,85,0.1);
+  border: 1px solid rgba(139,115,85,0.2); border-radius: 6px;
+  padding: 0.45rem 1.5rem; cursor: pointer;
+}
+.btn-flat-text {
+  font-family: 'Almendra', serif; font-size: 0.85rem;
+  color: #c9a66b; background: none; border: none;
+  cursor: pointer; padding: 0.45rem 0.5rem;
+}
+
+.body-text { font-family: 'Almendra', serif; font-size: 0.95rem; color: #9a8a70; line-height: 1.7; margin-bottom: 0.75rem; }
+.stat-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.stat-slim {
+  font-family: 'Cinzel', serif; font-weight: 400; font-size: 0.7rem;
+  color: #c9a66b; padding: 0.2rem 0.6rem;
+  border: 1px solid rgba(139,115,85,0.3); border-radius: 3px;
+  letter-spacing: 0.05em;
+}
+</style>
+
+<h2>Navigation Tabs</h2>
+<p class="subtitle">Three approaches for the subsystem tabs. Each balances "clearly selectable" with "graceful and arcane."</p>
+
+<div class="cards">
+  <div class="card" data-choice="nav-a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div class="gg-title">Knights of Belyar</div>
+        <div class="nav-a">
+          <span class="tab active">Herbalism</span>
+          <span class="tab">Inventory</span>
+          <span class="tab">Combat</span>
+          <span class="tab">Archemancy</span>
+        </div>
+        <div class="body-text">The Deepwood stretches before you, its canopy thick with the scent of wild herbs. Your trained eye spots several promising specimens.</div>
+        <div class="stat-row">
+          <div class="stat-slim">INT +3</div>
+          <div class="stat-slim">DC 12</div>
+          <div class="stat-slim">🔆 Light</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A: Ornamental Underline</h3>
+      <p>Active tab gets a gradient underline that fades at the edges + a tiny ✧ star ornament beneath. Inactive tabs are muted bronze. Elegant, clear hierarchy, minimal.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="nav-b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div class="gg-title">Knights of Belyar</div>
+        <div class="nav-b">
+          <span class="tab active">Herbalism</span>
+          <span class="tab">Inventory</span>
+          <span class="tab">Combat</span>
+          <span class="tab">Archemancy</span>
+        </div>
+        <div class="body-text">The Deepwood stretches before you, its canopy thick with the scent of wild herbs. Your trained eye spots several promising specimens.</div>
+        <div class="stat-row">
+          <div class="stat-slim">INT +3</div>
+          <div class="stat-slim">DC 12</div>
+          <div class="stat-slim">🔆 Light</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B: Arcane Glow</h3>
+      <p>Active tab glows softly — subtle upward gradient + text-shadow gives it a "lit from within" feel. Like selecting a rune. Border-bottom shifts from sepia to bronze on active.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="nav-c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div class="gg-title">Knights of Belyar</div>
+        <div class="nav-c">
+          <span class="tab active">Herbalism</span>
+          <span class="sep">◆</span>
+          <span class="tab">Inventory</span>
+          <span class="sep">◆</span>
+          <span class="tab">Combat</span>
+          <span class="sep">◆</span>
+          <span class="tab">Archemancy</span>
+        </div>
+        <div class="body-text">The Deepwood stretches before you, its canopy thick with the scent of wild herbs. Your trained eye spots several promising specimens.</div>
+        <div class="stat-row">
+          <div class="stat-slim">INT +3</div>
+          <div class="stat-slim">DC 12</div>
+          <div class="stat-slim">🔆 Light</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C: Spaced Elegance</h3>
+      <p>Cormorant Garamond — taller, thinner letterforms. Separated by tiny ◆ diamonds. Active tab is brighter + slightly bolder. Most minimal, relies on typography and spacing alone. Book-chapter feel.</p>
+    </div>
+  </div>
+</div>
+
+<h2 style="margin-top: 2.5rem;">Button Styles</h2>
+<p class="subtitle">Apple-inspired: confident, minimal, rounded. Two sets below — pill-shaped vs soft-square.</p>
+
+<div class="cards">
+  <div class="card" data-choice="btn-pill" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div class="gg-title" style="font-size: 1.3rem;">Brew a Potion</div>
+        <div class="body-text">You have selected 3 herbs. Their elements align for a healing elixir.</div>
+        <div class="btn-section">
+          <span class="btn-apple-primary">Begin Brewing</span>
+          <span class="btn-apple-secondary">Change Herbs</span>
+          <span class="btn-apple-text">Cancel</span>
+        </div>
+        <div style="margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid rgba(61,52,42,0.3);">
+          <div class="body-text" style="margin-bottom: 0.5rem;">Completed — Elixir of Restoration</div>
+          <div class="btn-section" style="margin-top: 0.5rem;">
+            <span class="btn-apple-primary">Add to Inventory</span>
+            <span class="btn-apple-text">Discard</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Pill Buttons (Apple-style)</h3>
+      <p>Primary: bronze gradient fill, dark text, pill shape. Secondary: subtle fill + thin border, pill. Text: just colored text, no chrome. Three clear tiers of importance.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="btn-soft" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div class="gg-title" style="font-size: 1.3rem;">Brew a Potion</div>
+        <div class="body-text">You have selected 3 herbs. Their elements align for a healing elixir.</div>
+        <div class="btn-section">
+          <span class="btn-flat-primary">Begin Brewing</span>
+          <span class="btn-flat-secondary">Change Herbs</span>
+          <span class="btn-flat-text">Cancel</span>
+        </div>
+        <div style="margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid rgba(61,52,42,0.3);">
+          <div class="body-text" style="margin-bottom: 0.5rem;">Completed — Elixir of Restoration</div>
+          <div class="btn-section" style="margin-top: 0.5rem;">
+            <span class="btn-flat-primary">Add to Inventory</span>
+            <span class="btn-flat-text">Discard</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Soft Square Buttons</h3>
+      <p>Same three tiers but with soft-rounded rectangles (6px radius) instead of pills. Slightly more structured, less playful. Same bronze fill for primary.</p>
+    </div>
+  </div>
+</div>

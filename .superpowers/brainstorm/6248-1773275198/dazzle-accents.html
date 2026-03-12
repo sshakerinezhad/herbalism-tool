@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Element Accents — Dazzle</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@400;600;700;900&family=Almendra:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;600;700&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0d0c0a; color: #f5f0e6; font-family: 'Almendra', serif; padding: 2rem; }
+
+h1 { font-family: 'Grenze Gotisch', cursive; font-size: 2rem; font-weight: 700; text-align: center; margin-bottom: 0.5rem; }
+.subtitle { text-align: center; color: #8b7355; font-size: 0.95rem; margin-bottom: 2rem; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; max-width: 1200px; margin: 0 auto; }
+
+/* === ELEMENT BADGE BASE === */
+.element-badge {
+  position: relative;
+  padding: 1.25rem;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+.element-badge:hover {
+  transform: translateY(-2px);
+}
+.element-badge .name {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.25rem;
+}
+.element-badge .desc {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  line-height: 1.5;
+}
+.element-badge .icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+/* Shimmer overlay */
+.element-badge::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  transition: left 0.6s;
+}
+.element-badge:hover::before {
+  left: 150%;
+}
+
+/* === FIRE === */
+.fire {
+  background: linear-gradient(135deg, #1a0a04, #2d1008, #1a0a04);
+  border: 1px solid rgba(255,100,30,0.25);
+  box-shadow: inset 0 0 30px rgba(255,80,20,0.08), 0 0 15px rgba(255,80,20,0.05);
+}
+.fire:hover { box-shadow: inset 0 0 30px rgba(255,80,20,0.15), 0 0 25px rgba(255,80,20,0.12), 0 4px 20px rgba(0,0,0,0.4); }
+.fire .name { color: #ff9a5c; text-shadow: 0 0 10px rgba(255,120,40,0.4); }
+.fire .icon { text-shadow: 0 0 15px rgba(255,80,20,0.6); }
+
+/* === COLD === */
+.cold {
+  background: linear-gradient(135deg, #040a1a, #081228, #040a1a);
+  border: 1px solid rgba(100,180,255,0.2);
+  box-shadow: inset 0 0 30px rgba(80,160,255,0.06), 0 0 15px rgba(80,160,255,0.04);
+}
+.cold:hover { box-shadow: inset 0 0 30px rgba(80,160,255,0.12), 0 0 25px rgba(80,160,255,0.1), 0 4px 20px rgba(0,0,0,0.4); }
+.cold .name { color: #7ec8ff; text-shadow: 0 0 10px rgba(100,180,255,0.4); }
+.cold .icon { text-shadow: 0 0 15px rgba(100,180,255,0.6); }
+
+/* === POISON === */
+.poison {
+  background: linear-gradient(135deg, #061205, #0d1f0a, #061205);
+  border: 1px solid rgba(80,220,80,0.2);
+  box-shadow: inset 0 0 30px rgba(60,200,60,0.06), 0 0 15px rgba(60,200,60,0.04);
+}
+.poison:hover { box-shadow: inset 0 0 30px rgba(60,200,60,0.12), 0 0 25px rgba(60,200,60,0.1), 0 4px 20px rgba(0,0,0,0.4); }
+.poison .name { color: #7de87d; text-shadow: 0 0 10px rgba(80,220,80,0.4); }
+.poison .icon { text-shadow: 0 0 15px rgba(80,220,80,0.6); }
+
+/* === LIGHT === */
+.light {
+  background: linear-gradient(135deg, #1a1505, #2a2008, #1a1505);
+  border: 1px solid rgba(255,220,120,0.25);
+  box-shadow: inset 0 0 30px rgba(255,210,80,0.08), 0 0 15px rgba(255,210,80,0.06);
+}
+.light:hover { box-shadow: inset 0 0 40px rgba(255,210,80,0.15), 0 0 30px rgba(255,210,80,0.12), 0 4px 20px rgba(0,0,0,0.4); }
+.light .name { color: #ffd966; text-shadow: 0 0 12px rgba(255,210,80,0.5); }
+.light .icon { text-shadow: 0 0 20px rgba(255,210,80,0.7); }
+
+/* === DARK === */
+.dark {
+  background: linear-gradient(135deg, #0d0510, #150820, #0d0510);
+  border: 1px solid rgba(160,80,220,0.2);
+  box-shadow: inset 0 0 30px rgba(140,60,200,0.08), 0 0 15px rgba(140,60,200,0.05);
+}
+.dark:hover { box-shadow: inset 0 0 30px rgba(140,60,200,0.15), 0 0 25px rgba(140,60,200,0.12), 0 4px 20px rgba(0,0,0,0.4); }
+.dark .name { color: #c88aff; text-shadow: 0 0 10px rgba(160,80,220,0.5); }
+.dark .icon { text-shadow: 0 0 15px rgba(160,80,220,0.6); }
+
+/* === LIGHTNING === */
+.lightning {
+  background: linear-gradient(135deg, #0a0a14, #121228, #0a0a14);
+  border: 1px solid rgba(140,140,255,0.2);
+  box-shadow: inset 0 0 30px rgba(120,120,255,0.06), 0 0 15px rgba(120,120,255,0.04);
+}
+.lightning:hover { box-shadow: inset 0 0 30px rgba(120,120,255,0.12), 0 0 25px rgba(120,120,255,0.1), 0 4px 20px rgba(0,0,0,0.4); }
+.lightning .name { color: #a0a0ff; text-shadow: 0 0 10px rgba(140,140,255,0.5); }
+.lightning .icon { text-shadow: 0 0 15px rgba(140,140,255,0.6); }
+
+/* === SECTION: Stat badges with element accents === */
+.stat-section { max-width: 800px; margin: 3rem auto 0; }
+.stat-section h2 { font-family: 'Grenze Gotisch', cursive; font-size: 1.5rem; margin-bottom: 1rem; text-align: center; }
+.stat-demo { background: #151311; border: 1px solid #3d342a; border-radius: 8px; padding: 1.5rem; }
+.stat-row { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.75rem; }
+
+/* Element stat chips — small inline versions */
+.chip {
+  font-family: 'Cinzel', serif;
+  font-weight: 400;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.7rem;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.chip-fire { color: #ff9a5c; background: rgba(255,80,20,0.08); border: 1px solid rgba(255,80,20,0.2); box-shadow: 0 0 8px rgba(255,80,20,0.08); }
+.chip-cold { color: #7ec8ff; background: rgba(80,160,255,0.08); border: 1px solid rgba(80,160,255,0.2); box-shadow: 0 0 8px rgba(80,160,255,0.08); }
+.chip-poison { color: #7de87d; background: rgba(60,200,60,0.08); border: 1px solid rgba(60,200,60,0.2); box-shadow: 0 0 8px rgba(60,200,60,0.08); }
+.chip-light { color: #ffd966; background: rgba(255,210,80,0.08); border: 1px solid rgba(255,210,80,0.2); box-shadow: 0 0 8px rgba(255,210,80,0.08); }
+.chip-dark { color: #c88aff; background: rgba(140,60,200,0.08); border: 1px solid rgba(140,60,200,0.2); box-shadow: 0 0 8px rgba(140,60,200,0.08); }
+.chip-lightning { color: #a0a0ff; background: rgba(120,120,255,0.08); border: 1px solid rgba(120,120,255,0.2); box-shadow: 0 0 8px rgba(120,120,255,0.08); }
+
+.chip-neutral { color: #c9a66b; background: rgba(139,115,85,0.08); border: 1px solid rgba(139,115,85,0.25); }
+
+.body-text { font-family: 'Almendra', serif; font-size: 0.95rem; color: #9a8a70; line-height: 1.7; }
+.label-text { font-family: 'Cinzel', serif; font-weight: 400; font-size: 0.6rem; letter-spacing: 0.15em; color: #8b7355; margin-top: 0.75rem; margin-bottom: 0.25rem; }
+
+/* Pulse animation for magical effects */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+</style>
+</head>
+<body>
+
+<h1>Elemental Accents</h1>
+<p class="subtitle">Each element is a gemstone — layered gradients, inner light, shimmer on hover. Not just color. Material.</p>
+
+<div class="grid">
+  <div class="element-badge fire">
+    <div class="icon">🔥</div>
+    <div class="name">FIRE</div>
+    <div class="desc">Ember glow radiating from within. Warm orange-to-crimson depth. Feels like looking into a forge.</div>
+  </div>
+
+  <div class="element-badge cold">
+    <div class="icon">❄️</div>
+    <div class="name">COLD</div>
+    <div class="desc">Crystalline ice shimmer. Cool blue with frosted edges. Like breath on a winter window.</div>
+  </div>
+
+  <div class="element-badge poison">
+    <div class="icon">☠️</div>
+    <div class="name">POISON</div>
+    <div class="desc">Acidic luminescence. Sickly green that seems to bubble at the edges. Toxic and alive.</div>
+  </div>
+
+  <div class="element-badge light">
+    <div class="icon">🔆</div>
+    <div class="name">LIGHT</div>
+    <div class="desc">Radiant warmth, like sunlight through stained glass. Golden bloom that feels sacred and powerful.</div>
+  </div>
+
+  <div class="element-badge dark">
+    <div class="icon">🌑</div>
+    <div class="name">DARK</div>
+    <div class="desc">Deep amethyst void. Purple that pulls you in. Like staring into a gem that contains a universe.</div>
+  </div>
+
+  <div class="element-badge lightning">
+    <div class="icon">⚡</div>
+    <div class="name">LIGHTNING</div>
+    <div class="desc">Electric indigo crackle. Sharp, bright, dangerous. The air feels charged around it.</div>
+  </div>
+</div>
+
+<div class="stat-section">
+  <h2>In Context — Element Chips</h2>
+  <div class="stat-demo">
+    <div style="font-family: 'Grenze Gotisch', cursive; font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem;">Elixir of Restoration</div>
+    <div class="body-text">Combine Sunpetal and Nightshade to create a potion that restores 2d8 hit points.</div>
+
+    <div class="label-text">REQUIRED ELEMENTS</div>
+    <div class="stat-row">
+      <span class="chip chip-light">🔆 Light ×2</span>
+      <span class="chip chip-dark">🌑 Dark ×1</span>
+    </div>
+
+    <div class="label-text">BREWING</div>
+    <div class="stat-row">
+      <span class="chip chip-neutral">INT +3</span>
+      <span class="chip chip-neutral">DC 12</span>
+    </div>
+
+    <div style="margin-top: 1.25rem; padding-top: 0.75rem; border-top: 1px solid rgba(61,52,42,0.3);">
+      <div style="font-family: 'Grenze Gotisch', cursive; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem;">Herb Inventory</div>
+      <div class="stat-row">
+        <span class="chip chip-fire">🔥 Flameleaf ×3</span>
+        <span class="chip chip-cold">❄️ Frostbloom ×2</span>
+        <span class="chip chip-light">🔆 Sunpetal ×5</span>
+        <span class="chip chip-poison">☠️ Venomroot ×1</span>
+        <span class="chip chip-dark">🌑 Nightshade ×4</span>
+        <span class="chip chip-lightning">⚡ Stormgrass ×2</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="max-width: 800px; margin: 2rem auto; padding: 1rem; border: 1px solid #3d342a; border-radius: 8px; background: #151311;">
+  <h2 style="font-family: 'Grenze Gotisch', cursive; font-size: 1.3rem; text-align: center; margin-bottom: 0.75rem;">The Technique</h2>
+  <div class="body-text" style="text-align: center;">
+    Each accent uses 4 layers: <strong>background gradient</strong> (dark → color-tinted → dark), <strong>inner glow</strong> (inset box-shadow), <strong>outer glow</strong> (ambient light spill), and <strong>text glow</strong> (text-shadow). On hover, all intensities increase + a shimmer sweeps across. The result isn't "colored" — it's <em>illuminated</em>.
+  </div>
+</div>
+
+</body>
+</html>

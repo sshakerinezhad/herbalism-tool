@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ember & Silence — V2 Comparison</title>
+<link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@300;400;500;600;700&family=Almendra:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* ── V2 PALETTE: Medium Lift ── */
+    --void: #141210;
+    --ink: #1a1714;
+    --char: #1e1b16;
+    --soot: #322d24;
+    --deep-ash: #524a3e;
+    --ash: #7d7265;
+    --ash-light: #9a8e7b;
+    --warm-white: #ede4d3;
+    --warm-mid: #c4b8a4;
+
+    /* Ember accents */
+    --ember: #c9a96e;
+    --ember-bright: #e2c792;
+    --ember-hot: #dbb87a;
+    --ember-dim: #8a7548;
+
+    /* HP */
+    --emerald: #22c55e;
+    --emerald-dim: rgba(34,197,94,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--void);
+    font-family: 'Almendra', serif;
+    color: var(--warm-white);
+    min-height: 100vh;
+  }
+
+  /* ── Comparison header ── */
+  .compare-header {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--ember);
+    text-align: center;
+    padding: 28px 0 6px;
+  }
+  .compare-sub {
+    font-family: 'Almendra', serif;
+    font-size: 13px;
+    color: var(--ash);
+    text-align: center;
+    padding-bottom: 20px;
+  }
+
+  .context-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--deep-ash);
+    text-align: center;
+    padding: 24px 0 12px;
+  }
+
+  /* ============================================================
+     THE NAV — EMBER & SILENCE V2
+     Changes: palette lift, larger text, more breathing room,
+     ember glow accents, better visual hierarchy
+     ============================================================ */
+  .nav {
+    position: relative;
+    max-width: 100%;
+  }
+
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    height: 56px;
+    padding: 0 20px;
+    position: relative;
+  }
+
+  /* The ember line — stronger presence with the lifted palette */
+  .nav-bar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+      var(--ember) 0%,
+      rgba(201,169,110,0.5) 8%,
+      rgba(201,169,110,0.18) 30%,
+      rgba(201,169,110,0.08) 55%,
+      rgba(201,169,110,0.03) 80%,
+      rgba(201,169,110,0.01) 100%
+    );
+  }
+
+  /* --- Character Presence --- */
+  .presence {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 24px 0 12px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  /* Ambient warmth — more visible now */
+  .presence::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 120px;
+    height: 80px;
+    background: radial-gradient(ellipse at 20% 50%,
+      rgba(201,169,110,0.07) 0%,
+      rgba(201,169,110,0.03) 40%,
+      transparent 70%
+    );
+    pointer-events: none;
+    animation: warmth 6s ease-in-out infinite;
+  }
+  @keyframes warmth {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+
+  .emblem {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: linear-gradient(145deg, #28231b, #1a1714);
+    border: 1px solid rgba(201,169,110,0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    position: relative;
+    z-index: 1;
+    box-shadow:
+      0 1px 8px rgba(0,0,0,0.3),
+      0 0 12px rgba(201,169,110,0.04),
+      inset 0 1px 2px rgba(201,169,110,0.08),
+      inset 0 -1px 2px rgba(0,0,0,0.3);
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .presence:hover .emblem {
+    border-color: rgba(201,169,110,0.35);
+    box-shadow:
+      0 1px 8px rgba(0,0,0,0.3),
+      0 0 20px rgba(201,169,110,0.08),
+      inset 0 1px 2px rgba(201,169,110,0.1),
+      inset 0 -1px 2px rgba(0,0,0,0.3);
+  }
+
+  .char-info {
+    position: relative;
+    z-index: 1;
+    line-height: 1.2;
+  }
+  .char-name {
+    font-family: 'Grenze Gotisch', serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--warm-white);
+    letter-spacing: 0.3px;
+    transition: color 0.4s;
+  }
+  .presence:hover .char-name {
+    color: #f0e8d8;
+  }
+  .char-subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--deep-ash);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: color 0.6s;
+  }
+  .presence:hover .char-subtitle {
+    color: var(--ash);
+  }
+
+  /* --- System Tabs --- */
+  .system-tabs {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .sys-tab {
+    position: relative;
+    padding: 18px 20px;
+    font-family: 'Cinzel', serif;
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: var(--ash);
+    cursor: pointer;
+    transition: color 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    user-select: none;
+  }
+  .sys-tab:hover {
+    color: var(--ash-light);
+  }
+
+  .sys-tab.active {
+    color: var(--ember-bright);
+  }
+
+  /* The ember — a warm organic glow beneath the active tab */
+  .sys-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--ember-hot);
+    box-shadow:
+      0 0 4px rgba(201,169,110,0.6),
+      0 0 12px rgba(201,169,110,0.3),
+      0 0 28px rgba(201,169,110,0.12),
+      0 1px 3px rgba(201,169,110,0.4);
+    animation: ember-live 4s ease-in-out infinite;
+  }
+  @keyframes ember-live {
+    0%, 100% {
+      box-shadow:
+        0 0 4px rgba(201,169,110,0.6),
+        0 0 12px rgba(201,169,110,0.3),
+        0 0 28px rgba(201,169,110,0.12),
+        0 1px 3px rgba(201,169,110,0.4);
+    }
+    50% {
+      box-shadow:
+        0 0 6px rgba(201,169,110,0.75),
+        0 0 16px rgba(201,169,110,0.4),
+        0 0 34px rgba(201,169,110,0.18),
+        0 1px 5px rgba(201,169,110,0.5);
+    }
+  }
+
+  .sys-tab.locked {
+    color: #2e2820;
+    letter-spacing: 1.5px;
+    font-size: 10.5px;
+    cursor: default;
+  }
+  .sys-tab.locked:hover {
+    color: #3d362d;
+  }
+
+  /* --- Right Side --- */
+  .nav-end {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 12px 0 20px;
+  }
+
+  .vitals {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: default;
+    position: relative;
+  }
+  .hp-ember {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--emerald);
+    box-shadow:
+      0 0 4px rgba(34,197,94,0.5),
+      0 0 12px rgba(34,197,94,0.2);
+    animation: hp-breathe 3.5s ease-in-out infinite;
+  }
+  @keyframes hp-breathe {
+    0%, 100% { opacity: 0.7; box-shadow: 0 0 4px rgba(34,197,94,0.5), 0 0 12px rgba(34,197,94,0.2); }
+    50% { opacity: 1; box-shadow: 0 0 6px rgba(34,197,94,0.6), 0 0 16px rgba(34,197,94,0.25); }
+  }
+  .hp-text {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--deep-ash);
+    letter-spacing: 1px;
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .vitals:hover .hp-text {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .gear-btn {
+    color: var(--deep-ash);
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    opacity: 0.7;
+    padding: 4px;
+  }
+  .gear-btn:hover {
+    color: var(--ember-dim);
+    opacity: 1;
+    transform: rotate(30deg);
+  }
+
+  /* ============================================================
+     SUB-TABS
+     ============================================================ */
+  .sub-nav {
+    position: relative;
+    padding: 0 0 0 80px;
+  }
+  .sub-bar {
+    display: flex;
+    gap: 0;
+    padding: 8px 0;
+    position: relative;
+  }
+  .sub-bar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 40%;
+    height: 1px;
+    background: linear-gradient(90deg,
+      rgba(201,169,110,0.1),
+      rgba(201,169,110,0.04) 60%,
+      transparent
+    );
+  }
+
+  .sub-tab {
+    padding: 10px 18px;
+    font-family: 'Almendra', serif;
+    font-size: 13.5px;
+    color: var(--ash);
+    cursor: pointer;
+    transition: color 0.4s;
+    position: relative;
+  }
+  .sub-tab:hover {
+    color: var(--ash-light);
+  }
+  .sub-tab.active {
+    color: var(--warm-mid);
+  }
+  .sub-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 18px;
+    right: 18px;
+    height: 1px;
+    background: rgba(201,169,110,0.25);
+  }
+
+  /* ============================================================
+     CONTENT PREVIEW — shows feel of full page
+     ============================================================ */
+  .content-area {
+    padding: 32px 24px 32px 80px;
+    max-width: 840px;
+  }
+
+  .char-banner {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+  .portrait-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
+    background: linear-gradient(145deg, #28231b, #1a1714);
+    border: 1px solid rgba(201,169,110,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    flex-shrink: 0;
+    box-shadow:
+      0 2px 12px rgba(0,0,0,0.3),
+      0 0 8px rgba(201,169,110,0.04);
+  }
+  .char-details h2 {
+    font-family: 'Grenze Gotisch', serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--warm-white);
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .char-details .class-line {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    color: var(--ash);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .stat-row {
+    display: flex;
+    gap: 16px;
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-val {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--warm-mid);
+  }
+  .stat-label {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    color: var(--ash);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .section {
+    margin-bottom: 24px;
+  }
+  .section-head {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--deep-ash);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(201,169,110,0.06);
+  }
+
+  /* Cards with ember glow accent */
+  .placeholder-block {
+    height: 52px;
+    background: linear-gradient(160deg, rgba(201,169,110,0.03), rgba(201,169,110,0.01));
+    border: 1px solid rgba(201,169,110,0.08);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ash);
+    font-size: 12px;
+    font-style: italic;
+    box-shadow: 0 0 8px rgba(201,169,110,0.03);
+    transition: box-shadow 0.5s ease, border-color 0.5s ease;
+  }
+  .placeholder-block:hover {
+    border-color: rgba(201,169,110,0.14);
+    box-shadow: 0 0 14px rgba(201,169,110,0.06);
+  }
+
+  /* ── Herbalism context ── */
+  .herb-context .sys-tab.active::after {
+    background: #6d9b5a;
+    box-shadow:
+      0 0 4px rgba(109,155,90,0.6),
+      0 0 12px rgba(109,155,90,0.3),
+      0 0 28px rgba(109,155,90,0.12),
+      0 1px 3px rgba(109,155,90,0.4);
+    animation: herb-ember 4s ease-in-out infinite;
+  }
+  @keyframes herb-ember {
+    0%, 100% {
+      box-shadow:
+        0 0 4px rgba(109,155,90,0.6),
+        0 0 12px rgba(109,155,90,0.3),
+        0 0 28px rgba(109,155,90,0.12);
+    }
+    50% {
+      box-shadow:
+        0 0 6px rgba(109,155,90,0.75),
+        0 0 16px rgba(109,155,90,0.4),
+        0 0 34px rgba(109,155,90,0.18);
+    }
+  }
+  .herb-context .sys-tab.active {
+    color: #a8c99a;
+  }
+
+  .spacer { height: 40px; }
+
+  /* ── Change callouts ── */
+  .changes {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px 24px;
+  }
+  .change-list {
+    font-family: 'Almendra', serif;
+    font-size: 13px;
+    color: var(--ash);
+    line-height: 1.8;
+    list-style: none;
+  }
+  .change-list li::before {
+    content: '▸ ';
+    color: var(--ember-dim);
+  }
+  .change-list li strong {
+    color: var(--warm-mid);
+    font-weight: 400;
+  }
+
+  @media (max-width: 768px) {
+    .sys-tab { padding: 18px 14px; font-size: 10px; letter-spacing: 1.2px; }
+    .sys-tab.locked { font-size: 9.5px; }
+    .content-area { padding-left: 24px; }
+    .sub-nav { padding-left: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="compare-header">Ember & Silence — V2</div>
+<div class="compare-sub">Medium palette lift · Larger text · More breathing room · Ember glow accents</div>
+
+<!-- CONTEXT 1: Profile page -->
+<div class="context-label">Profile Page — Default State</div>
+
+<div class="nav">
+  <div class="nav-bar">
+    <div class="presence">
+      <div class="emblem">⚔</div>
+      <div class="char-info">
+        <div class="char-name">Sir Aldric</div>
+        <div class="char-subtitle">Lv 3 · Fighter · Ghastbreakers</div>
+      </div>
+    </div>
+    <div class="system-tabs">
+      <div class="sys-tab active">Profile</div>
+      <div class="sys-tab">Herbalism</div>
+      <div class="sys-tab locked">Martial</div>
+      <div class="sys-tab locked">Archemancy</div>
+      <div class="sys-tab locked">Alchemy</div>
+    </div>
+    <div class="nav-end">
+      <div class="vitals">
+        <div class="hp-ember"></div>
+        <div class="hp-text">24 / 26</div>
+      </div>
+      <div class="gear-btn">⚙</div>
+    </div>
+  </div>
+</div>
+
+<div class="sub-nav">
+  <div class="sub-bar">
+    <div class="sub-tab active">Character</div>
+    <div class="sub-tab">Inventory</div>
+    <div class="sub-tab">Journal</div>
+  </div>
+</div>
+
+<div class="content-area">
+  <div class="char-banner">
+    <div class="portrait-large">⚔</div>
+    <div class="char-details">
+      <h2>Sir Aldric of Ghastbreakers</h2>
+      <div class="class-line">Level 3 · Fighter · Order of Ghastbreakers · Native Knight</div>
+      <div class="stat-row">
+        <div class="stat"><div class="stat-val">16</div><div class="stat-label">STR</div></div>
+        <div class="stat"><div class="stat-val">12</div><div class="stat-label">DEX</div></div>
+        <div class="stat"><div class="stat-val">14</div><div class="stat-label">CON</div></div>
+        <div class="stat"><div class="stat-val">10</div><div class="stat-label">INT</div></div>
+        <div class="stat"><div class="stat-val">13</div><div class="stat-label">WIS</div></div>
+        <div class="stat"><div class="stat-val">8</div><div class="stat-label">CHA</div></div>
+        <div class="stat"><div class="stat-val">8</div><div class="stat-label">HON</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-head">Equipment</div>
+    <div class="placeholder-block">Armor slots · Weapon slots · Quick slots</div>
+  </div>
+  <div class="section">
+    <div class="section-head">Skills</div>
+    <div class="placeholder-block">Proficient skills with modifiers</div>
+  </div>
+</div>
+
+<div class="spacer"></div>
+
+<!-- CONTEXT 2: Herbalism page -->
+<div class="context-label">Herbalism Hub — Different Active Tab</div>
+
+<div class="nav herb-context">
+  <div class="nav-bar">
+    <div class="presence">
+      <div class="emblem">⚔</div>
+      <div class="char-info">
+        <div class="char-name">Sir Aldric</div>
+        <div class="char-subtitle">Lv 3 · Fighter · Ghastbreakers</div>
+      </div>
+    </div>
+    <div class="system-tabs">
+      <div class="sys-tab">Profile</div>
+      <div class="sys-tab active">Herbalism</div>
+      <div class="sys-tab locked">Martial</div>
+      <div class="sys-tab locked">Archemancy</div>
+      <div class="sys-tab locked">Alchemy</div>
+    </div>
+    <div class="nav-end">
+      <div class="vitals">
+        <div class="hp-ember"></div>
+        <div class="hp-text">24 / 26</div>
+      </div>
+      <div class="gear-btn">⚙</div>
+    </div>
+  </div>
+</div>
+
+<div style="padding: 32px 24px 32px 80px; max-width: 840px;">
+  <div class="section">
+    <div class="section-head">Herbalism Hub</div>
+    <div class="placeholder-block">Foraging sessions · Recent brews · Quick links to Forage & Brew</div>
+  </div>
+</div>
+
+<div class="spacer"></div>
+
+<!-- Changes summary -->
+<div class="changes">
+  <div class="context-label">What Changed</div>
+  <ul class="change-list">
+    <li><strong>Page bg lifted</strong> from #050403 → #141210 (+6% brightness)</li>
+    <li><strong>All surface tokens</strong> shifted up proportionally</li>
+    <li><strong>Inactive tabs</strong> now use --ash (#7d7265) instead of --deep-ash — actually readable</li>
+    <li><strong>Locked tabs</strong> lifted from invisible (#1c1914) to dim but present (#2e2820)</li>
+    <li><strong>Subtitle</strong> bumped from 7.5px → 10px, color lifted to --deep-ash</li>
+    <li><strong>System tabs</strong> bumped from 10px → 11.5px</li>
+    <li><strong>Nav padding</strong> widened from 0 8px → 0 20px</li>
+    <li><strong>Tab gap</strong> widened from 2px → 8px</li>
+    <li><strong>Sub-tabs</strong> get 8px vertical padding instead of 2px</li>
+    <li><strong>Ember glow accents</strong> on emblem, portrait, and card hover states</li>
+    <li><strong>Borders</strong> bumped from 4% → 6-8% opacity</li>
+    <li><strong>Content text</strong> (class line, stat labels, section heads) all lifted for readability</li>
+  </ul>
+</div>
+
+</body>
+</html>

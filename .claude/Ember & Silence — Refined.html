@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ember & Silence — Refined</title>
+<link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@300;400;500;600;700&family=Almendra:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #050403;
+    --ink: #0b0a08;
+    --char: #13110d;
+    --ember: #c9a96e;
+    --ember-bright: #e2c792;
+    --ember-hot: #dbb87a;
+    --ember-dim: #8a7548;
+    --warm-white: #ede4d3;
+    --warm-mid: #c4b8a4;
+    --ash: #6b6155;
+    --ash-light: #8a7e6b;
+    --deep-ash: #3d362d;
+    --soot: #25211b;
+    --emerald: #22c55e;
+    --emerald-dim: rgba(34,197,94,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--void);
+    font-family: 'Almendra', serif;
+    color: var(--warm-white);
+    min-height: 100vh;
+  }
+
+  .context-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--deep-ash);
+    text-align: center;
+    padding: 20px 0 12px;
+  }
+
+  /* ============================================================
+     THE NAV — EMBER & SILENCE (Refined)
+     ============================================================ */
+  .nav {
+    position: relative;
+    max-width: 100%;
+  }
+
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    height: 56px;
+    padding: 0 8px;
+    position: relative;
+  }
+
+  /* The ember line — warmth originates from the character and fades across.
+     Not a decoration — it's the character's presence made visible. */
+  .nav-bar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+      var(--ember) 0%,
+      rgba(201,169,110,0.5) 6%,
+      rgba(201,169,110,0.15) 25%,
+      rgba(201,169,110,0.06) 50%,
+      rgba(201,169,110,0.03) 75%,
+      rgba(201,169,110,0.01) 100%
+    );
+  }
+
+  /* --- Character Presence --- */
+  .presence {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 20px 0 12px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  /* Ambient warmth — the character radiates */
+  .presence::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 100px;
+    height: 70px;
+    background: radial-gradient(ellipse at 20% 50%,
+      rgba(201,169,110,0.05) 0%,
+      rgba(201,169,110,0.02) 40%,
+      transparent 70%
+    );
+    pointer-events: none;
+    animation: warmth 6s ease-in-out infinite;
+  }
+  @keyframes warmth {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+
+  .emblem {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: linear-gradient(145deg, #1c1812, #100e0a);
+    border: 1px solid rgba(201,169,110,0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    position: relative;
+    z-index: 1;
+    box-shadow:
+      0 1px 8px rgba(0,0,0,0.4),
+      inset 0 1px 2px rgba(201,169,110,0.06),
+      inset 0 -1px 2px rgba(0,0,0,0.3);
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .presence:hover .emblem {
+    border-color: rgba(201,169,110,0.3);
+    box-shadow:
+      0 1px 8px rgba(0,0,0,0.4),
+      0 0 20px rgba(201,169,110,0.06),
+      inset 0 1px 2px rgba(201,169,110,0.08),
+      inset 0 -1px 2px rgba(0,0,0,0.3);
+  }
+
+  .char-info {
+    position: relative;
+    z-index: 1;
+    line-height: 1.15;
+  }
+  .char-name {
+    font-family: 'Grenze Gotisch', serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--warm-white);
+    letter-spacing: 0.3px;
+    transition: color 0.4s;
+  }
+  .presence:hover .char-name {
+    color: #f0e8d8;
+  }
+  .char-subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 7.5px;
+    font-weight: 500;
+    color: var(--soot);
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    transition: color 0.6s;
+  }
+  .presence:hover .char-subtitle {
+    color: var(--deep-ash);
+  }
+
+  /* --- System Tabs --- */
+  .system-tabs {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    gap: 2px;
+  }
+
+  .sys-tab {
+    position: relative;
+    padding: 16px 22px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: var(--deep-ash);
+    cursor: pointer;
+    transition: color 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    user-select: none;
+  }
+  .sys-tab:hover {
+    color: var(--ash);
+  }
+
+  .sys-tab.active {
+    color: var(--ember-bright);
+  }
+
+  /* The ember — a warm organic glow beneath the active tab.
+     Not a dot. Not a line. A small ember, like the last coal in a fire. */
+  .sys-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--ember-hot);
+    box-shadow:
+      0 0 4px rgba(201,169,110,0.6),
+      0 0 10px rgba(201,169,110,0.3),
+      0 0 24px rgba(201,169,110,0.12),
+      0 1px 3px rgba(201,169,110,0.4);
+    animation: ember-live 4s ease-in-out infinite;
+  }
+  @keyframes ember-live {
+    0%, 100% {
+      box-shadow:
+        0 0 4px rgba(201,169,110,0.6),
+        0 0 10px rgba(201,169,110,0.3),
+        0 0 24px rgba(201,169,110,0.12),
+        0 1px 3px rgba(201,169,110,0.4);
+    }
+    50% {
+      box-shadow:
+        0 0 5px rgba(201,169,110,0.7),
+        0 0 14px rgba(201,169,110,0.35),
+        0 0 30px rgba(201,169,110,0.15),
+        0 1px 4px rgba(201,169,110,0.5);
+    }
+  }
+
+  .sys-tab.locked {
+    color: #1c1914;
+    letter-spacing: 1.5px;
+    font-size: 9px;
+    cursor: default;
+  }
+  .sys-tab.locked:hover {
+    color: #262119;
+  }
+
+  /* --- Right Side --- */
+  .nav-end {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 12px 0 16px;
+  }
+
+  /* HP as a living indicator — not a bar, not numbers.
+     A small ember that communicates through color and intensity. */
+  .vitals {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: default;
+    position: relative;
+  }
+  .hp-ember {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--emerald);
+    box-shadow:
+      0 0 4px rgba(34,197,94,0.4),
+      0 0 10px rgba(34,197,94,0.15);
+    animation: hp-breathe 3.5s ease-in-out infinite;
+  }
+  @keyframes hp-breathe {
+    0%, 100% { opacity: 0.6; box-shadow: 0 0 4px rgba(34,197,94,0.4), 0 0 10px rgba(34,197,94,0.15); }
+    50% { opacity: 1; box-shadow: 0 0 6px rgba(34,197,94,0.5), 0 0 14px rgba(34,197,94,0.2); }
+  }
+  .hp-text {
+    font-family: 'Cinzel', serif;
+    font-size: 8.5px;
+    font-weight: 500;
+    color: var(--deep-ash);
+    letter-spacing: 1px;
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .vitals:hover .hp-text {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .gear-btn {
+    color: var(--soot);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    opacity: 0.6;
+    padding: 4px;
+  }
+  .gear-btn:hover {
+    color: var(--ember-dim);
+    opacity: 1;
+    transform: rotate(30deg);
+  }
+
+  /* ============================================================
+     SUB-TABS — Profile's inner navigation
+     Lighter, secondary. These are chapters within the Profile section.
+     ============================================================ */
+  .sub-nav {
+    position: relative;
+    padding: 0 0 0 80px; /* Aligned with content, not the character presence */
+  }
+  .sub-bar {
+    display: flex;
+    gap: 0;
+    padding: 2px 0;
+    position: relative;
+  }
+  /* Whisper of a bottom border */
+  .sub-bar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 40%;
+    height: 1px;
+    background: linear-gradient(90deg,
+      rgba(201,169,110,0.08),
+      rgba(201,169,110,0.03) 60%,
+      transparent
+    );
+  }
+
+  .sub-tab {
+    padding: 10px 18px;
+    font-family: 'Almendra', serif;
+    font-size: 13px;
+    color: var(--deep-ash);
+    cursor: pointer;
+    transition: color 0.4s;
+    position: relative;
+  }
+  .sub-tab:hover {
+    color: var(--ash);
+  }
+  .sub-tab.active {
+    color: var(--warm-mid);
+  }
+  .sub-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 18px;
+    right: 18px;
+    height: 1px;
+    background: rgba(201,169,110,0.2);
+  }
+
+  /* ============================================================
+     CONTENT PREVIEW — shows the feel of the full page
+     ============================================================ */
+  .content-area {
+    padding: 32px 24px 32px 80px;
+    max-width: 840px;
+  }
+
+  .char-banner {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+  .portrait-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
+    background: linear-gradient(145deg, #1c1812, #0e0c09);
+    border: 1px solid rgba(201,169,110,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  }
+  .char-details h2 {
+    font-family: 'Grenze Gotisch', serif;
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--warm-white);
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .char-details .class-line {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    color: var(--ash);
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .stat-row {
+    display: flex;
+    gap: 16px;
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-val {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--warm-mid);
+  }
+  .stat-label {
+    font-family: 'Cinzel', serif;
+    font-size: 7px;
+    color: var(--deep-ash);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .section {
+    margin-bottom: 24px;
+  }
+  .section-head {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    font-weight: 600;
+    color: var(--soot);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(201,169,110,0.04);
+  }
+  .placeholder-block {
+    height: 48px;
+    background: linear-gradient(160deg, rgba(201,169,110,0.02), transparent);
+    border: 1px solid rgba(201,169,110,0.04);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--soot);
+    font-size: 11px;
+    font-style: italic;
+  }
+
+  /* ============================================================
+     SECOND CONTEXT: Nav on the Herbalism page
+     Shows how it looks when NOT on Profile
+     ============================================================ */
+  .herb-context .sys-tab.active::after {
+    background: #6d9b5a;
+    box-shadow:
+      0 0 4px rgba(109,155,90,0.6),
+      0 0 10px rgba(109,155,90,0.3),
+      0 0 24px rgba(109,155,90,0.12),
+      0 1px 3px rgba(109,155,90,0.4);
+    animation: herb-ember 4s ease-in-out infinite;
+  }
+  @keyframes herb-ember {
+    0%, 100% {
+      box-shadow:
+        0 0 4px rgba(109,155,90,0.6),
+        0 0 10px rgba(109,155,90,0.3),
+        0 0 24px rgba(109,155,90,0.12);
+    }
+    50% {
+      box-shadow:
+        0 0 5px rgba(109,155,90,0.7),
+        0 0 14px rgba(109,155,90,0.35),
+        0 0 30px rgba(109,155,90,0.15);
+    }
+  }
+  .herb-context .sys-tab.active {
+    color: #a8c99a;
+  }
+
+  .spacer { height: 60px; }
+
+  /* Responsive — graceful degradation */
+  @media (max-width: 768px) {
+    .sys-tab { padding: 16px 14px; font-size: 9px; letter-spacing: 1.2px; }
+    .sys-tab.locked { font-size: 8px; }
+    .content-area { padding-left: 24px; }
+    .sub-nav { padding-left: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- CONTEXT 1: Profile page (default state) -->
+<div class="context-label">Profile Page — Default State</div>
+
+<div class="nav">
+  <div class="nav-bar">
+    <div class="presence">
+      <div class="emblem">⚔</div>
+      <div class="char-info">
+        <div class="char-name">Sir Aldric</div>
+        <div class="char-subtitle">Lv 3 · Fighter · Ghastbreakers</div>
+      </div>
+    </div>
+    <div class="system-tabs">
+      <div class="sys-tab active">Profile</div>
+      <div class="sys-tab">Herbalism</div>
+      <div class="sys-tab locked">Martial</div>
+      <div class="sys-tab locked">Archemancy</div>
+      <div class="sys-tab locked">Alchemy</div>
+    </div>
+    <div class="nav-end">
+      <div class="vitals">
+        <div class="hp-ember"></div>
+        <div class="hp-text">24 / 26</div>
+      </div>
+      <div class="gear-btn">⚙</div>
+    </div>
+  </div>
+</div>
+
+<div class="sub-nav">
+  <div class="sub-bar">
+    <div class="sub-tab active">Character</div>
+    <div class="sub-tab">Inventory</div>
+    <div class="sub-tab">Journal</div>
+  </div>
+</div>
+
+<div class="content-area">
+  <div class="char-banner">
+    <div class="portrait-large">⚔</div>
+    <div class="char-details">
+      <h2>Sir Aldric of Ghastbreakers</h2>
+      <div class="class-line">Level 3 · Fighter · Order of Ghastbreakers · Native Knight</div>
+      <div class="stat-row">
+        <div class="stat"><div class="stat-val">16</div><div class="stat-label">STR</div></div>
+        <div class="stat"><div class="stat-val">12</div><div class="stat-label">DEX</div></div>
+        <div class="stat"><div class="stat-val">14</div><div class="stat-label">CON</div></div>
+        <div class="stat"><div class="stat-val">10</div><div class="stat-label">INT</div></div>
+        <div class="stat"><div class="stat-val">13</div><div class="stat-label">WIS</div></div>
+        <div class="stat"><div class="stat-val">8</div><div class="stat-label">CHA</div></div>
+        <div class="stat"><div class="stat-val">8</div><div class="stat-label">HON</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-head">Equipment</div>
+    <div class="placeholder-block">Armor slots · Weapon slots · Quick slots</div>
+  </div>
+  <div class="section">
+    <div class="section-head">Skills</div>
+    <div class="placeholder-block">Proficient skills with modifiers</div>
+  </div>
+</div>
+
+
+<div class="spacer"></div>
+
+<!-- CONTEXT 2: Herbalism page (different active tab) -->
+<div class="context-label">Herbalism Hub — Different Active Tab</div>
+
+<div class="nav herb-context">
+  <div class="nav-bar">
+    <div class="presence">
+      <div class="emblem">⚔</div>
+      <div class="char-info">
+        <div class="char-name">Sir Aldric</div>
+        <div class="char-subtitle">Lv 3 · Fighter · Ghastbreakers</div>
+      </div>
+    </div>
+    <div class="system-tabs">
+      <div class="sys-tab">Profile</div>
+      <div class="sys-tab active">Herbalism</div>
+      <div class="sys-tab locked">Martial</div>
+      <div class="sys-tab locked">Archemancy</div>
+      <div class="sys-tab locked">Alchemy</div>
+    </div>
+    <div class="nav-end">
+      <div class="vitals">
+        <div class="hp-ember"></div>
+        <div class="hp-text">24 / 26</div>
+      </div>
+      <div class="gear-btn">⚙</div>
+    </div>
+  </div>
+</div>
+
+<div style="padding: 32px 24px 32px 80px; max-width: 840px;">
+  <div class="section">
+    <div class="section-head">Herbalism Hub</div>
+    <div class="placeholder-block">Foraging sessions · Recent brews · Quick links to Forage & Brew</div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const WS_URL = 'ws://' + window.location.host;
+  let ws = null;
+  let eventQueue = [];
+
+  function connect() {
+    ws = new WebSocket(WS_URL);
+
+    ws.onopen = () => {
+      eventQueue.forEach(e => ws.send(JSON.stringify(e)));
+      eventQueue = [];
+    };
+
+    ws.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+      if (data.type === 'reload') {
+        window.location.reload();
+      }
+    };
+
+    ws.onclose = () => {
+      setTimeout(connect, 1000);
+    };
+  }
+
+  function sendEvent(event) {
+    event.timestamp = Date.now();
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(event));
+    } else {
+      eventQueue.push(event);
+    }
+  }
+
+  // Capture clicks on choice elements
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('[data-choice]');
+    if (!target) return;
+
+    sendEvent({
+      type: 'click',
+      text: target.textContent.trim(),
+      choice: target.dataset.choice,
+      id: target.id || null
+    });
+
+    // Update indicator bar (defer so toggleSelect runs first)
+    setTimeout(() => {
+      const indicator = document.getElementById('indicator-text');
+      if (!indicator) return;
+      const container = target.closest('.options') || target.closest('.cards');
+      const selected = container ? container.querySelectorAll('.selected') : [];
+      if (selected.length === 0) {
+        indicator.textContent = 'Click an option above, then return to the terminal';
+      } else if (selected.length === 1) {
+        const label = selected[0].querySelector('h3, .content h3, .card-body h3')?.textContent?.trim() || selected[0].dataset.choice;
+        indicator.innerHTML = '<span class="selected-text">' + label + ' selected</span> — return to terminal to continue';
+      } else {
+        indicator.innerHTML = '<span class="selected-text">' + selected.length + ' selected</span> — return to terminal to continue';
+      }
+    }, 0);
+  });
+
+  // Frame UI: selection tracking
+  window.selectedChoice = null;
+
+  window.toggleSelect = function(el) {
+    const container = el.closest('.options') || el.closest('.cards');
+    const multi = container && container.dataset.multiselect !== undefined;
+    if (container && !multi) {
+      container.querySelectorAll('.option, .card').forEach(o => o.classList.remove('selected'));
+    }
+    if (multi) {
+      el.classList.toggle('selected');
+    } else {
+      el.classList.add('selected');
+    }
+    window.selectedChoice = el.dataset.choice;
+  };
+
+  // Expose API for explicit use
+  window.brainstorm = {
+    send: sendEvent,
+    choice: (value, metadata = {}) => sendEvent({ type: 'choice', value, ...metadata })
+  };
+
+  connect();
+})();
+
+</script>
+</body>
+</html>

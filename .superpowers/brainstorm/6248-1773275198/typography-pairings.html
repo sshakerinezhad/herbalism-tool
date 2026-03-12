@@ -1,0 +1,187 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@400;600;700;900&family=Metamorphous&family=Grenze:wght@400;600;700&family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+.demo-card {
+  background: #151311;
+  border: 1px solid #3d342a;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+.demo-row {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+.demo-stat {
+  color: #c9a66b;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid rgba(139,115,85,0.4);
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+.demo-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #8b7355;
+  margin-top: 0.5rem;
+}
+.demo-btn {
+  display: inline-block;
+  color: #f5f0e6;
+  background: rgba(139,115,85,0.25);
+  border: 1px solid rgba(139,115,85,0.5);
+  padding: 0.4rem 1.2rem;
+  border-radius: 4px;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+}
+.demo-nav {
+  color: #b8a890;
+  letter-spacing: 0.12em;
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+}
+.vs-label {
+  text-align: center;
+  color: #666;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin: 1.5rem 0 0.5rem;
+}
+</style>
+
+<h2>Title Font Pairings</h2>
+<p class="subtitle">Your two title picks — each shown with 3 different body/UI font options. Look at how each body font feels across headings, body text, stats, labels, buttons, and navigation.</p>
+
+<h3 style="margin-top:1.5rem; color: #c9a66b;">Grenze Gotisch titles with...</h3>
+
+<div class="cards">
+  <div class="card" data-choice="gg-spectral" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div style="font-family: 'Grenze Gotisch', cursive; font-size: 1.6rem; font-weight: 700; color: #f5f0e6; text-shadow: 0 1px 0 rgba(0,0,0,0.4);">Foraging — Deepwood</div>
+        <div class="demo-nav" style="font-family: 'Spectral', serif; font-weight: 600; text-transform: uppercase;">Herbs &bull; Brewed &bull; Weapons &bull; Items</div>
+        <div style="font-family: 'Spectral', serif; font-size: 0.95rem; color: #9a8a70; line-height: 1.7;">Roll your Nature check to search for herbs in the Deepwood biome. Found herbs are added to your inventory automatically.</div>
+        <div class="demo-row">
+          <div class="demo-stat" style="font-family: 'Spectral', serif; font-weight: 600;">INT +3</div>
+          <div class="demo-stat" style="font-family: 'Spectral', serif; font-weight: 600;">DC 12</div>
+        </div>
+        <div class="demo-label" style="font-family: 'Spectral', serif; font-weight: 600;">Brewing Modifier</div>
+        <div class="demo-btn" style="font-family: 'Spectral', serif; font-weight: 600;">Begin Foraging</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>+ Spectral (body/UI)</h3>
+      <p>Sharp, refined serifs. Wide weight range (200-800). Digital-optimized readability with old-world character. Clean labels and buttons.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="gg-grenze" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div style="font-family: 'Grenze Gotisch', cursive; font-size: 1.6rem; font-weight: 700; color: #f5f0e6; text-shadow: 0 1px 0 rgba(0,0,0,0.4);">Foraging — Deepwood</div>
+        <div class="demo-nav" style="font-family: 'Grenze', serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em;">Herbs &bull; Brewed &bull; Weapons &bull; Items</div>
+        <div style="font-family: 'Grenze', serif; font-size: 1rem; color: #9a8a70; line-height: 1.7;">Roll your Nature check to search for herbs in the Deepwood biome. Found herbs are added to your inventory automatically.</div>
+        <div class="demo-row">
+          <div class="demo-stat" style="font-family: 'Grenze', serif; font-weight: 600;">INT +3</div>
+          <div class="demo-stat" style="font-family: 'Grenze', serif; font-weight: 600;">DC 12</div>
+        </div>
+        <div class="demo-label" style="font-family: 'Grenze', serif; font-weight: 600;">Brewing Modifier</div>
+        <div class="demo-btn" style="font-family: 'Grenze', serif; font-weight: 600;">Begin Foraging</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>+ Grenze (body/UI)</h3>
+      <p>Same type family — cohesive DNA. The readable serif version of Gotisch. Keeps the gothic energy throughout without sacrificing legibility. Most unified feel.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="gg-cormorant" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div style="font-family: 'Grenze Gotisch', cursive; font-size: 1.6rem; font-weight: 700; color: #f5f0e6; text-shadow: 0 1px 0 rgba(0,0,0,0.4);">Foraging — Deepwood</div>
+        <div class="demo-nav" style="font-family: 'Cormorant Garamond', serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em;">Herbs &bull; Brewed &bull; Weapons &bull; Items</div>
+        <div style="font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: #9a8a70; line-height: 1.7;">Roll your Nature check to search for herbs in the Deepwood biome. Found herbs are added to your inventory automatically.</div>
+        <div class="demo-row">
+          <div class="demo-stat" style="font-family: 'Cormorant Garamond', serif; font-weight: 600;">INT +3</div>
+          <div class="demo-stat" style="font-family: 'Cormorant Garamond', serif; font-weight: 600;">DC 12</div>
+        </div>
+        <div class="demo-label" style="font-family: 'Cormorant Garamond', serif; font-weight: 600;">Brewing Modifier</div>
+        <div class="demo-btn" style="font-family: 'Cormorant Garamond', serif; font-weight: 600;">Begin Foraging</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>+ Cormorant Garamond (body/UI)</h3>
+      <p>Elegant old-world Garamond. High contrast between gothic title and refined body creates dramatic tension. Most "pulp fiction" feel — bold cover, readable interior.</p>
+    </div>
+  </div>
+</div>
+
+<div class="vs-label">— versus —</div>
+
+<h3 style="color: #c9a66b;">Metamorphous titles with...</h3>
+
+<div class="cards">
+  <div class="card" data-choice="mm-spectral" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div style="font-family: 'Metamorphous', cursive; font-size: 1.6rem; color: #f5f0e6; text-shadow: 0 1px 0 rgba(0,0,0,0.4);">Foraging — Deepwood</div>
+        <div class="demo-nav" style="font-family: 'Spectral', serif; font-weight: 600; text-transform: uppercase;">Herbs &bull; Brewed &bull; Weapons &bull; Items</div>
+        <div style="font-family: 'Spectral', serif; font-size: 0.95rem; color: #9a8a70; line-height: 1.7;">Roll your Nature check to search for herbs in the Deepwood biome. Found herbs are added to your inventory automatically.</div>
+        <div class="demo-row">
+          <div class="demo-stat" style="font-family: 'Spectral', serif; font-weight: 600;">INT +3</div>
+          <div class="demo-stat" style="font-family: 'Spectral', serif; font-weight: 600;">DC 12</div>
+        </div>
+        <div class="demo-label" style="font-family: 'Spectral', serif; font-weight: 600;">Brewing Modifier</div>
+        <div class="demo-btn" style="font-family: 'Spectral', serif; font-weight: 600;">Begin Foraging</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>+ Spectral (body/UI)</h3>
+      <p>Stone-carved title meets sharp scholarly body. Nice contrast — the headings feel like ancient artifacts, the body feels like a well-kept compendium.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="mm-imfell" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div style="font-family: 'Metamorphous', cursive; font-size: 1.6rem; color: #f5f0e6; text-shadow: 0 1px 0 rgba(0,0,0,0.4);">Foraging — Deepwood</div>
+        <div class="demo-nav" style="font-family: 'IM Fell English', serif; letter-spacing: 0.1em;">Herbs &bull; Brewed &bull; Weapons &bull; Items</div>
+        <div style="font-family: 'IM Fell English', serif; font-size: 1rem; color: #9a8a70; line-height: 1.7;">Roll your Nature check to search for herbs in the Deepwood biome. Found herbs are added to your inventory automatically.</div>
+        <div class="demo-row">
+          <div class="demo-stat" style="font-family: 'IM Fell English', serif;">INT +3</div>
+          <div class="demo-stat" style="font-family: 'IM Fell English', serif;">DC 12</div>
+        </div>
+        <div class="demo-label" style="font-family: 'IM Fell English', serif;">Brewing Modifier</div>
+        <div class="demo-btn" style="font-family: 'IM Fell English', serif;">Begin Foraging</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>+ IM Fell English (body/UI)</h3>
+      <p>Maximum atmosphere — carved stone titles with inky old-press body. Feels like a prop from a fantasy world. Very distinctive but rougher at small sizes.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="mm-crimson" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div style="font-family: 'Metamorphous', cursive; font-size: 1.6rem; color: #f5f0e6; text-shadow: 0 1px 0 rgba(0,0,0,0.4);">Foraging — Deepwood</div>
+        <div class="demo-nav" style="font-family: 'Crimson Pro', serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em;">Herbs &bull; Brewed &bull; Weapons &bull; Items</div>
+        <div style="font-family: 'Crimson Pro', serif; font-size: 1rem; color: #9a8a70; line-height: 1.7;">Roll your Nature check to search for herbs in the Deepwood biome. Found herbs are added to your inventory automatically.</div>
+        <div class="demo-row">
+          <div class="demo-stat" style="font-family: 'Crimson Pro', serif; font-weight: 600;">INT +3</div>
+          <div class="demo-stat" style="font-family: 'Crimson Pro', serif; font-weight: 600;">DC 12</div>
+        </div>
+        <div class="demo-label" style="font-family: 'Crimson Pro', serif; font-weight: 600;">Brewing Modifier</div>
+        <div class="demo-btn" style="font-family: 'Crimson Pro', serif; font-weight: 600;">Begin Foraging</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>+ Crimson Pro (body/UI)</h3>
+      <p>Garamond-inspired, optimized for screens. Wide weight range. Clean and readable with warmth. The most practical body option — great readability without losing old-world feel.</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,120 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IM+Fell+English:ital@0;1&family=Almendra:ital,wght@0,400;0,700;1,400&family=MedievalSharp&family=Pirata+One&family=Uncial+Antiqua&display=swap');
+
+.font-demo {
+  background: #151311;
+  border: 1px solid #3d342a;
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 0.5rem;
+}
+.font-demo .title {
+  color: #f5f0e6;
+  margin-bottom: 0.25rem;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.4), 0 -1px 0 rgba(255,255,255,0.05);
+}
+.font-demo .nav {
+  color: #b8a890;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.1em;
+}
+.font-demo .body {
+  color: #9a8a70;
+  line-height: 1.7;
+  max-width: 500px;
+}
+.font-demo .stat {
+  display: inline-block;
+  color: #c9a66b;
+  margin-top: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid rgba(139,115,85,0.4);
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+.font-demo .label-text {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #8b7355;
+  margin-top: 0.75rem;
+}
+</style>
+
+<h2>Fantasy Typography — Going Deeper</h2>
+<p class="subtitle">You liked the serif direction. Here are fonts that push further into stylized fantasy territory. Each shown with headings, navigation, body text, and UI elements from your app.</p>
+
+<div class="cards">
+  <div class="card" data-choice="cinzel" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="font-demo">
+        <div class="title" style="font-family: 'Cinzel', serif; font-size: 1.8rem; font-weight: 700; letter-spacing: 0.06em;">Knights of Belyar</div>
+        <div class="nav" style="font-family: 'Cinzel', serif; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.2em;">Herbalism &bull; Inventory &bull; Combat</div>
+        <div class="body" style="font-family: 'Cormorant Garamond', serif; font-size: 1.05rem;">Combine two herbs of opposing elements to brew a potion of great power. The darkness within the Nightshade binds with the light of the Sunpetal.</div>
+        <div class="stat" style="font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 600;">INT +3</div>
+        <div class="stat" style="font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 600; margin-left: 0.5rem;">DC 12</div>
+        <div class="label-text" style="font-family: 'Cinzel', serif;">Brewing Modifier</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Cinzel + Cormorant Garamond</h3>
+      <p><strong>Cinzel</strong> headings — Roman imperial capitals. Used by Dark Souls, Elden Ring, countless dark fantasy games. Authoritative and unmistakable.<br><strong>Cormorant Garamond</strong> body — elegant old-world serif, very readable at small sizes. Claude Garamond meets fantasy.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="imfell" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="font-demo">
+        <div class="title" style="font-family: 'IM Fell English', serif; font-size: 1.8rem; letter-spacing: 0.02em;">Knights of Belyar</div>
+        <div class="nav" style="font-family: 'IM Fell English', serif; font-size: 0.85rem; letter-spacing: 0.08em;">Herbalism &bull; Inventory &bull; Combat</div>
+        <div class="body" style="font-family: 'IM Fell English', serif; font-size: 1rem;">Combine two herbs of opposing elements to brew a potion of great power. The darkness within the Nightshade binds with the light of the Sunpetal.</div>
+        <div class="stat" style="font-family: 'IM Fell English', serif; font-size: 0.9rem;">INT +3</div>
+        <div class="stat" style="font-family: 'IM Fell English', serif; font-size: 0.9rem; margin-left: 0.5rem;">DC 12</div>
+        <div class="label-text" style="font-family: 'IM Fell English', serif;">Brewing Modifier</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>IM Fell English (All)</h3>
+      <p>Based on actual 17th-century typefaces by John Fell. Has rough, inky edges — looks like it was printed on a hand press. Extremely atmospheric. Most "old book" feeling of all options. May sacrifice some readability at very small sizes.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="almendra" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="font-demo">
+        <div class="title" style="font-family: 'Almendra', serif; font-size: 1.8rem; font-weight: 700; letter-spacing: 0.03em;">Knights of Belyar</div>
+        <div class="nav" style="font-family: 'Almendra', serif; font-size: 0.85rem; letter-spacing: 0.1em;">Herbalism &bull; Inventory &bull; Combat</div>
+        <div class="body" style="font-family: 'Almendra', serif; font-size: 1rem;">Combine two herbs of opposing elements to brew a potion of great power. The darkness within the Nightshade binds with the light of the Sunpetal.</div>
+        <div class="stat" style="font-family: 'Almendra', serif; font-size: 0.9rem; font-weight: 700;">INT +3</div>
+        <div class="stat" style="font-family: 'Almendra', serif; font-size: 0.9rem; font-weight: 700; margin-left: 0.5rem;">DC 12</div>
+        <div class="label-text" style="font-family: 'Almendra', serif;">Brewing Modifier</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Almendra (All)</h3>
+      <p>Designed specifically for fantasy RPG use. Calligraphic pen-stroke character with slight swoops and flourishes. Very D&D. Works as both heading and body. Most "fantasy game" of the options.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="medieval" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="font-demo">
+        <div class="title" style="font-family: 'MedievalSharp', cursive; font-size: 1.8rem; letter-spacing: 0.03em;">Knights of Belyar</div>
+        <div class="nav" style="font-family: 'Uncial Antiqua', cursive; font-size: 0.8rem; letter-spacing: 0.1em;">Herbalism &bull; Inventory &bull; Combat</div>
+        <div class="body" style="font-family: 'Cormorant Garamond', serif; font-size: 1.05rem;">Combine two herbs of opposing elements to brew a potion of great power. The darkness within the Nightshade binds with the light of the Sunpetal.</div>
+        <div class="stat" style="font-family: 'Uncial Antiqua', cursive; font-size: 0.85rem;">INT +3</div>
+        <div class="stat" style="font-family: 'Uncial Antiqua', cursive; font-size: 0.85rem; margin-left: 0.5rem;">DC 12</div>
+        <div class="label-text" style="font-family: 'Uncial Antiqua', cursive;">Brewing Modifier</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>MedievalSharp + Uncial Antiqua + Cormorant</h3>
+      <p><strong>MedievalSharp</strong> for major headings — angular, calligraphic, unmistakably medieval.<br><strong>Uncial Antiqua</strong> for labels/nav — Celtic manuscript style.<br><strong>Cormorant Garamond</strong> for body — keeps long text readable. Maximum fantasy, 3-font stack.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 1.5rem; padding: 1rem; border: 1px solid #333; border-radius: 8px;">
+  <h3>My Take</h3>
+  <p><strong>Cinzel + Cormorant Garamond</strong> is my recommendation — it's the dark fantasy gold standard (literally used by FromSoftware games), looks incredible at every size, and the pairing is battle-tested. But if you want maximum old-world atmosphere, IM Fell English is unmatched. The medieval options are fun but risk tipping into "costume" territory for a tool you use regularly.</p>
+</div>

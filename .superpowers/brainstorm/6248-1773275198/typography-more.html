@@ -1,0 +1,121 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@400;600;700;900&family=Grenze:wght@400;600;700&family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=Sorts+Mill+Goudy:ital@0;1&family=Metamorphous&family=Cardo:ital,wght@0,400;0,700;1,400&family=Marcellus&family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Vollkorn:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+.font-demo {
+  background: #151311;
+  border: 1px solid #3d342a;
+  border-radius: 8px;
+  padding: 1.75rem;
+}
+.font-demo .title {
+  color: #f5f0e6;
+  margin-bottom: 0.25rem;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.4), 0 -1px 0 rgba(255,255,255,0.05);
+}
+.font-demo .nav {
+  color: #b8a890;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.1em;
+}
+.font-demo .body {
+  color: #9a8a70;
+  line-height: 1.7;
+}
+.font-demo .stat {
+  display: inline-block;
+  color: #c9a66b;
+  margin-top: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid rgba(139,115,85,0.4);
+  border-radius: 4px;
+}
+.font-demo .label-text {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #8b7355;
+  margin-top: 0.5rem;
+}
+</style>
+
+<h2>More Fantasy Typography Options</h2>
+<p class="subtitle">A wider spread — from gothic blackletter to refined old-world to stone-carved fantasy. Click the one that resonates.</p>
+
+<div class="cards">
+  <div class="card" data-choice="grenze" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="font-demo">
+        <div class="title" style="font-family: 'Grenze Gotisch', cursive; font-size: 2rem; font-weight: 700;">Knights of Belyar</div>
+        <div class="nav" style="font-family: 'Grenze', serif; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em;">Herbalism &bull; Inventory &bull; Combat</div>
+        <div class="body" style="font-family: 'Grenze', serif; font-size: 1.05rem; font-weight: 400;">Combine two herbs of opposing elements to brew a potion of great power. The darkness within the Nightshade binds with the light of the Sunpetal.</div>
+        <div class="stat" style="font-family: 'Grenze', serif; font-size: 0.9rem; font-weight: 600;">INT +3</div>
+        <div class="stat" style="font-family: 'Grenze', serif; font-size: 0.9rem; font-weight: 600; margin-left: 0.5rem;">DC 12</div>
+        <div class="label-text" style="font-family: 'Grenze', serif; font-weight: 600;">Brewing Modifier</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Grenze Gotisch + Grenze</h3>
+      <p><strong>Grenze Gotisch</strong> headings — blackletter/gothic, darkest vibe possible. Warhammer, Diablo energy.<br><strong>Grenze</strong> body — same family, readable serif version. Cohesive pairing, distinctly dark fantasy.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="spectral" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="font-demo">
+        <div class="title" style="font-family: 'Spectral', serif; font-size: 1.8rem; font-weight: 700; letter-spacing: 0.02em;">Knights of Belyar</div>
+        <div class="nav" style="font-family: 'Spectral', serif; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.18em;">Herbalism &bull; Inventory &bull; Combat</div>
+        <div class="body" style="font-family: 'Spectral', serif; font-size: 1rem; font-weight: 400;">Combine two herbs of opposing elements to brew a potion of great power. The darkness within the Nightshade binds with the light of the Sunpetal.</div>
+        <div class="stat" style="font-family: 'Spectral', serif; font-size: 0.9rem; font-weight: 600;">INT +3</div>
+        <div class="stat" style="font-family: 'Spectral', serif; font-size: 0.9rem; font-weight: 600; margin-left: 0.5rem;">DC 12</div>
+        <div class="label-text" style="font-family: 'Spectral', serif; font-weight: 600;">Brewing Modifier</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Spectral (All)</h3>
+      <p>Designed by Google for digital reading with old-world charm. Sharp serifs, excellent weight range (200-800), italic support. Think "scholar's grimoire" — refined and readable but clearly not modern. Great all-rounder.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="metamorphous" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="font-demo">
+        <div class="title" style="font-family: 'Metamorphous', cursive; font-size: 1.8rem; letter-spacing: 0.03em;">Knights of Belyar</div>
+        <div class="nav" style="font-family: 'Metamorphous', cursive; font-size: 0.8rem; letter-spacing: 0.12em;">Herbalism &bull; Inventory &bull; Combat</div>
+        <div class="body" style="font-family: 'Old Standard TT', serif; font-size: 1rem;">Combine two herbs of opposing elements to brew a potion of great power. The darkness within the Nightshade binds with the light of the Sunpetal.</div>
+        <div class="stat" style="font-family: 'Metamorphous', cursive; font-size: 0.9rem;">INT +3</div>
+        <div class="stat" style="font-family: 'Metamorphous', cursive; font-size: 0.9rem; margin-left: 0.5rem;">DC 12</div>
+        <div class="label-text" style="font-family: 'Metamorphous', cursive;">Brewing Modifier</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Metamorphous + Old Standard TT</h3>
+      <p><strong>Metamorphous</strong> headings — stone-carved, rune-adjacent fantasy letterforms. Very "enchanted artifact" feel.<br><strong>Old Standard TT</strong> body — early 20th century revival, scholarly, pairs well with fantasy display fonts.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="vollkorn" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="font-demo">
+        <div class="title" style="font-family: 'Marcellus', serif; font-size: 1.8rem; letter-spacing: 0.05em;">Knights of Belyar</div>
+        <div class="nav" style="font-family: 'Marcellus', serif; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.2em;">Herbalism &bull; Inventory &bull; Combat</div>
+        <div class="body" style="font-family: 'Vollkorn', serif; font-size: 1rem;">Combine two herbs of opposing elements to brew a potion of great power. The darkness within the Nightshade binds with the light of the Sunpetal.</div>
+        <div class="stat" style="font-family: 'Marcellus', serif; font-size: 0.9rem;">INT +3</div>
+        <div class="stat" style="font-family: 'Marcellus', serif; font-size: 0.9rem; margin-left: 0.5rem;">DC 12</div>
+        <div class="label-text" style="font-family: 'Marcellus', serif;">Brewing Modifier</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Marcellus + Vollkorn</h3>
+      <p><strong>Marcellus</strong> headings — Roman inscriptional capitals. Chiseled, monumental, refined. Quieter than Cinzel but still classical.<br><strong>Vollkorn</strong> body — warm, generous serif designed for body text. "Vollkorn" literally means "wholegrain" in German — hearty and substantial.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 1.5rem; padding: 1rem; border: 1px solid #333; border-radius: 8px;">
+  <h3>Recap of all options so far</h3>
+  <p style="font-size: 0.9rem; line-height: 1.6;">
+    <strong>Previous round:</strong> Cinzel + Cormorant (dark souls), IM Fell English (old press), Almendra (D&D), MedievalSharp + Uncial (full medieval)<br>
+    <strong>This round:</strong> Grenze Gotisch (blackletter/gothic), Spectral (refined scholar), Metamorphous (stone-carved runes), Marcellus + Vollkorn (chiseled Roman)<br><br>
+    You can also mix — e.g. "Grenze Gotisch headings with Spectral body" or "Metamorphous titles with IM Fell labels". Let me know what catches your eye.
+  </p>
+</div>

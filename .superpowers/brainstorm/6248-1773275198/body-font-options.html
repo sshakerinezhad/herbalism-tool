@@ -1,0 +1,125 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@400;600;700;900&family=Almendra:ital,wght@0,400;0,700;1,400&family=IM+Fell+English:ital@0;1&family=Cardo:ital,wght@0,400;0,700;1,400&family=Sorts+Mill+Goudy:ital@0;1&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Vollkorn:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+.demo-card {
+  background: #151311;
+  border: 1px solid #3d342a;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+.demo-row { display: flex; gap: 0.75rem; margin-top: 0.75rem; flex-wrap: wrap; }
+.demo-stat {
+  color: #c9a66b;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid rgba(139,115,85,0.4);
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+.demo-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.18em; color: #8b7355; margin-top: 0.5rem; }
+.demo-btn {
+  display: inline-block; color: #f5f0e6; background: rgba(139,115,85,0.25);
+  border: 1px solid rgba(139,115,85,0.5); padding: 0.4rem 1.2rem;
+  border-radius: 4px; margin-top: 0.75rem; font-size: 0.85rem;
+}
+.demo-nav { color: #b8a890; letter-spacing: 0.12em; font-size: 0.8rem; margin-bottom: 0.75rem; }
+.gg-title { font-family: 'Grenze Gotisch', cursive; font-size: 1.6rem; font-weight: 700; color: #f5f0e6; text-shadow: 0 1px 0 rgba(0,0,0,0.4); margin-bottom: 0.25rem; }
+</style>
+
+<h2>Body Font for Grenze Gotisch</h2>
+<p class="subtitle">Title is locked: Grenze Gotisch. Now pick the font for everything else — body text, navigation, buttons, labels, stats. Each option shows a realistic UI card.</p>
+
+<div class="cards">
+  <div class="card" data-choice="almendra" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div class="gg-title">Foraging — Deepwood</div>
+        <div class="demo-nav" style="font-family: 'Almendra', serif; font-weight: 700;">Herbs &bull; Brewed &bull; Weapons &bull; Items</div>
+        <div style="font-family: 'Almendra', serif; font-size: 1rem; color: #9a8a70; line-height: 1.7;">Roll your Nature check to search for herbs in the Deepwood biome. Found herbs are added to your inventory automatically.</div>
+        <div class="demo-row">
+          <div class="demo-stat" style="font-family: 'Almendra', serif; font-weight: 700;">INT +3</div>
+          <div class="demo-stat" style="font-family: 'Almendra', serif; font-weight: 700;">DC 12</div>
+          <div class="demo-stat" style="font-family: 'Almendra', serif; font-weight: 700;">🔆 Light</div>
+        </div>
+        <div class="demo-label" style="font-family: 'Almendra', serif; font-weight: 700;">Brewing Modifier</div>
+        <div class="demo-btn" style="font-family: 'Almendra', serif; font-weight: 700;">Begin Foraging</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Almendra</h3>
+      <p>Fantasy RPG font with calligraphic pen strokes. Swoopy, characterful, D&D energy. Pairs with Gotisch's darkness. Bold + regular weights, italic available.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="imfell" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div class="gg-title">Foraging — Deepwood</div>
+        <div class="demo-nav" style="font-family: 'IM Fell English', serif;">Herbs &bull; Brewed &bull; Weapons &bull; Items</div>
+        <div style="font-family: 'IM Fell English', serif; font-size: 1rem; color: #9a8a70; line-height: 1.7;">Roll your Nature check to search for herbs in the Deepwood biome. Found herbs are added to your inventory automatically.</div>
+        <div class="demo-row">
+          <div class="demo-stat" style="font-family: 'IM Fell English', serif;">INT +3</div>
+          <div class="demo-stat" style="font-family: 'IM Fell English', serif;">DC 12</div>
+          <div class="demo-stat" style="font-family: 'IM Fell English', serif;">🔆 Light</div>
+        </div>
+        <div class="demo-label" style="font-family: 'IM Fell English', serif;">Brewing Modifier</div>
+        <div class="demo-btn" style="font-family: 'IM Fell English', serif;">Begin Foraging</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>IM Fell English</h3>
+      <p>17th-century printing press. Rough, inky, atmospheric. Maximum old-world feel. Only regular + italic (no bold weight), so emphasis comes from italics and size, not weight.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="lora" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div class="gg-title">Foraging — Deepwood</div>
+        <div class="demo-nav" style="font-family: 'Lora', serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em;">Herbs &bull; Brewed &bull; Weapons &bull; Items</div>
+        <div style="font-family: 'Lora', serif; font-size: 1rem; color: #9a8a70; line-height: 1.7;">Roll your Nature check to search for herbs in the Deepwood biome. Found herbs are added to your inventory automatically.</div>
+        <div class="demo-row">
+          <div class="demo-stat" style="font-family: 'Lora', serif; font-weight: 600;">INT +3</div>
+          <div class="demo-stat" style="font-family: 'Lora', serif; font-weight: 600;">DC 12</div>
+          <div class="demo-stat" style="font-family: 'Lora', serif; font-weight: 600;">🔆 Light</div>
+        </div>
+        <div class="demo-label" style="font-family: 'Lora', serif; font-weight: 600;">Brewing Modifier</div>
+        <div class="demo-btn" style="font-family: 'Lora', serif; font-weight: 600;">Begin Foraging</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Lora</h3>
+      <p>Transitional serif with calligraphic roots. Warm, balanced, extremely readable. Wide weight range (400-700 + italics). The "safe but good" choice — doesn't try to steal the show from Grenze Gotisch.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="vollkorn" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div class="gg-title">Foraging — Deepwood</div>
+        <div class="demo-nav" style="font-family: 'Vollkorn', serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em;">Herbs &bull; Brewed &bull; Weapons &bull; Items</div>
+        <div style="font-family: 'Vollkorn', serif; font-size: 1rem; color: #9a8a70; line-height: 1.7;">Roll your Nature check to search for herbs in the Deepwood biome. Found herbs are added to your inventory automatically.</div>
+        <div class="demo-row">
+          <div class="demo-stat" style="font-family: 'Vollkorn', serif; font-weight: 600;">INT +3</div>
+          <div class="demo-stat" style="font-family: 'Vollkorn', serif; font-weight: 600;">DC 12</div>
+          <div class="demo-stat" style="font-family: 'Vollkorn', serif; font-weight: 600;">🔆 Light</div>
+        </div>
+        <div class="demo-label" style="font-family: 'Vollkorn', serif; font-weight: 600;">Brewing Modifier</div>
+        <div class="demo-btn" style="font-family: 'Vollkorn', serif; font-weight: 600;">Begin Foraging</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Vollkorn</h3>
+      <p>"Wholegrain" — hearty, warm, substantial serif. More personality than Lora but still very readable. Slightly heavier strokes give it presence. Good weight range (400-700 + italics).</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 1.5rem; padding: 1rem; border: 1px solid #333; border-radius: 8px;">
+  <h3>Quick guide</h3>
+  <p style="font-size: 0.9rem; line-height: 1.6;">
+    <strong>Most fantasy:</strong> Almendra — swoopy, calligraphic, D&D book feel<br>
+    <strong>Most atmospheric:</strong> IM Fell English — rough, inky, old printing press<br>
+    <strong>Most readable:</strong> Lora — warm serif, great weight range, doesn't compete with title<br>
+    <strong>Most characterful + readable:</strong> Vollkorn — hearty, warm, substantial
+  </p>
+</div>

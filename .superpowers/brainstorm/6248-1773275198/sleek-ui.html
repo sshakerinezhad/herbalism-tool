@@ -1,0 +1,155 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@400;600;700;900&family=Almendra:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+.demo-card {
+  background: #151311;
+  border: 1px solid #3d342a;
+  border-radius: 8px;
+  padding: 1.75rem;
+}
+.gg-title { font-family: 'Grenze Gotisch', cursive; font-size: 1.5rem; font-weight: 700; color: #f5f0e6; text-shadow: 0 1px 0 rgba(0,0,0,0.4); margin-bottom: 0.5rem; }
+.alm-body { font-family: 'Almendra', serif; font-size: 1rem; color: #9a8a70; line-height: 1.7; margin-bottom: 0.75rem; }
+
+.nav-elegant { color: #b8a890; font-size: 0.9rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0; }
+.nav-elegant .sep { color: #8b7355; margin: 0 0.75rem; font-size: 0.7rem; opacity: 0.6; }
+.nav-elegant .active { color: #c9a66b; }
+.nav-elegant .inactive { color: #8b7355; }
+.nav-elegant .inactive:hover { color: #b8a890; }
+
+.stat-slim {
+  display: inline-flex; align-items: center;
+  color: #c9a66b; padding: 0.2rem 0.6rem;
+  border: 1px solid rgba(139,115,85,0.3); border-radius: 3px;
+  font-size: 0.8rem; gap: 0.3rem;
+}
+.stat-row { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+
+.label-slim { font-size: 0.7rem; letter-spacing: 0.12em; color: #8b7355; margin-top: 0.6rem; }
+
+.btn-sleek {
+  display: inline-block; color: #c9a66b; background: transparent;
+  border: 1px solid rgba(139,115,85,0.4); padding: 0.45rem 1.5rem;
+  border-radius: 3px; font-size: 0.85rem; margin-top: 0.75rem;
+  transition: all 0.2s;
+}
+.btn-sleek:hover { background: rgba(139,115,85,0.15); border-color: rgba(139,115,85,0.6); }
+.btn-ghost {
+  display: inline-block; color: #8b7355; background: transparent;
+  border: 1px solid rgba(61,52,42,0.4); padding: 0.45rem 1rem;
+  border-radius: 3px; font-size: 0.8rem; margin-top: 0.75rem; margin-left: 0.5rem;
+}
+</style>
+
+<h2>Sleek UI Styling</h2>
+<p class="subtitle">Same fonts, radically different feel. Navigation is graceful with ornamental separators. Buttons are ghost/outline style. Stat badges are slim and minimal. Three styling approaches below.</p>
+
+<div class="cards">
+  <div class="card" data-choice="almendra-all" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div class="gg-title">Foraging — Deepwood</div>
+        <div class="nav-elegant" style="font-family: 'Almendra', serif;">
+          <span class="active">Herbs</span>
+          <span class="sep">✦</span>
+          <span class="inactive">Brewed</span>
+          <span class="sep">✦</span>
+          <span class="inactive">Weapons</span>
+          <span class="sep">✦</span>
+          <span class="inactive">Items</span>
+        </div>
+        <div class="alm-body">Roll your Nature check to search for herbs in the Deepwood biome. Found herbs are added to your inventory automatically.</div>
+        <div class="stat-row">
+          <div class="stat-slim" style="font-family: 'Almendra', serif;">INT +3</div>
+          <div class="stat-slim" style="font-family: 'Almendra', serif;">DC 12</div>
+          <div class="stat-slim" style="font-family: 'Almendra', serif;">🔆 Light</div>
+          <div class="stat-slim" style="font-family: 'Almendra', serif;">🌑 Dark</div>
+        </div>
+        <div class="label-slim" style="font-family: 'Almendra', serif; font-weight: 700;">Brewing Modifier</div>
+        <div>
+          <span class="btn-sleek" style="font-family: 'Almendra', serif; font-weight: 700;">Begin Foraging</span>
+          <span class="btn-ghost" style="font-family: 'Almendra', serif;">Cancel</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A: Almendra Everything</h3>
+      <p>One body font for all non-title text. Almendra's calligraphic character carries through nav, stats, buttons. Relies on weight/size/color for hierarchy. Simplest font stack (2 fonts total). The ✦ separators add elegance.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="cinzel-slim" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div class="gg-title">Foraging — Deepwood</div>
+        <div class="nav-elegant" style="font-family: 'Almendra', serif;">
+          <span class="active">Herbs</span>
+          <span class="sep">◆</span>
+          <span class="inactive">Brewed</span>
+          <span class="sep">◆</span>
+          <span class="inactive">Weapons</span>
+          <span class="sep">◆</span>
+          <span class="inactive">Items</span>
+        </div>
+        <div class="alm-body">Roll your Nature check to search for herbs in the Deepwood biome. Found herbs are added to your inventory automatically.</div>
+        <div class="stat-row">
+          <div class="stat-slim" style="font-family: 'Cinzel', serif; font-weight: 400; font-size: 0.7rem; letter-spacing: 0.05em;">INT +3</div>
+          <div class="stat-slim" style="font-family: 'Cinzel', serif; font-weight: 400; font-size: 0.7rem; letter-spacing: 0.05em;">DC 12</div>
+          <div class="stat-slim" style="font-family: 'Cinzel', serif; font-weight: 400; font-size: 0.7rem; letter-spacing: 0.05em;">🔆 Light</div>
+          <div class="stat-slim" style="font-family: 'Cinzel', serif; font-weight: 400; font-size: 0.7rem; letter-spacing: 0.05em;">🌑 Dark</div>
+        </div>
+        <div class="label-slim" style="font-family: 'Cinzel', serif; font-weight: 400; font-size: 0.6rem; letter-spacing: 0.15em;">Brewing Modifier</div>
+        <div>
+          <span class="btn-sleek" style="font-family: 'Cinzel', serif; font-weight: 400; font-size: 0.8rem; letter-spacing: 0.08em;">Begin Foraging</span>
+          <span class="btn-ghost" style="font-family: 'Cinzel', serif; font-weight: 400; font-size: 0.75rem; letter-spacing: 0.05em;">Cancel</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B: Cinzel Light for UI Chrome</h3>
+      <p>Cinzel at weight 400 (lightest) + small size + letter-spacing. Much sleeker than before — the Roman capitals become delicate inscriptions rather than shouting. Nav stays in Almendra with ◆ separators. 3-font stack.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="cormorant-ui" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="demo-card">
+        <div class="gg-title">Foraging — Deepwood</div>
+        <div class="nav-elegant" style="font-family: 'Cormorant Garamond', serif; font-size: 0.95rem;">
+          <span class="active" style="font-weight: 600;">Herbs</span>
+          <span class="sep">·</span>
+          <span class="inactive">Brewed</span>
+          <span class="sep">·</span>
+          <span class="inactive">Weapons</span>
+          <span class="sep">·</span>
+          <span class="inactive">Items</span>
+        </div>
+        <div class="alm-body">Roll your Nature check to search for herbs in the Deepwood biome. Found herbs are added to your inventory automatically.</div>
+        <div class="stat-row">
+          <div class="stat-slim" style="font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 0.85rem;">INT +3</div>
+          <div class="stat-slim" style="font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 0.85rem;">DC 12</div>
+          <div class="stat-slim" style="font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 0.85rem;">🔆 Light</div>
+          <div class="stat-slim" style="font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 0.85rem;">🌑 Dark</div>
+        </div>
+        <div class="label-slim" style="font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;">Brewing Modifier</div>
+        <div>
+          <span class="btn-sleek" style="font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 0.9rem;">Begin Foraging</span>
+          <span class="btn-ghost" style="font-family: 'Cormorant Garamond', serif; font-weight: 500; font-size: 0.85rem;">Cancel</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C: Cormorant Garamond for UI</h3>
+      <p>Elegant, high-contrast Garamond. Thin strokes give it natural sleekness. Wide weight range for subtle hierarchy. Nav uses Cormorant too with minimal · separators. 3-font stack but the most refined feel.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 1.5rem; padding: 1rem; border: 1px solid #333; border-radius: 8px;">
+  <h3>What changed</h3>
+  <p style="font-size: 0.9rem; line-height: 1.6;">
+    <strong>Navigation:</strong> No more uppercase blocks — graceful text with ornamental separators (✦ ◆ ·)<br>
+    <strong>Buttons:</strong> Ghost/outline style — transparent background, thin borders, subtle hover<br>
+    <strong>Stat badges:</strong> Slimmer, less padding, lower-key borders<br>
+    <strong>Labels:</strong> Lighter weight, reduced letter-spacing
+  </p>
+</div>

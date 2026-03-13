@@ -2,9 +2,11 @@
 
 import { CharacterPortrait } from './CharacterPortrait'
 import { StatBlock } from './StatBlock'
+import { CoinPurse } from './CoinPurse'
 import { Divider } from '../ui'
 import { CLASSES, KNIGHT_ORDERS, RACES, HUMAN_CULTURES, BACKGROUNDS, VOCATIONS, getAbilityModifier } from '@/lib/constants'
 import type { Character, AbilityStat } from '@/lib/types'
+import type { Coins } from './CoinPurse'
 
 type CharacterBannerProps = {
   character: Character
@@ -14,6 +16,10 @@ type CharacterBannerProps = {
   maxHP: number
   armorClass: number
   armorLevel: 'none' | 'light' | 'medium' | 'heavy'
+  // Coins
+  coins: Coins
+  characterId: string
+  onMoneyChanged: () => void
 }
 
 const armorLevelLabels: Record<string, string> = {
@@ -39,6 +45,9 @@ export function CharacterBanner({
   maxHP,
   armorClass,
   armorLevel,
+  coins,
+  characterId,
+  onMoneyChanged,
 }: CharacterBannerProps) {
   const raceName = RACES[character.race as keyof typeof RACES]?.name ?? character.race
   const subraceName = character.subrace
@@ -111,6 +120,15 @@ export function CharacterBanner({
                   </>
                 )}
               </p>
+
+              {/* Coin Purse */}
+              <div className="mt-2">
+                <CoinPurse
+                  characterId={characterId}
+                  coins={coins}
+                  onUpdate={onMoneyChanged}
+                />
+              </div>
             </div>
           </div>
 

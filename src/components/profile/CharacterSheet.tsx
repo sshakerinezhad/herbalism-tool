@@ -32,7 +32,6 @@ import {
   removeCharacterArmor,
 } from '@/lib/db/characters'
 import {
-  CoinPurse,
   QuickSlots,
   CharacterBanner,
   EquipmentWeaponsPanel,
@@ -292,7 +291,7 @@ function CharacterSheetContent({
 
   return (
     <div className="space-y-6">
-      {/* Character Banner (includes vitals and ability scores) */}
+      {/* Character Banner (includes vitals, ability scores, and coins) */}
       <CharacterBanner
         character={character}
         userEmail={userEmail}
@@ -300,6 +299,14 @@ function CharacterSheetContent({
         maxHP={maxHP}
         armorClass={totalAC}
         armorLevel={armorLevel}
+        coins={{
+          platinum: character.platinum,
+          gold: character.gold,
+          silver: character.silver,
+          copper: character.copper,
+        }}
+        characterId={character.id}
+        onMoneyChanged={onMoneyChanged}
       />
 
       {/* Equipment Panel (Armor + Weapons) */}
@@ -330,21 +337,6 @@ function CharacterSheetContent({
           skillStates={skillStates}
           stats={characterStats}
           level={character.level}
-        />
-      </GrimoireCard>
-
-      {/* Coin Purse */}
-      <GrimoireCard>
-        <SectionHeader>Coin Purse</SectionHeader>
-        <CoinPurse
-          characterId={character.id}
-          coins={{
-            platinum: character.platinum,
-            gold: character.gold,
-            silver: character.silver,
-            copper: character.copper,
-          }}
-          onUpdate={onMoneyChanged}
         />
       </GrimoireCard>
 

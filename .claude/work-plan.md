@@ -1,45 +1,59 @@
-# Plan: Bug Fixes + Add Elixir Feature
+# Plan: CoinPurse → Banner + Dynamic Brewing DC
 
-## 1. Fix Brewing Bug (one-line fix)
+## Task 1: Move CoinPurse into CharacterBanner
 
-**File:** `src/lib/hooks/useBrewState.ts` ~line 380
-- **Change:** `count: count * batchCount` → `count: count`
-- **Why:** `batchCount` controls how many dice rolls / brew attempts happen. It should NOT multiply the effect potency. The DB layer already uses `batchCount` for repetition (herb removal × batchCount, quantity = successCount).
+**Goal:** Compact coin pills below identity text (right of portrait), click-to-popover for editing.
 
-## 2. Fix CoinPurse Debounce / Race Conditions
+### Files to modify
 
-**File:** `src/components/character/CoinPurse.tsx`
-- Add `pendingCoin: CoinType | null` state to track which coin type has an in-flight mutation
-- In `handleChange()`: if `pendingCoin` is set, return early (block concurrent mutations)
-- Set `pendingCoin = coinType` before the DB call, clear it after (success or error)
-- Pass `disabled={isDisabled || pendingCoin === type}` to each `CoinCell` so buttons gray out during save
-- Fix `useEffect` dependency: wrap `propCoins` sync with a guard — skip if any mutation is pending (don't reset optimistic state mid-flight)
+- `src/components/character/CoinPurse.tsx` — Refactor into two modes:
+  - **Compact mode (new default):** Horizontal row of 4 metallic coin pills (value + label). Each pill is clickable.
+  - **Popover:** On click, show a small dropdown with ±1/±10/±100 buttons (reuse existing `Btn` sub-component). Close on click-outside.
+  - Remove the lock toggle header — the popover pattern replaces it (coins are read-only until clicked).
+  - Keep all existing mutation logic (optimistic updates, pendingCoin guard, error rollback).
 
-## 3. Add Elixir to Inventory (new modal)
+- `src/components/character/CharacterBanner.tsx` — Add CoinPurse below identity text:
+  - New props: `coins: Coins`, `characterId: string`, `onMoneyChanged: () => void`
+  - Place `<CoinPurse>` after the race/background/vocation line, inside the identity `<div>` (right of portrait, won't shift portrait height — portrait is `shrink-0` with fixed size)
 
-**New file:** `src/components/inventory/herbalism/AddElixirModal.tsx`
-- Mirrors `AddHerbModal` pattern (same modal structure, search, quantity picker)
-- Lists character's unlocked recipes via `useCharacterRecipes()` hook
-- User selects a recipe → picks potency (1–4 via button group, default 1) → picks quantity (default 1)
-- If recipe has template variables in `description` (e.g. `{damage_type}`), show choice dropdowns (reuse `parseTemplateVariables` from `useBrewState.ts`)
-- On submit: build `effects[]` by repeating `recipe.name` × potency, call `addCharacterBrewedItem(characterId, recipe.type, effects, computedDescription, choices, quantity)`
-- Compute `computedDescription` by filling template variables into `recipe.description` (reuse `fillTemplate` from brew utils)
+- `src/components/profile/CharacterSheet.tsx` — Remove the standalone `<GrimoireCard>` CoinPurse section (lines 336-349). Pass coin props to CharacterBanner instead.
 
-**Modified files:**
-- `src/components/inventory/herbalism/HerbalismSection.tsx` — add `showAddElixir` state, render `AddElixirModal` when brewed tab is active, add "+ Add Elixir" button next to Brewed tab
-- `src/components/inventory/herbalism/index.ts` — export `AddElixirModal`
+### Reuse
+- `updateCharacterMoney` from `src/lib/db/characters.ts` (already used by CoinPurse)
+- `useInvalidateQueries` from `src/lib/hooks/queries.ts` (already used in CharacterSheet)
+- Existing `COIN_CONFIG`, `Btn`, metallic gradient styles in CoinPurse.tsx
 
-**Reuses:**
-- `addCharacterBrewedItem()` from `src/lib/db/characterInventory.ts` (already exists, untouched)
-- `useCharacterRecipes()` from `src/lib/hooks/queries.ts`
-- `parseTemplateVariables` and `fillTemplate` from `src/lib/brewing.ts` (already exported)
+---
+
+## Task 2: Dynamic Brewing DC
+
+**Goal:** Replace hardcoded `BREWING_DC = 15` with `DC = herbCount * 2 + 6`.
+
+### Files to modify
+
+- `src/lib/constants.ts` — Replace `export const BREWING_DC = 15` with:
+  ```ts
+  export function getBrewingDC(herbCount: number): number {
+    return herbCount * 2 + 6
+  }
+  ```
+
+- `src/app/(app)/brew/page.tsx` — At all 3 DC check sites (lines ~151, ~226, ~261):
+  - Compute `const dc = getBrewingDC(totalHerbsSelected)`
+  - Replace `total >= BREWING_DC` with `total >= dc`
+  - Pass `dc` to ResultPhase / BatchResultPhase
+
+- `src/components/brew/ResultPhase.tsx` — Add `dc: number` prop to both components:
+  - `ResultPhase`: Replace hardcoded `≥ 15 (DC)` / `< 15 (DC)` with `≥ ${dc} (DC)` / `< ${dc} (DC)`
+  - `BatchResultPhase`: Replace `Roll Results (DC 15)` with `Roll Results (DC ${dc})`
+
+### Reuse
+- `totalHerbsSelected` already exported from `useBrewState` hook (line 443)
+
+---
 
 ## Verification
 
 ```bash
 npm run build
 ```
-Then manual test:
-- Brew page: "by recipe" → select 3× single-power healing → should get up to 3 single-potency elixirs
-- CoinPurse: rapid-click +1 gold 5 times → should increment exactly 5, no jumps or resets
-- Inventory Brewed tab: click "+ Add Elixir" → pick recipe → set potency 2 → add → verify item appears with potency 2

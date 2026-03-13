@@ -15,7 +15,7 @@
 |---|----------|-----------|---------------|
 | 1 | Oil → **Balm** | Rename everywhere to match EPG | 2B |
 | 2 | positive/negative → **Light/Dark** | Rename elements + emojis (🔆/🌑) | 2.0 (early) |
-| 3 | Brewing DC → **6 + 2×ingredients** | Replace flat DC 15 with scaled formula | 2B |
+| 3 | Brewing DC → **6 + 2×ingredients** | Replace flat DC 15 with scaled formula | Interstitial (session 13) |
 | 4 | Brewing ability → **Keep INT** | Deliberate EPG divergence (EPG says WIS) | No change |
 | 5 | Access → **Recipe-based** | Remove herbalist-only gate. Anyone with recipes can brew. Herbalists get full library + can learn more. Non-herbalists get Order-based recipes (future wave). Empty state message for no recipes. | 2B |
 | 6 | Alchemy → **Separate system, deferred** | Completely different system (creature organs, own interface). Not Wave 2. | Future wave |
@@ -61,12 +61,13 @@ Replaced hub-and-spoke navigation with persistent Ember & Silence nav bar and pr
 
 Targeted fixes and UI improvements between 2A and 2B. Not a formal wave piece — driven by user-reported issues.
 
-**What shipped (session 11, uncommitted):**
+**What shipped (sessions 11–13):**
 - **Brewing bug fix:** `useBrewState.ts` — removed `count * batchCount` that multiplied potency by batch count (DB layer already handles repetition)
 - **CoinPurse debounce:** `CoinPurse.tsx` — added `pendingCoin` state guard to serialize async mutations and prevent race conditions from rapid clicks
 - **AddElixirModal:** New modal to manually add brewed items from known recipes — potency picker (I–IV), template variable choices, quantity. Wired into HerbalismSection Brewed tab.
 - **SkillsPanel redesign:** View mode now 2-column grid with tighter spacing (~50% less vertical space). Edit mode unchanged.
-- **CoinPurse width:** Constrained to `max-w-sm`, centered, reduced gap
+- **CoinPurse → CharacterBanner:** Moved CoinPurse from standalone GrimoireCard into the banner's identity column. Rewritten as compact metallic pills with inline expanding edit tray (CSS Grid `0fr→1fr` height animation). No popover/portal — stays within DOM flow, avoids `overflow-hidden` clipping.
+- **Dynamic Brewing DC:** Replaced `BREWING_DC = 15` constant with `getBrewingDC(herbCount)` → `herbCount * 2 + 6`. Updated all 3 DC check sites in brew page + result display components. Aligns with EPG formula (kickoff decision #3).
 
 ### 2B — Herbalism & Inventory
 

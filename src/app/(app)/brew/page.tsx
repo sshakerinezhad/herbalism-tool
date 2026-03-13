@@ -33,7 +33,7 @@ import {
 import type { CharacterHerb, CharacterRecipe } from '@/lib/types'
 import { Recipe } from '@/lib/types'
 import { rollD20 } from '@/lib/dice'
-import { BREWING_DC, MAX_HERBS_PER_BREW } from '@/lib/constants'
+import { getBrewingDC, MAX_HERBS_PER_BREW } from '@/lib/constants'
 import { computeBrewingModifier } from '@/lib/characterUtils'
 import { ErrorDisplay, BrewSkeleton } from '@/components/ui'
 import {
@@ -146,9 +146,10 @@ export default function BrewPage() {
   async function executeBrew() {
     if (!characterId) return
 
+    const dc = getBrewingDC(totalHerbsSelected)
     const roll = rollD20()
     const total = roll + brewingMod
-    const success = total >= BREWING_DC
+    const success = total >= dc
     const successCount = success ? 1 : 0
 
     const type = (pairingValidation.type || 'unknown') as 'elixir' | 'bomb' | 'oil'
@@ -188,7 +189,7 @@ export default function BrewPage() {
       invalidateCharacterBrewedItems(characterId)
     }
 
-    actions.setPhase({ phase: 'result', success, roll, total, type, description, selectedHerbs })
+    actions.setPhase({ phase: 'result', success, roll, total, dc, type, description, selectedHerbs })
   }
 
   // Wrapper for reset that includes invalidate side effect
@@ -219,11 +220,13 @@ export default function BrewPage() {
       }
     }
 
+    const dc = getBrewingDC(totalHerbsSelected)
+
     if (batch === 1) {
       // Single brew: roll dice, then atomically brew
       const roll = rollD20()
       const total = roll + brewingMod
-      const success = total >= BREWING_DC
+      const success = total >= dc
       const successCount = success ? 1 : 0
 
       const { error } = await brewItems(
@@ -247,7 +250,7 @@ export default function BrewPage() {
         invalidateCharacterBrewedItems(characterId)
       }
 
-      actions.setPhase({ phase: 'result', success, roll, total, type, description, selectedHerbs })
+      actions.setPhase({ phase: 'result', success, roll, total, dc, type, description, selectedHerbs })
       return
     }
 
@@ -258,7 +261,7 @@ export default function BrewPage() {
     for (let i = 0; i < batch; i++) {
       const roll = rollD20()
       const total = roll + brewingMod
-      const success = total >= BREWING_DC
+      const success = total >= dc
 
       results.push({ success, roll, total })
       if (success) successCount++
@@ -286,7 +289,7 @@ export default function BrewPage() {
       invalidateCharacterBrewedItems(characterId)
     }
 
-    actions.setPhase({ phase: 'batch-result', results, type, description, successCount })
+    actions.setPhase({ phase: 'batch-result', results, dc, type, description, successCount })
   }
 
   // ============ Render ============
@@ -537,6 +540,7 @@ export default function BrewPage() {
             roll={phase.roll}
             total={phase.total}
             brewingMod={brewingMod}
+            dc={phase.dc}
             type={phase.type}
             description={phase.description}
             onReset={reset}
@@ -548,6 +552,7 @@ export default function BrewPage() {
           <BatchResultPhase
             results={phase.results}
             brewingMod={brewingMod}
+            dc={phase.dc}
             type={phase.type}
             description={phase.description}
             successCount={phase.successCount}

@@ -132,8 +132,10 @@ export const RARITY_ORDER = [
 /** Difficulty class for foraging checks */
 export const FORAGING_DC = 13
 
-/** Difficulty class for brewing checks */
-export const BREWING_DC = 15
+/** Difficulty class for brewing checks: scales with herb count */
+export function getBrewingDC(herbCount: number): number {
+  return herbCount * 2 + 6
+}
 
 /** Maximum number of herbs that can be used in a single brew */
 export const MAX_HERBS_PER_BREW = 6

@@ -30,5 +30,5 @@ export type BrewPhase =
   | { phase: 'select-herbs-for-recipes'; selectedRecipes: SelectedRecipe[] }
   | { phase: 'make-choices'; selectedHerbs: InventoryItem[]; pairedEffects: PairedEffect[] }
   | { phase: 'brewing'; selectedHerbs: InventoryItem[]; pairedEffects: PairedEffect[]; choices: Record<string, string> }
-  | { phase: 'result'; success: boolean; roll: number; total: number; type: string; description: string; selectedHerbs: InventoryItem[] }
-  | { phase: 'batch-result'; results: BrewResult[]; type: string; description: string; successCount: number }
+  | { phase: 'result'; success: boolean; roll: number; total: number; dc: number; type: string; description: string; selectedHerbs: InventoryItem[] }
+  | { phase: 'batch-result'; results: BrewResult[]; dc: number; type: string; description: string; successCount: number }

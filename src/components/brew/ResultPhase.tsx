@@ -15,6 +15,7 @@ type ResultPhaseProps = {
   roll: number
   total: number
   brewingMod: number
+  dc: number
   type: string
   description: string
   onReset: () => void
@@ -25,6 +26,7 @@ export function ResultPhase({
   roll,
   total,
   brewingMod,
+  dc,
   type,
   description,
   onReset
@@ -42,7 +44,7 @@ export function ResultPhase({
         
         <p className="text-zinc-300 mb-4">
           Roll: <strong>{roll}</strong> {brewingMod >= 0 ? '+' : ''}{brewingMod} = <strong>{total}</strong>
-          {success ? ' ≥ 15 (DC)' : ' < 15 (DC)'}
+          {success ? ` ≥ ${dc} (DC)` : ` < ${dc} (DC)`}
         </p>
 
         {success ? (
@@ -90,6 +92,7 @@ export function ResultPhase({
 type BatchResultPhaseProps = {
   results: BrewResult[]
   brewingMod: number
+  dc: number
   type: string
   description: string
   successCount: number
@@ -99,6 +102,7 @@ type BatchResultPhaseProps = {
 export function BatchResultPhase({
   results,
   brewingMod,
+  dc,
   type,
   description,
   successCount,
@@ -153,7 +157,7 @@ export function BatchResultPhase({
 
         {/* Individual rolls */}
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-zinc-400">Roll Results (DC 15)</h3>
+          <h3 className="text-sm font-medium text-zinc-400">Roll Results (DC {dc})</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {results.map((result, idx) => (
               <div

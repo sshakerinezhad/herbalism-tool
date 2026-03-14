@@ -14,7 +14,6 @@
       "Bash(\"C:\\\\Users\\\\User\\\\.claude\\\\plugins\\\\cache\\\\claude-plugins-official\\\\explanatory-output-style\\\\2cd88e7947b7\\\\hooks-handlers\\\\session-start.cmd\")",
       "Bash(gh repo view:*)",
       "WebFetch(domain:api.github.com)",
-      "Bash(git config:*)",
       "Bash(dir:*)",
       "Bash(do mkdir -p \"$dir\")",
       "Bash(echo:*)",
@@ -27,8 +26,7 @@
       "Bash(find:*)",
       "Bash(npm list:*)",
       "Bash(cd \"C:\\\\Users\\\\User\\\\Desktop\\\\herbalism-tool\" && bash __verify__/checkpoint_A.sh)",
-      "Bash(npx supabase:*)",
-      "Bash(git add:*)"
+      "Bash(npx supabase:*)"
     ]
   }
 }

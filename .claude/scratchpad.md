@@ -1,49 +1,41 @@
 # Scratchpad
 
 **Branch:** `main`
-**Last session:** 2026-03-12 (session 13)
+**Last session:** 2026-03-12 (session 14)
 
 ## Current state
 
-- On `main`, **uncommitted changes** — ready to commit
+- On `main`, **uncommitted changes** from session 13 still need committing (CoinPurse + dynamic DC)
 - Build passing
-- Wave 2 interstitial work complete (see `.claude/wave2.md`)
+- Wave 2B brainstorm complete — first chunk scoped and spec'd
 
-## Session 13 — what was done
+## Session 14 — what was done
 
-### Task 1: CoinPurse → CharacterBanner
-- Rewrote `CoinPurse.tsx` as compact metallic gradient pills (value + label)
-- Click pill → **inline expanding edit tray** slides open below pill row (CSS Grid `grid-rows-[0fr]→[1fr]` animation)
-- Initial version used a popover, but it got clipped by the banner's `overflow-hidden`. Redesigned to expand inline within DOM flow — no portals, no z-index, no clipping.
-- Tray layout: `-100 -10 -1 [value] +1 +10 +100` — symmetric, spacious
-- Removed lock toggle and standalone GrimoireCard section from CharacterSheet
-- CoinPurse now lives inside CharacterBanner's identity column (below race/background line)
-- New CharacterBanner props: `coins`, `characterId`, `onMoneyChanged`
+### 2B Brainstorm: Scoped first chunk as Oil → Balm rename
 
-### Task 2: Dynamic Brewing DC
-- `BREWING_DC = 15` → `getBrewingDC(herbCount)` = `herbCount * 2 + 6`
-- Updated all 3 DC check sites in `brew/page.tsx`
-- `dc` added to BrewPhase type, passed to ResultPhase/BatchResultPhase
-- Aligns with EPG formula (kickoff brainstorm decision #3, updated in wave2.md)
+Brainstormed Wave 2B (Herbalism & Inventory). Full 2B scope is too large for one piece, so we broke it into chunks:
+1. **Oil → Balm rename** ← doing this first
+2. Inventory UX improvements (herb info modal, brewed organization, stackable effects)
+3. Visual pass on herbalism pages
+4. Recipe → Brew link + recipe polish
 
-### Files changed
-- `src/components/character/CoinPurse.tsx` — full rewrite (pills + inline tray)
-- `src/components/character/CharacterBanner.tsx` — new props, CoinPurse placement
-- `src/components/profile/CharacterSheet.tsx` — removed standalone CoinPurse, pass coins to banner
-- `src/lib/constants.ts` — `getBrewingDC()` replaces `BREWING_DC` constant
-- `src/app/(app)/brew/page.tsx` — dynamic DC at all check sites
-- `src/components/brew/ResultPhase.tsx` — `dc` prop on both result components
-- `src/components/brew/types.ts` — `dc` field on result/batch-result phases
-- `.claude/wave2.md` — updated interstitial section + kickoff decision #3
+### Key decisions
+- **Full rename** through DB + code + UI (not UI-only mapping)
+- **Icon:** 🫗/⚔️/🗡️ → 🩸 (drop of blood) everywhere balm appears
+- **Color scheme stays amber** — still fits weapon-coating balms
+- **Big bang approach** — one commit, no two-phase migration (personal project, no rolling deploy risk)
+
+### Artifacts produced
+- **Spec:** `docs/superpowers/specs/2026-03-12-oil-to-balm-rename.md` (reviewed, approved)
+- **Work plan:** `.claude/work-plan.md` (7 steps)
+- Blast radius: 46 references across 16 files
 
 ## What the next session needs to do
 
-1. **Commit** these changes
-2. **Manual testing:**
-   - Character sheet: coin pills visible in banner below identity text
-   - Click pill → edit tray slides open with ±1/±10/±100
-   - Click outside → tray closes
-   - Rapid-click +1 gold 5 times → increments exactly 5, no race conditions
-   - Brew page: DC displays dynamically (2 herbs = DC 10, 4 herbs = DC 14, 6 herbs = DC 18)
-   - Result screen: DC number matches herb count used
-3. **Next wave piece:** 2B — Herbalism & Inventory (brainstorm first)
+1. **Commit session 13 changes first** (CoinPurse + dynamic DC — still uncommitted)
+2. **Execute oil → balm rename** following `.claude/work-plan.md`:
+   - Step 1: DB migration (new file, push, regenerate types)
+   - Steps 2-6: TypeScript types, style mappings, UI labels, type assertions, comments
+   - Step 7: Update wave2.md to mark decision #1 as implemented
+3. **Verify:** `npm run build`
+4. **After rename:** Continue 2B brainstorm for next chunk (inventory UX improvements)

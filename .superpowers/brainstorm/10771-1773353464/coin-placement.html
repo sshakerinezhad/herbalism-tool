@@ -1,0 +1,232 @@
+<h2>CoinPurse Placement in CharacterBanner</h2>
+<p class="subtitle">Where should the coins live within the banner? Click the layout that feels right.</p>
+
+<div class="cards">
+  <!-- Option A: Below vitals -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#1a1a2e;border-radius:8px;padding:16px;font-family:monospace;font-size:11px;color:#d4c5a0;">
+        <div style="display:flex;gap:16px;">
+          <!-- Left: Portrait + Identity -->
+          <div style="flex:1;">
+            <div style="display:flex;gap:12px;">
+              <div style="width:64px;height:64px;background:#2a2a3e;border-radius:8px;border:1px solid #8b7355;display:flex;align-items:center;justify-content:center;font-size:24px;">🧙</div>
+              <div>
+                <div style="font-size:16px;font-weight:bold;color:#f5f0e0;">Aldric Stormblade</div>
+                <div style="color:#c9a84c;font-size:11px;">Level 5 Fighter · Silver Order</div>
+                <div style="color:#9a8a70;font-size:10px;">Human · Noble · Herbalist</div>
+              </div>
+            </div>
+          </div>
+          <!-- Right: Vitals -->
+          <div style="width:200px;">
+            <div style="font-size:9px;color:#9a8a70;text-transform:uppercase;">Hit Points</div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:2px;">
+              <span style="font-size:9px;color:#9a8a70;">HP</span>
+              <span style="font-size:11px;font-weight:bold;">32 / 40</span>
+            </div>
+            <div style="height:12px;background:#0a0a1e;border-radius:3px;overflow:hidden;margin-bottom:8px;">
+              <div style="width:80%;height:100%;background:#059669;"></div>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:6px;">
+              <div style="flex:1;background:#22223a;border-radius:4px;padding:4px;text-align:center;">
+                <div style="font-size:14px;font-weight:bold;">16</div>
+                <div style="font-size:8px;color:#9a8a70;">AC</div>
+              </div>
+              <div style="flex:1;background:#22223a;border-radius:4px;padding:4px;text-align:center;">
+                <div style="font-size:14px;font-weight:bold;">+2</div>
+                <div style="font-size:8px;color:#9a8a70;">INIT</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:2px;justify-content:space-between;">
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">14</div><div style="font-size:7px;color:#9a8a70;">STR</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">16</div><div style="font-size:7px;color:#9a8a70;">DEX</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">12</div><div style="font-size:7px;color:#9a8a70;">CON</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">10</div><div style="font-size:7px;color:#9a8a70;">INT</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">13</div><div style="font-size:7px;color:#9a8a70;">WIS</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">8</div><div style="font-size:7px;color:#9a8a70;">CHA</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">11</div><div style="font-size:7px;color:#9a8a70;">HON</div></div>
+            </div>
+            <!-- COINS HERE -->
+            <div style="margin-top:8px;padding-top:8px;border-top:1px solid #8b735533;">
+              <div style="display:flex;gap:4px;">
+                <div style="flex:1;text-align:center;background:linear-gradient(to bottom,#e8e8f0,#b8b8c8);border-radius:4px;padding:3px 2px;">
+                  <div style="font-size:12px;font-weight:bold;color:#1a1a2e;">0</div>
+                  <div style="font-size:7px;color:#333;">PP</div>
+                </div>
+                <div style="flex:1;text-align:center;background:linear-gradient(to bottom,#f0c850,#c8942c);border-radius:4px;padding:3px 2px;">
+                  <div style="font-size:12px;font-weight:bold;color:#4a3000;">12</div>
+                  <div style="font-size:7px;color:#4a3000;">GP</div>
+                </div>
+                <div style="flex:1;text-align:center;background:linear-gradient(to bottom,#b8b8b8,#909090);border-radius:4px;padding:3px 2px;">
+                  <div style="font-size:12px;font-weight:bold;color:#333;">18</div>
+                  <div style="font-size:7px;color:#333;">SP</div>
+                </div>
+                <div style="flex:1;text-align:center;background:linear-gradient(to bottom,#cd7f32,#8b4513);border-radius:4px;padding:3px 2px;">
+                  <div style="font-size:12px;font-weight:bold;color:#3a1800;">24</div>
+                  <div style="font-size:7px;color:#3a1800;">CP</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A: Below Ability Scores (in vitals column)</h3>
+      <p>Coins become the 4th row of the vitals stack. Compact display-only coins, edit via click/modal. Keeps right column hierarchy: HP → AC/Init → Stats → Coins.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Full-width bottom strip -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#1a1a2e;border-radius:8px;padding:16px;font-family:monospace;font-size:11px;color:#d4c5a0;">
+        <div style="display:flex;gap:16px;margin-bottom:12px;">
+          <!-- Left: Portrait + Identity -->
+          <div style="flex:1;">
+            <div style="display:flex;gap:12px;">
+              <div style="width:64px;height:64px;background:#2a2a3e;border-radius:8px;border:1px solid #8b7355;display:flex;align-items:center;justify-content:center;font-size:24px;">🧙</div>
+              <div>
+                <div style="font-size:16px;font-weight:bold;color:#f5f0e0;">Aldric Stormblade</div>
+                <div style="color:#c9a84c;font-size:11px;">Level 5 Fighter · Silver Order</div>
+                <div style="color:#9a8a70;font-size:10px;">Human · Noble · Herbalist</div>
+              </div>
+            </div>
+          </div>
+          <!-- Right: Vitals (no coins) -->
+          <div style="width:200px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:2px;">
+              <span style="font-size:9px;color:#9a8a70;text-transform:uppercase;">Hit Points</span>
+              <span style="font-size:11px;font-weight:bold;">32 / 40</span>
+            </div>
+            <div style="height:12px;background:#0a0a1e;border-radius:3px;overflow:hidden;margin-bottom:8px;">
+              <div style="width:80%;height:100%;background:#059669;"></div>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:6px;">
+              <div style="flex:1;background:#22223a;border-radius:4px;padding:4px;text-align:center;">
+                <div style="font-size:14px;font-weight:bold;">16</div>
+                <div style="font-size:8px;color:#9a8a70;">AC</div>
+              </div>
+              <div style="flex:1;background:#22223a;border-radius:4px;padding:4px;text-align:center;">
+                <div style="font-size:14px;font-weight:bold;">+2</div>
+                <div style="font-size:8px;color:#9a8a70;">INIT</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:2px;justify-content:space-between;">
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">14</div><div style="font-size:7px;color:#9a8a70;">STR</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">16</div><div style="font-size:7px;color:#9a8a70;">DEX</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">12</div><div style="font-size:7px;color:#9a8a70;">CON</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">10</div><div style="font-size:7px;color:#9a8a70;">INT</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">13</div><div style="font-size:7px;color:#9a8a70;">WIS</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">8</div><div style="font-size:7px;color:#9a8a70;">CHA</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">11</div><div style="font-size:7px;color:#9a8a70;">HON</div></div>
+            </div>
+          </div>
+        </div>
+        <!-- COINS STRIP -->
+        <div style="border-top:1px solid #8b735533;padding-top:10px;display:flex;align-items:center;gap:12px;">
+          <span style="font-size:9px;text-transform:uppercase;color:#9a8a70;letter-spacing:1px;">Coin Purse</span>
+          <div style="display:flex;gap:6px;flex:1;justify-content:center;">
+            <div style="display:flex;align-items:center;gap:4px;background:linear-gradient(to bottom,#e8e8f0,#b8b8c8);border-radius:6px;padding:4px 10px;">
+              <span style="font-size:14px;font-weight:bold;color:#1a1a2e;">0</span>
+              <span style="font-size:9px;color:#555;">PP</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;background:linear-gradient(to bottom,#f0c850,#c8942c);border-radius:6px;padding:4px 10px;">
+              <span style="font-size:14px;font-weight:bold;color:#4a3000;">12</span>
+              <span style="font-size:9px;color:#4a3000;">GP</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;background:linear-gradient(to bottom,#b8b8b8,#909090);border-radius:6px;padding:4px 10px;">
+              <span style="font-size:14px;font-weight:bold;color:#333;">18</span>
+              <span style="font-size:9px;color:#333;">SP</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;background:linear-gradient(to bottom,#cd7f32,#8b4513);border-radius:6px;padding:4px 10px;">
+              <span style="font-size:14px;font-weight:bold;color:#3a1800;">24</span>
+              <span style="font-size:9px;color:#3a1800;">CP</span>
+            </div>
+          </div>
+          <span style="font-size:10px;color:#9a8a70;">🔒</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B: Full-Width Bottom Strip</h3>
+      <p>Coins in a horizontal strip below the banner's main content. Inline pill-style coins with lock icon. More room for interaction controls. Replaces the email line.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Alongside AC/Initiative -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#1a1a2e;border-radius:8px;padding:16px;font-family:monospace;font-size:11px;color:#d4c5a0;">
+        <div style="display:flex;gap:16px;">
+          <!-- Left: Portrait + Identity -->
+          <div style="flex:1;">
+            <div style="display:flex;gap:12px;">
+              <div style="width:64px;height:64px;background:#2a2a3e;border-radius:8px;border:1px solid #8b7355;display:flex;align-items:center;justify-content:center;font-size:24px;">🧙</div>
+              <div>
+                <div style="font-size:16px;font-weight:bold;color:#f5f0e0;">Aldric Stormblade</div>
+                <div style="color:#c9a84c;font-size:11px;">Level 5 Fighter · Silver Order</div>
+                <div style="color:#9a8a70;font-size:10px;">Human · Noble · Herbalist</div>
+                <!-- Coins under identity -->
+                <div style="margin-top:8px;display:flex;gap:4px;">
+                  <div style="text-align:center;background:linear-gradient(to bottom,#e8e8f0,#b8b8c8);border-radius:4px;padding:2px 6px;">
+                    <div style="font-size:11px;font-weight:bold;color:#1a1a2e;">0</div>
+                    <div style="font-size:7px;color:#555;">PP</div>
+                  </div>
+                  <div style="text-align:center;background:linear-gradient(to bottom,#f0c850,#c8942c);border-radius:4px;padding:2px 6px;">
+                    <div style="font-size:11px;font-weight:bold;color:#4a3000;">12</div>
+                    <div style="font-size:7px;color:#4a3000;">GP</div>
+                  </div>
+                  <div style="text-align:center;background:linear-gradient(to bottom,#b8b8b8,#909090);border-radius:4px;padding:2px 6px;">
+                    <div style="font-size:11px;font-weight:bold;color:#333;">18</div>
+                    <div style="font-size:7px;color:#333;">SP</div>
+                  </div>
+                  <div style="text-align:center;background:linear-gradient(to bottom,#cd7f32,#8b4513);border-radius:4px;padding:2px 6px;">
+                    <div style="font-size:11px;font-weight:bold;color:#3a1800;">24</div>
+                    <div style="font-size:7px;color:#3a1800;">CP</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Right: Vitals -->
+          <div style="width:200px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:2px;">
+              <span style="font-size:9px;color:#9a8a70;text-transform:uppercase;">Hit Points</span>
+              <span style="font-size:11px;font-weight:bold;">32 / 40</span>
+            </div>
+            <div style="height:12px;background:#0a0a1e;border-radius:3px;overflow:hidden;margin-bottom:8px;">
+              <div style="width:80%;height:100%;background:#059669;"></div>
+            </div>
+            <div style="display:flex;gap:6px;margin-bottom:6px;">
+              <div style="flex:1;background:#22223a;border-radius:4px;padding:4px;text-align:center;">
+                <div style="font-size:14px;font-weight:bold;">16</div>
+                <div style="font-size:8px;color:#9a8a70;">AC</div>
+              </div>
+              <div style="flex:1;background:#22223a;border-radius:4px;padding:4px;text-align:center;">
+                <div style="font-size:14px;font-weight:bold;">+2</div>
+                <div style="font-size:8px;color:#9a8a70;">INIT</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:2px;justify-content:space-between;">
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">14</div><div style="font-size:7px;color:#9a8a70;">STR</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">16</div><div style="font-size:7px;color:#9a8a70;">DEX</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">12</div><div style="font-size:7px;color:#9a8a70;">CON</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">10</div><div style="font-size:7px;color:#9a8a70;">INT</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">13</div><div style="font-size:7px;color:#9a8a70;">WIS</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">8</div><div style="font-size:7px;color:#9a8a70;">CHA</div></div>
+              <div style="text-align:center;"><div style="font-size:11px;font-weight:bold;">11</div><div style="font-size:7px;color:#9a8a70;">HON</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C: Below Identity (left side)</h3>
+      <p>Coins tuck under name/class/race in the identity section. Keeps vitals column clean. Coin row sits naturally as part of "who you are" (name, class, wealth).</p>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:16px;">Note: All options show display-only coins. Editing (increment/decrement) would happen via click-to-edit or a modal.</p>

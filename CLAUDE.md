@@ -88,6 +88,10 @@ When committing code, follow these key points:
 - Describe what changed and briefly why
 
 
+## Context Management
+
+**40%+ context saturation is high — start conserving.** Prefer referencing earlier reads over re-reading files. `offset`/`limit` is only allowed on files already read in full (partial reads without full context lead to bad edits).
+
 ## Commands
 
 ```bash

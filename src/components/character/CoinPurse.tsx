@@ -1,9 +1,10 @@
 /**
  * CoinPurse Component
  *
- * Portal-based coin popover with save-on-close architecture.
+ * Portal-based coin popover with debounced auto-save.
  * Click a pill -> popover drops below with value input + stepper grid.
- * All edits are local -- one Supabase write fires on close.
+ * Edits save to DB after 400ms of inactivity (debounced).
+ * Closing the popover or switching tabs flushes immediately.
  * Portal escapes CharacterBanner's overflow-hidden.
  */
 
@@ -93,6 +94,7 @@ export function CoinPurse({
   })
   const snapshotRef = useRef<Coins>(coins)
   const localCoinsRef = useRef<Coins>(coins)
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Keep ref in sync with state (for stale closure avoidance in saveCoin)
   localCoinsRef.current = localCoins
@@ -104,7 +106,21 @@ export function CoinPurse({
     const oldValue = snapshotRef.current[coinType]
     if (newValue === oldValue) return
     updateCharacterMoney(characterId, { [coinType]: newValue })
-      .then(({ error }) => { if (!error) onUpdate?.() })
+      .then(({ error }) => {
+        if (error) { console.error('CoinPurse save failed:', error); return }
+        snapshotRef.current = { ...snapshotRef.current, [coinType]: newValue }
+        onUpdate?.()
+      })
+  }
+
+  function scheduleSave() {
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+    const coinToSave = openCoin
+    if (!coinToSave) return
+    debounceTimerRef.current = setTimeout(() => {
+      debounceTimerRef.current = null
+      saveCoin(coinToSave)
+    }, 400)
   }
 
   // -- Open / close --
@@ -116,7 +132,13 @@ export function CoinPurse({
       return
     }
     // Save previous coin if switching directly between pills
-    if (openCoin) saveCoin(openCoin)
+    if (openCoin) {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+        debounceTimerRef.current = null
+      }
+      saveCoin(openCoin)
+    }
 
     const el = pillRefs.current[type]
     if (!el) return
@@ -134,6 +156,10 @@ export function CoinPurse({
 
   function closePopover() {
     if (!openCoin) return
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = null
+    }
     saveCoin(openCoin)
     setOpenCoin(null)
     setPopoverPos(null)
@@ -154,6 +180,31 @@ export function CoinPurse({
     return () => document.removeEventListener('keydown', handleKey)
   }, [openCoin])
 
+  // -- Save when tab goes hidden --
+
+  useEffect(() => {
+    if (!openCoin) return
+    const coinToSave = openCoin
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'hidden') {
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current)
+          debounceTimerRef.current = null
+        }
+        saveCoin(coinToSave)
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [openCoin])
+
+  // Clear debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+    }
+  }, [])
+
   // -- Stepper / direct input --
 
   function step(delta: number) {
@@ -163,6 +214,7 @@ export function CoinPurse({
       localCoinsRef.current = next
       return next
     })
+    scheduleSave()
   }
 
   function setDirectValue(value: number) {
@@ -173,6 +225,7 @@ export function CoinPurse({
       localCoinsRef.current = next
       return next
     })
+    scheduleSave()
   }
 
   // Show local value for the coin being edited, prop value for others

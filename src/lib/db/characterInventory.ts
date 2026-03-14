@@ -6,7 +6,7 @@
  * 
  * Tables:
  * - character_herbs: Herb inventory (references herbs table)
- * - character_brewed: Brewed items (elixirs, bombs, oils)
+ * - character_brewed: Brewed items (elixirs, bombs, balms)
  * - character_recipes: Known recipes (references recipes table)
  * - character_weapons: Weapons (references weapon_templates + materials)
  * - character_items: Items (references item_templates)
@@ -146,7 +146,7 @@ export async function fetchCharacterBrewedItems(characterId: string): Promise<{
  */
 export async function addCharacterBrewedItem(
   characterId: string,
-  type: 'elixir' | 'bomb' | 'oil',
+  type: 'elixir' | 'bomb' | 'balm',
   effects: string[],
   computedDescription: string,
   choices: Record<string, string> = {},
@@ -205,7 +205,7 @@ export async function consumeCharacterBrewedItem(
 export async function brewItems(
   characterId: string,
   herbsToRemove: Array<{ herb_id: number; quantity: number }>,
-  brewType: 'elixir' | 'bomb' | 'oil',
+  brewType: 'elixir' | 'bomb' | 'balm',
   effects: string[],
   computedDescription: string,
   choices: Record<string, string> = {},

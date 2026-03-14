@@ -81,9 +81,9 @@ export function BrewedTabContent(props: BrewedTabContentProps) {
               💣 Bombs
             </FilterButton>
           )}
-          {brewedTypes.includes('oil') && (
-            <FilterButton active={brewedTypeFilter === 'oil'} onClick={() => setBrewedTypeFilter('oil')} activeClass="bg-amber-700">
-              ⚗️ Oils
+          {brewedTypes.includes('balm') && (
+            <FilterButton active={brewedTypeFilter === 'balm'} onClick={() => setBrewedTypeFilter('balm')} activeClass="bg-amber-700">
+              🩸 Balms
             </FilterButton>
           )}
         </div>

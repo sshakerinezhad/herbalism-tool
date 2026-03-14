@@ -34,7 +34,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   // Brewed types
   elixir: '🧪',
   bomb: '💣',
-  oil: '🫗',
+  balm: '🩸',
 
   // Item categories
   potion: '🧪',

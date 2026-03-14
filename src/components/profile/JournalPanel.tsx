@@ -3,7 +3,7 @@
 /**
  * JournalPanel — Recipe book panel for the profile page
  *
- * Displays the character's known recipes organized by type (elixirs, bombs, oils)
+ * Displays the character's known recipes organized by type (elixirs, bombs, balms)
  * with an unlock modal for discovering secret recipes via codes.
  */
 
@@ -15,13 +15,13 @@ import { getElementSymbol } from '@/lib/constants'
 import { ErrorDisplay, RecipesSkeleton } from '@/components/ui'
 import { RecipeCard } from '@/components/recipes'
 
-type ViewTab = 'elixir' | 'bomb' | 'oil'
+type ViewTab = 'elixir' | 'bomb' | 'balm'
 
 // Tab configuration for recipe types
 const RECIPE_TABS: { type: ViewTab; label: string; icon: string; activeClass: string }[] = [
   { type: 'elixir', label: 'Elixirs', icon: '🧪', activeClass: 'bg-blue-700' },
   { type: 'bomb', label: 'Bombs', icon: '💣', activeClass: 'bg-red-700' },
-  { type: 'oil', label: 'Oils', icon: '🗡️', activeClass: 'bg-amber-600' },
+  { type: 'balm', label: 'Balms', icon: '🩸', activeClass: 'bg-amber-600' },
 ]
 
 // Type descriptions shown below tabs
@@ -36,9 +36,9 @@ const TYPE_DESCRIPTIONS: Record<ViewTab, { icon: string; text: string; className
     text: "Bombs are volatile concoctions that explode on impact, dealing damage or creating hazardous areas that affect enemies. A bomb's DC is 8 + your proficiency bonus + brewing modifier.\n\nBombs can also be fixed to arrows, replacing their normal damage with the effect of the bomb.",
     className: 'bg-red-950/40 border-red-500 text-red-200',
   },
-  oil: {
-    icon: '🗡️',
-    text: 'Oils are applied to weapons to enhance them, adding damage, precision, or some other temporary effect.',
+  balm: {
+    icon: '🩸',
+    text: 'Balms are applied to weapons to enhance them, adding damage, precision, or some other temporary effect.',
     className: 'bg-amber-950/40 border-amber-500 text-amber-200',
   },
 }
@@ -92,7 +92,7 @@ export function JournalPanel({ character }: JournalPanelProps) {
   const recipesByType = useMemo(() => ({
     elixir: recipes.filter(r => r.type === 'elixir').sort((a, b) => a.name.localeCompare(b.name)),
     bomb: recipes.filter(r => r.type === 'bomb').sort((a, b) => a.name.localeCompare(b.name)),
-    oil: recipes.filter(r => r.type === 'oil').sort((a, b) => a.name.localeCompare(b.name)),
+    balm: recipes.filter(r => r.type === 'balm').sort((a, b) => a.name.localeCompare(b.name)),
   }), [recipes])
 
   const currentRecipes = recipesByType[viewTab]

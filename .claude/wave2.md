@@ -13,7 +13,7 @@
 
 | # | Decision | Resolution | Implemented In |
 |---|----------|-----------|---------------|
-| 1 | Oil → **Balm** | Rename everywhere to match EPG | 2B |
+| 1 | Oil → **Balm** | Rename everywhere to match EPG | 2B ✓ |
 | 2 | positive/negative → **Light/Dark** | Rename elements + emojis (🔆/🌑) | 2.0 (early) |
 | 3 | Brewing DC → **6 + 2×ingredients** | Replace flat DC 15 with scaled formula | Interstitial (session 13) |
 | 4 | Brewing ability → **Keep INT** | Deliberate EPG divergence (EPG says WIS) | No change |

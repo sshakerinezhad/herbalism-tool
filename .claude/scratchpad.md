@@ -1,41 +1,45 @@
 # Scratchpad
 
 **Branch:** `main`
-**Last session:** 2026-03-12 (session 14)
+**Last session:** 2026-03-14 (session 15)
 
 ## Current state
 
-- On `main`, **uncommitted changes** from session 13 still need committing (CoinPurse + dynamic DC)
+- On `main`, **uncommitted changes** from oil → balm rename
 - Build passing
-- Wave 2B brainstorm complete — first chunk scoped and spec'd
+- DB migration 013 pushed to remote, types regenerated
 
-## Session 14 — what was done
+## Session 15 — what was done
 
-### 2B Brainstorm: Scoped first chunk as Oil → Balm rename
+### Oil → Balm rename (complete)
 
-Brainstormed Wave 2B (Herbalism & Inventory). Full 2B scope is too large for one piece, so we broke it into chunks:
-1. **Oil → Balm rename** ← doing this first
-2. Inventory UX improvements (herb info modal, brewed organization, stackable effects)
-3. Visual pass on herbalism pages
-4. Recipe → Brew link + recipe polish
+Executed the full rename per `.claude/work-plan.md`:
+1. **DB migration** (`013_rename_oil_to_balm.sql`): dropped CHECK constraint first, updated data, added new constraint with 'balm', replaced `brew_items` function, updated comments
+   - Hit a constraint ordering issue on first push (CHECK blocked UPDATE to 'balm'). Fixed by reordering: drop constraint → update data → add new constraint. Used `supabase migration repair --status reverted 013` to retry.
+2. **TypeScript types** (`types.ts`, `constants.ts`, `inventory/types.ts`): union + array + filter type
+3. **Style/icon mappings** (4 files): key `oil` → `balm`, icons → 🩸
+4. **UI labels** (3 files): RecipeSelector, BrewedTabContent, JournalPanel
+5. **Type assertions** (2 files): `as` casts + function params
+6. **Comments** (3 files): prose references
+7. **wave2.md**: marked decision #1 as implemented
 
-### Key decisions
-- **Full rename** through DB + code + UI (not UI-only mapping)
-- **Icon:** 🫗/⚔️/🗡️ → 🩸 (drop of blood) everywhere balm appears
-- **Color scheme stays amber** — still fits weapon-coating balms
-- **Big bang approach** — one commit, no two-phase migration (personal project, no rolling deploy risk)
-
-### Artifacts produced
-- **Spec:** `docs/superpowers/specs/2026-03-12-oil-to-balm-rename.md` (reviewed, approved)
-- **Work plan:** `.claude/work-plan.md` (7 steps)
-- Blast radius: 46 references across 16 files
+### Files changed
+- `supabase/migrations/013_rename_oil_to_balm.sql` (new)
+- `src/lib/database.types.ts` (regenerated)
+- `src/lib/types.ts`, `src/lib/constants.ts`
+- `src/components/inventory/types.ts`
+- `src/components/inventory/BrewedItemCard.tsx`
+- `src/components/recipes/RecipeCard.tsx`
+- `src/components/character/QuickSlotCell.tsx`
+- `src/components/inventory/herbalism/AddElixirModal.tsx`
+- `src/components/brew/RecipeSelector.tsx`
+- `src/components/inventory/herbalism/BrewedTabContent.tsx`
+- `src/components/profile/JournalPanel.tsx`
+- `src/app/(app)/brew/page.tsx`
+- `src/lib/db/characterInventory.ts`
+- `.claude/wave2.md`
 
 ## What the next session needs to do
 
-1. **Commit session 13 changes first** (CoinPurse + dynamic DC — still uncommitted)
-2. **Execute oil → balm rename** following `.claude/work-plan.md`:
-   - Step 1: DB migration (new file, push, regenerate types)
-   - Steps 2-6: TypeScript types, style mappings, UI labels, type assertions, comments
-   - Step 7: Update wave2.md to mark decision #1 as implemented
-3. **Verify:** `npm run build`
-4. **After rename:** Continue 2B brainstorm for next chunk (inventory UX improvements)
+1. **Commit oil → balm rename** (all changes are uncommitted)
+2. **Continue 2B brainstorm** for next chunk (inventory UX improvements)

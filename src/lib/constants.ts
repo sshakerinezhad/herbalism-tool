@@ -143,7 +143,7 @@ export const MAX_HERBS_PER_BREW = 6
 // ============ Recipe Types ============
 
 /** Valid recipe/brew types */
-export const RECIPE_TYPES = ['elixir', 'bomb', 'oil'] as const
+export const RECIPE_TYPES = ['elixir', 'bomb', 'balm'] as const
 export type RecipeType = typeof RECIPE_TYPES[number]
 
 // ============ Element Utilities ============

@@ -1,5 +1,5 @@
 /**
- * BrewedItemCard - Display a brewed item (elixir, bomb, oil) in inventory
+ * BrewedItemCard - Display a brewed item (elixir, bomb, balm) in inventory
  */
 
 import { fillTemplate } from '@/lib/brewing'
@@ -30,11 +30,11 @@ const TYPE_STYLES = {
     badge: 'bg-red-900/50 text-red-300',
     icon: '💣',
   },
-  oil: {
+  balm: {
     border: 'border-amber-800/50',
     bg: 'bg-amber-900/30',
     badge: 'bg-amber-900/50 text-amber-300',
-    icon: '⚔️',
+    icon: '🩸',
   },
 } as const
 

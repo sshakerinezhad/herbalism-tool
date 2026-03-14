@@ -27,7 +27,7 @@ const TYPE_STYLES = {
     effectBorder: 'border-red-600/40',
     effectLabel: 'text-red-400',
   },
-  oil: {
+  balm: {
     gradient: 'bg-gradient-to-br from-amber-950/80 via-amber-900/40 to-amber-950/60',
     accent: 'bg-amber-500',
     elementBg: 'bg-amber-800/50',

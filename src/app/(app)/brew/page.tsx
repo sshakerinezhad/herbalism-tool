@@ -3,7 +3,7 @@
 /**
  * Brew Page
  *
- * Allows herbalists to combine herbs into elixirs, bombs, and oils.
+ * Allows herbalists to combine herbs into elixirs, bombs, and balms.
  * Supports two modes:
  * - "By Herbs": Select herbs first, then pair elements to create effects
  * - "By Recipe": Select recipes first, then find matching herbs
@@ -152,7 +152,7 @@ export default function BrewPage() {
     const success = total >= dc
     const successCount = success ? 1 : 0
 
-    const type = (pairingValidation.type || 'unknown') as 'elixir' | 'bomb' | 'oil'
+    const type = (pairingValidation.type || 'unknown') as 'elixir' | 'bomb' | 'balm'
     const description = computeBrewedDescription(pairedEffects, choices)
     const effectNames = pairedEffects.flatMap(e => Array(e.count).fill(e.recipe.name))
 
@@ -205,7 +205,7 @@ export default function BrewPage() {
     if (!characterId) return
 
     const validation = canCombineEffects(effects)
-    const type = (validation.type || 'unknown') as 'elixir' | 'bomb' | 'oil'
+    const type = (validation.type || 'unknown') as 'elixir' | 'bomb' | 'balm'
     const description = computeBrewedDescription(effects, choicesData)
     const effectNames = effects.flatMap(e => Array(e.count).fill(e.recipe.name))
 

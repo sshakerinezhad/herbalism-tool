@@ -34,7 +34,7 @@ export function RecipeSelector({
 }: RecipeSelectorProps) {
   const elixirRecipes = recipes.filter(r => r.type === 'elixir')
   const bombRecipes = recipes.filter(r => r.type === 'bomb')
-  const oilRecipes = recipes.filter(r => r.type === 'oil')
+  const balmRecipes = recipes.filter(r => r.type === 'balm')
 
   // Get first selected type (to enforce single-type brewing)
   const firstType = selectedRecipes.length > 0 ? selectedRecipes[0].recipe.type : null
@@ -85,9 +85,9 @@ export function RecipeSelector({
               columnStyle="text-red-400 border-red-900/50 bg-red-950/30 hover:bg-red-900/40"
             />
             <RecipeColumn
-              title="Oils"
-              icon="🗡️"
-              recipes={oilRecipes}
+              title="Balms"
+              icon="🩸"
+              recipes={balmRecipes}
               selectedRecipes={selectedRecipes}
               firstType={firstType}
               onAdd={onAddRecipe}

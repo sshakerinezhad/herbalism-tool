@@ -111,7 +111,7 @@ export function AddElixirModal({ characterId, onClose, onSuccess }: AddElixirMod
   const typeIcon: Record<string, string> = {
     elixir: '🧪',
     bomb: '💣',
-    oil: '🫗',
+    balm: '🩸',
   }
 
   return (

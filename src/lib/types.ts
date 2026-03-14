@@ -328,7 +328,7 @@ export type LegacyBrewedItem = {
 export type CharacterBrewedItem = {
   id: number
   character_id: string
-  type: 'elixir' | 'bomb' | 'oil'
+  type: 'elixir' | 'bomb' | 'balm'
   effects: string[]  // Always array in new table (JSONB)
   choices: Record<string, string>
   computed_description: string | null

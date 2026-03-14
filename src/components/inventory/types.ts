@@ -9,7 +9,7 @@ export type ViewTab = 'herbs' | 'brewed'
 
 // Filter and sort types
 export type SortMode = 'rarity' | 'element'
-export type BrewedTypeFilter = 'all' | 'elixir' | 'bomb' | 'oil'
+export type BrewedTypeFilter = 'all' | 'elixir' | 'bomb' | 'balm'
 
 // Modal mode types
 export type WeaponModalMode = 'template' | 'custom'

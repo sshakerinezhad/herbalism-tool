@@ -12,34 +12,31 @@ import { useCharacterRecipesNew, useCharacterRecipeStats, useInvalidateQueries }
 import { unlockCharacterRecipeWithCode } from '@/lib/db/characterInventory'
 import { Recipe, CharacterRecipe, Character } from '@/lib/types'
 import { getElementSymbol } from '@/lib/constants'
-import { ErrorDisplay, RecipesSkeleton } from '@/components/ui'
+import { ErrorDisplay, RecipesSkeleton, Modal } from '@/components/ui'
 import { RecipeCard } from '@/components/recipes'
 
 type ViewTab = 'elixir' | 'bomb' | 'balm'
 
 // Tab configuration for recipe types
-const RECIPE_TABS: { type: ViewTab; label: string; icon: string; activeClass: string }[] = [
-  { type: 'elixir', label: 'Elixirs', icon: '🧪', activeClass: 'bg-blue-700' },
-  { type: 'bomb', label: 'Bombs', icon: '💣', activeClass: 'bg-red-700' },
-  { type: 'balm', label: 'Balms', icon: '🩸', activeClass: 'bg-amber-600' },
+const RECIPE_TABS: { type: ViewTab; label: string }[] = [
+  { type: 'elixir', label: 'Elixirs' },
+  { type: 'bomb', label: 'Bombs' },
+  { type: 'balm', label: 'Balms' },
 ]
 
 // Type descriptions shown below tabs
-const TYPE_DESCRIPTIONS: Record<ViewTab, { icon: string; text: string; className: string }> = {
+const TYPE_DESCRIPTIONS: Record<ViewTab, { text: string; color: string }> = {
   elixir: {
-    icon: '🧪',
     text: 'Elixirs are consumables imbibed to grant beneficial effects to the drinker, such as healing or enhanced defenses.',
-    className: 'bg-blue-950/40 border-blue-500 text-blue-200',
+    color: 'rgba(59,130,246,0.15)',
   },
   bomb: {
-    icon: '💣',
     text: "Bombs are volatile concoctions that explode on impact, dealing damage or creating hazardous areas that affect enemies. A bomb's DC is 8 + your proficiency bonus + brewing modifier.\n\nBombs can also be fixed to arrows, replacing their normal damage with the effect of the bomb.",
-    className: 'bg-red-950/40 border-red-500 text-red-200',
+    color: 'rgba(239,68,68,0.15)',
   },
   balm: {
-    icon: '🩸',
     text: 'Balms are applied to weapons to enhance them, adding damage, precision, or some other temporary effect.',
-    className: 'bg-amber-950/40 border-amber-500 text-amber-200',
+    color: 'rgba(245,158,11,0.15)',
   },
 }
 
@@ -138,15 +135,15 @@ export function JournalPanel({ character }: JournalPanelProps) {
   return (
     <div>
       {/* Header */}
-      <div className="flex justify-between items-start mb-6">
+      <div className="flex justify-between items-start mb-5">
         <div>
-          <h1 className="text-3xl font-bold mb-1">📖 Recipe Book</h1>
+          <h1 className="font-heading text-2xl text-bronze-bright mb-1">Recipe Book</h1>
           {stats && (
-            <p className="text-zinc-500 text-sm">
+            <p className="font-ui text-[10px] text-vellum-400/50 tracking-wide">
               {stats.known} recipe{stats.known !== 1 ? 's' : ''} known
               {stats.secretsUnlocked > 0 && (
-                <span className="text-amber-500 ml-2">
-                  • {stats.secretsUnlocked} secret{stats.secretsUnlocked !== 1 ? 's' : ''} unlocked
+                <span className="text-bronze-bright/60 ml-2">
+                  • {stats.secretsUnlocked} secret{stats.secretsUnlocked !== 1 ? 's' : ''}
                 </span>
               )}
             </p>
@@ -155,29 +152,24 @@ export function JournalPanel({ character }: JournalPanelProps) {
 
         <button
           onClick={() => setShowUnlockModal(true)}
-          className="px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+          className="btn btn-secondary px-4 py-2 text-sm rounded-full"
         >
-          <span>🔓</span>
-          <span>Discover Recipe</span>
+          Discover Recipe
         </button>
       </div>
 
       {error && <ErrorDisplay message={error} className="mb-6" />}
 
-      {/* Type Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-zinc-800 pb-4">
+      {/* Type Tabs — grimoire sub-tabs */}
+      <div className="flex items-center mb-5" style={{ borderBottom: '1px solid var(--soot)' }}>
         {RECIPE_TABS.map(tab => (
           <button
             key={tab.type}
             onClick={() => setViewTab(tab.type)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              viewTab === tab.type
-                ? `${tab.activeClass} text-white`
-                : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
-            }`}
+            className={viewTab === tab.type ? 'sub-tab-active' : 'sub-tab-inactive'}
           >
-            {tab.icon} {tab.label}
-            <span className="ml-2 text-xs opacity-70">({recipesByType[tab.type].length})</span>
+            {tab.label}
+            <span className="ml-1.5 font-ui text-[10px] opacity-50">({recipesByType[tab.type].length})</span>
           </button>
         ))}
       </div>
@@ -187,8 +179,8 @@ export function JournalPanel({ character }: JournalPanelProps) {
 
       {/* Empty State */}
       {currentRecipes.length === 0 && (
-        <div className="bg-zinc-800/50 rounded-lg p-8 text-center">
-          <p className="text-zinc-400 mb-4">
+        <div className="elevation-raised rounded-lg p-8 text-center">
+          <p className="text-vellum-400">
             No {viewTab} recipes known yet
           </p>
         </div>
@@ -222,13 +214,16 @@ function TypeDescription({ type }: { type: ViewTab }) {
   const config = TYPE_DESCRIPTIONS[type]
 
   return (
-    <div className={`mb-6 rounded-lg px-4 py-3 border-l-4 ${config.className}`}>
-      <div className="flex items-start gap-3">
-        <span className="text-xl mt-0.5">{config.icon}</span>
-        <p className="text-sm leading-relaxed whitespace-pre-line">
-          {config.text}
-        </p>
-      </div>
+    <div
+      className="mb-5 rounded-lg px-4 py-3"
+      style={{
+        background: config.color,
+        borderLeft: '2px solid rgba(201,169,110,0.2)',
+      }}
+    >
+      <p className="text-sm text-vellum-200/70 leading-relaxed whitespace-pre-line">
+        {config.text}
+      </p>
     </div>
   )
 }
@@ -244,73 +239,69 @@ type UnlockModalProps = {
 
 function UnlockModal({ code, onCodeChange, onUnlock, onClose, loading, result }: UnlockModalProps) {
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-      <div className="bg-zinc-800 rounded-xl border border-zinc-700 max-w-md w-full p-6">
-        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <span>🔓</span>
-          <span>Discover New Recipe</span>
-        </h2>
-
-        <p className="text-zinc-400 text-sm mb-4">
+    <Modal open={true} onClose={onClose} title="Discover New Recipe">
+      <div className="space-y-4">
+        <p className="text-vellum-400 text-sm">
           Enter a secret code to unlock a hidden recipe. Codes are discovered through
           gameplay, quests, or special discoveries in the world.
         </p>
 
-        <div className="space-y-4">
-          <input
-            type="text"
-            value={code}
-            onChange={(e) => onCodeChange(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onUnlock()}
-            placeholder="Enter unlock code..."
-            className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-amber-500 text-center font-mono tracking-wider"
-            autoFocus
-          />
+        <input
+          type="text"
+          value={code}
+          onChange={(e) => onCodeChange(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && onUnlock()}
+          placeholder="Enter unlock code..."
+          className="w-full px-4 py-3 rounded-lg text-center font-mono tracking-wider text-vellum-50 outline-none"
+          style={{
+            background: 'rgba(0,0,0,0.25)',
+            border: '1px solid var(--sepia-700)',
+            caretColor: 'var(--bronze-bright)',
+          }}
+          autoFocus
+        />
 
-          {/* Result Message */}
-          {result && (
-            <div className={`p-4 rounded-lg ${
-              result.success
-                ? 'bg-green-900/30 border border-green-700'
-                : 'bg-red-900/30 border border-red-700'
-            }`}>
-              <p className={result.success ? 'text-green-300' : 'text-red-300'}>
-                {result.success ? '✓ ' : '✗ '}{result.message}
-              </p>
-              {result.recipe && (
-                <div className="mt-3 pt-3 border-t border-green-700/50">
-                  <p className="text-zinc-300 text-sm">
-                    <span className="mr-2">
-                      {result.recipe.elements.map((el, i) => (
-                        <span key={i}>{getElementSymbol(el)}</span>
-                      ))}
-                    </span>
-                    <strong>{result.recipe.name}</strong>
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="flex gap-3">
-            <button
-              onClick={onClose}
-              className="flex-1 py-3 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium transition-colors"
-            >
-              {result?.success ? 'Close' : 'Cancel'}
-            </button>
-            {!result?.success && (
-              <button
-                onClick={onUnlock}
-                disabled={!code.trim() || loading}
-                className="flex-1 py-3 bg-amber-700 hover:bg-amber-600 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
-              >
-                {loading ? 'Checking...' : 'Unlock'}
-              </button>
+        {result && (
+          <div className={`p-4 rounded-lg ${
+            result.success
+              ? 'border'
+              : 'bg-red-900/30 border border-red-700'
+          }`}
+          style={result.success ? { background: 'rgba(34,197,94,0.1)', borderColor: 'rgba(34,197,94,0.3)' } : undefined}
+          >
+            <p className={result.success ? 'text-green-300' : 'text-red-300'}>
+              {result.success ? '✓ ' : '✗ '}{result.message}
+            </p>
+            {result.recipe && (
+              <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(34,197,94,0.2)' }}>
+                <p className="text-vellum-200 text-sm">
+                  <span className="mr-2">
+                    {result.recipe.elements.map((el, i) => (
+                      <span key={i}>{getElementSymbol(el)}</span>
+                    ))}
+                  </span>
+                  <strong>{result.recipe.name}</strong>
+                </p>
+              </div>
             )}
           </div>
+        )}
+
+        <div className="flex gap-3">
+          <button onClick={onClose} className="btn btn-secondary flex-1 py-3 rounded-lg">
+            {result?.success ? 'Close' : 'Cancel'}
+          </button>
+          {!result?.success && (
+            <button
+              onClick={onUnlock}
+              disabled={!code.trim() || loading}
+              className="btn btn-primary flex-1 py-3 rounded-lg"
+            >
+              {loading ? 'Checking...' : 'Unlock'}
+            </button>
+          )}
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }

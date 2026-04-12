@@ -36,8 +36,8 @@ export function HerbSelector({
 }: HerbSelectorProps) {
   if (inventory.length === 0) {
     return (
-      <div className="bg-zinc-800/50 rounded-lg p-6 text-center">
-        <p className="text-zinc-400 mb-4">No herbs to brew with</p>
+      <div className="elevation-base/50 rounded-lg p-6 text-center">
+        <p className="text-vellum-400 mb-4">No herbs to brew with</p>
         <Link
           href="/forage"
           className="inline-block px-4 py-2 bg-green-700 hover:bg-green-600 rounded-lg text-sm font-medium transition-colors"
@@ -87,7 +87,7 @@ export function HerbSelector({
                   </span>
                 ))}
               </span>
-              <span className="text-zinc-500 text-xs capitalize">
+              <span className="text-vellum-400/60 text-xs capitalize">
                 ({item.herb.rarity})
               </span>
             </div>
@@ -97,7 +97,7 @@ export function HerbSelector({
               <button
                 onClick={() => onRemove(item.id)}
                 disabled={selectedQty === 0}
-                className="w-7 h-7 rounded bg-zinc-700 hover:bg-zinc-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-lg transition-colors"
+                className="w-7 h-7 rounded btn-secondary disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-lg transition-colors"
               >
                 −
               </button>
@@ -107,7 +107,7 @@ export function HerbSelector({
               <button
                 onClick={() => onAdd(item.id)}
                 disabled={selectedQty >= item.quantity || totalSelected >= maxHerbs}
-                className="w-7 h-7 rounded bg-zinc-700 hover:bg-zinc-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-lg transition-colors"
+                className="w-7 h-7 rounded btn-secondary disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-lg transition-colors"
               >
                 +
               </button>
@@ -142,14 +142,14 @@ export function SelectedHerbsSummary({
   const totalElements = Array.from(elementPool.values()).reduce((sum, n) => sum + n, 0)
 
   return (
-    <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
+    <div className="elevation-base rounded-lg p-4 border border-sepia-700/40">
       <div className="flex justify-between items-center mb-3">
         <h2 className="font-semibold">Selected Herbs</h2>
-        <span className="text-zinc-400 text-sm">{totalSelected}/{maxHerbs}</span>
+        <span className="text-vellum-400 text-sm">{totalSelected}/{maxHerbs}</span>
       </div>
       
       {totalSelected === 0 ? (
-        <p className="text-zinc-500 text-sm">Select herbs from your inventory below</p>
+        <p className="text-vellum-400/60 text-sm">Select herbs from your inventory below</p>
       ) : (
         <div className="space-y-2">
           {/* Selected herbs list */}
@@ -175,8 +175,8 @@ export function SelectedHerbsSummary({
           </div>
           
           {/* Element pool preview */}
-          <div className="pt-2 border-t border-zinc-700 mt-3">
-            <span className="text-zinc-400 text-sm mr-2">Elements:</span>
+          <div className="pt-2 border-t border-sepia-700/40 mt-3">
+            <span className="text-vellum-400 text-sm mr-2">Elements:</span>
             {Array.from(elementPool.entries()).map(([el, count]) => (
               <span key={el} className="mr-2">
                 {Array(count).fill(0).map((_, i) => (
@@ -184,7 +184,7 @@ export function SelectedHerbsSummary({
                 ))}
               </span>
             ))}
-            <span className="text-zinc-500 text-sm ml-2">
+            <span className="text-vellum-400/60 text-sm ml-2">
               ({totalElements} total)
             </span>
           </div>

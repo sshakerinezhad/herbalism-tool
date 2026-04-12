@@ -2,6 +2,7 @@
  * RecipeSelector - Select recipes for "By Recipe" brewing mode
  */
 
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Recipe } from '@/lib/types'
 import { getElementSymbol } from '@/lib/constants'
@@ -16,6 +17,7 @@ type RecipeSelectorProps = {
   selectedRecipes: SelectedRecipe[]
   batchCount: number
   requiredElements: Map<string, number>
+  initialRecipeId?: number
   onAddRecipe: (recipe: Recipe) => void
   onRemoveRecipe: (recipeId: number) => void
   onBatchCountChange: (count: number) => void
@@ -27,11 +29,24 @@ export function RecipeSelector({
   selectedRecipes,
   batchCount,
   requiredElements,
+  initialRecipeId,
   onAddRecipe,
   onRemoveRecipe,
   onBatchCountChange,
   onProceed,
 }: RecipeSelectorProps) {
+  // Auto-select recipe from URL param on mount
+  const autoSelected = useRef(false)
+  useEffect(() => {
+    if (initialRecipeId && !autoSelected.current && recipes.length > 0 && selectedRecipes.length === 0) {
+      const recipe = recipes.find(r => r.id === initialRecipeId)
+      if (recipe) {
+        onAddRecipe(recipe)
+        autoSelected.current = true
+      }
+    }
+  }, [initialRecipeId, recipes, selectedRecipes.length, onAddRecipe])
+
   const elixirRecipes = recipes.filter(r => r.type === 'elixir')
   const bombRecipes = recipes.filter(r => r.type === 'bomb')
   const balmRecipes = recipes.filter(r => r.type === 'balm')
@@ -55,8 +70,8 @@ export function RecipeSelector({
       <div>
         <h2 className="font-semibold mb-3">Your Recipe Book</h2>
         {recipes.length === 0 ? (
-          <div className="bg-zinc-800/50 rounded-lg p-6 text-center">
-            <p className="text-zinc-400 mb-4">No recipes known</p>
+          <div className="elevation-base/50 rounded-lg p-6 text-center">
+            <p className="text-vellum-400 mb-4">No recipes known</p>
             <Link
               href="/"
               className="inline-block px-4 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-colors"
@@ -120,22 +135,22 @@ function SelectedRecipesSummary({
   const totalEffects = selectedRecipes.reduce((sum, r) => sum + r.count, 0)
 
   return (
-    <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
+    <div className="elevation-base rounded-lg p-4 border border-sepia-700/40">
       <div className="flex justify-between items-center mb-3">
         <h2 className="font-semibold">Selected Recipes</h2>
-        <span className="text-zinc-400 text-sm">
+        <span className="text-vellum-400 text-sm">
           {totalEffects} effect{totalEffects !== 1 ? 's' : ''}
         </span>
       </div>
       
       {selectedRecipes.length === 0 ? (
-        <p className="text-zinc-500 text-sm">Select recipes from your recipe book below</p>
+        <p className="text-vellum-400/60 text-sm">Select recipes from your recipe book below</p>
       ) : (
         <div className="space-y-2">
           {selectedRecipes.map(({ recipe, count }) => (
             <div 
               key={recipe.id}
-              className="flex items-center justify-between py-2 px-3 bg-zinc-700/50 rounded"
+              className="flex items-center justify-between py-2 px-3 bg-sepia-800/50/50 rounded"
             >
               <div className="flex items-center gap-3">
                 <span className="text-lg">
@@ -143,14 +158,14 @@ function SelectedRecipesSummary({
                     <span key={i}>{getElementSymbol(el)}</span>
                   ))}
                 </span>
-                <span className="text-zinc-200">{recipe.name}</span>
+                <span className="text-vellum-100">{recipe.name}</span>
                 {count > 1 && (
                   <span className="text-purple-400 text-sm">×{count}</span>
                 )}
               </div>
               <button
                 onClick={() => onRemove(recipe.id)}
-                className="text-zinc-400 hover:text-red-400 transition-colors"
+                className="text-vellum-400 hover:text-red-400 transition-colors"
               >
                 −
               </button>
@@ -158,17 +173,17 @@ function SelectedRecipesSummary({
           ))}
           
           {/* Batch Count */}
-          <div className="pt-3 border-t border-zinc-700 mt-3">
+          <div className="pt-3 border-t border-sepia-700/40 mt-3">
             <div className="flex items-center justify-between">
               <div>
-                <span className="text-zinc-300 text-sm font-medium">Brew Quantity</span>
-                <p className="text-zinc-500 text-xs">Make multiple of this exact brew</p>
+                <span className="text-vellum-200 text-sm font-medium">Brew Quantity</span>
+                <p className="text-vellum-400/60 text-xs">Make multiple of this exact brew</p>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => onBatchCountChange(Math.max(1, batchCount - 1))}
                   disabled={batchCount <= 1}
-                  className="w-8 h-8 rounded bg-zinc-700 hover:bg-zinc-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-lg transition-colors"
+                  className="w-8 h-8 rounded btn-secondary disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-lg transition-colors"
                 >
                   −
                 </button>
@@ -177,7 +192,7 @@ function SelectedRecipesSummary({
                 </span>
                 <button
                   onClick={() => onBatchCountChange(batchCount + 1)}
-                  className="w-8 h-8 rounded bg-zinc-700 hover:bg-zinc-600 flex items-center justify-center text-lg transition-colors"
+                  className="w-8 h-8 rounded btn-secondary flex items-center justify-center text-lg transition-colors"
                 >
                   +
                 </button>
@@ -186,8 +201,8 @@ function SelectedRecipesSummary({
           </div>
 
           {/* Required elements */}
-          <div className="pt-3 border-t border-zinc-700 mt-3">
-            <span className="text-zinc-400 text-sm mr-2">
+          <div className="pt-3 border-t border-sepia-700/40 mt-3">
+            <span className="text-vellum-400 text-sm mr-2">
               Required elements {batchCount > 1 && `(×${batchCount})`}:
             </span>
             {Array.from(requiredElements.entries()).map(([el, count]) => (
@@ -206,7 +221,7 @@ function SelectedRecipesSummary({
           {/* Proceed Button */}
           <button
             onClick={onProceed}
-            className="w-full mt-4 py-3 bg-purple-700 hover:bg-purple-600 rounded-lg font-semibold transition-colors"
+            className="w-full mt-4 py-3 btn-primary rounded-lg font-semibold transition-colors"
           >
             {batchCount > 1 
               ? `Find Herbs for ${batchCount} Brews →`
@@ -256,7 +271,7 @@ function RecipeColumn({
               selected
                 ? 'bg-purple-900/40 border border-purple-700'
                 : !isCompatible
-                  ? 'bg-zinc-800/20 opacity-30 cursor-not-allowed'
+                  ? 'elevation-base/20 opacity-30 cursor-not-allowed'
                   : `${bgColor} ${hoverColor} border border-transparent`
             }`}
           >
@@ -267,7 +282,7 @@ function RecipeColumn({
                     <span key={i}>{getElementSymbol(el)}</span>
                   ))}
                 </span>
-                <span className={`truncate ${selected ? 'text-purple-300' : 'text-zinc-200'}`}>
+                <span className={`truncate ${selected ? 'text-purple-300' : 'text-vellum-100'}`}>
                   {recipe.name}
                 </span>
               </div>

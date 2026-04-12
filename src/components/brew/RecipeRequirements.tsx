@@ -24,7 +24,7 @@ export function RecipeRequirements({
   batchCount,
 }: RecipeRequirementsProps) {
   return (
-    <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
+    <div className="elevation-base rounded-lg p-4 border border-sepia-700/40">
       <h2 className="font-semibold mb-3">Brewing</h2>
       <div className="space-y-2">
         {selectedRecipes.map(({ recipe, count }) => (
@@ -34,15 +34,15 @@ export function RecipeRequirements({
                 <span key={i}>{getElementSymbol(el)}</span>
               ))}
             </span>
-            <span className="text-zinc-200">{recipe.name}</span>
+            <span className="text-vellum-100">{recipe.name}</span>
             {count > 1 && <span className="text-purple-400">×{count}</span>}
           </div>
         ))}
       </div>
 
       {/* Element requirements with fulfillment status */}
-      <div className="pt-3 mt-3 border-t border-zinc-700">
-        <p className="text-zinc-400 text-sm mb-2">Required elements:</p>
+      <div className="pt-3 mt-3 border-t border-sepia-700/40">
+        <p className="text-vellum-400 text-sm mb-2">Required elements:</p>
         <div className="flex flex-wrap gap-2">
           {Array.from(requiredElements.entries()).map(([element, needed]) => {
             let totalHave = 0
@@ -58,11 +58,11 @@ export function RecipeRequirements({
               <div
                 key={element}
                 className={`px-2 py-1 rounded text-sm flex items-center gap-1 ${
-                  fulfilled ? 'bg-green-900/50 border border-green-700' : 'bg-zinc-700 border border-zinc-600'
+                  fulfilled ? 'bg-green-900/50 border border-green-700' : 'bg-sepia-800/50 border border-zinc-600'
                 }`}
               >
                 <span>{getElementSymbol(element)}</span>
-                <span className={fulfilled ? 'text-green-300' : 'text-zinc-300'}>
+                <span className={fulfilled ? 'text-green-300' : 'text-vellum-200'}>
                   {totalHave}/{needed}
                 </span>
                 {fulfilled && <span className="text-green-400">✓</span>}

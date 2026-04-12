@@ -44,9 +44,9 @@ export function ChoicesPhase({
 
   return (
     <div className="space-y-6">
-      <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
+      <div className="elevation-base rounded-lg p-4 border border-sepia-700/40">
         <h2 className="font-semibold mb-4">Make Choices</h2>
-        <p className="text-zinc-400 text-sm mb-4">
+        <p className="text-vellum-400 text-sm mb-4">
           Some effects require you to make a choice at brewing time.
         </p>
         
@@ -66,7 +66,7 @@ export function ChoicesPhase({
                       className={`px-4 py-2 rounded-lg transition-colors capitalize ${
                         choices[choice.variable] === option
                           ? 'bg-purple-700 text-white'
-                          : 'bg-zinc-700 hover:bg-zinc-600'
+                          : 'btn-secondary'
                       }`}
                     >
                       {option}
@@ -79,7 +79,7 @@ export function ChoicesPhase({
                   value={choices[choice.variable] || ''}
                   onChange={(e) => onUpdateChoice(choice.variable, e.target.value)}
                   placeholder={`Enter ${choice.variable.replace(/_/g, ' ')}`}
-                  className="w-full px-4 py-2 bg-zinc-700 border border-zinc-600 rounded-lg focus:outline-none focus:border-purple-500"
+                  className="w-full px-4 py-2 bg-sepia-800/50 border border-zinc-600 rounded-lg focus:outline-none focus:border-purple-500"
                 />
               )}
             </div>
@@ -88,9 +88,9 @@ export function ChoicesPhase({
       </div>
 
       {/* Preview */}
-      <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700">
-        <h3 className="text-sm font-medium text-zinc-400 mb-2">Preview</h3>
-        <p className="text-zinc-200">
+      <div className="elevation-base/50 rounded-lg p-4 border border-sepia-700/40">
+        <h3 className="text-sm font-medium text-vellum-400 mb-2">Preview</h3>
+        <p className="text-vellum-100">
           {computeBrewedDescription(pairedEffects, choices)}
         </p>
       </div>
@@ -99,14 +99,14 @@ export function ChoicesPhase({
       <div className="flex gap-4">
         <button
           onClick={onBack}
-          className="px-6 py-3 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium transition-colors"
+          className="px-6 py-3 btn-secondary rounded-lg font-medium transition-colors"
         >
           ← Back
         </button>
         <button
           onClick={onProceed}
           disabled={!allChoicesMade}
-          className="flex-1 py-3 bg-purple-700 hover:bg-purple-600 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
+          className="flex-1 py-3 btn-primary disabled:bg-sepia-800/50 disabled:text-vellum-400/60 rounded-lg font-semibold transition-colors"
         >
           {allChoicesMade ? 'Brew!' : 'Make all choices to continue'}
         </button>

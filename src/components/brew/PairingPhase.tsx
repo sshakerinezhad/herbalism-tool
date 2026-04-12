@@ -55,16 +55,16 @@ export function PairingPhase({
   return (
     <div className="space-y-6">
       {/* Assigned Pairs */}
-      <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
+      <div className="elevation-base rounded-lg p-4 border border-sepia-700/40">
         <h2 className="font-semibold mb-3">Assigned Pairs</h2>
         {assignedPairs.length === 0 ? (
-          <p className="text-zinc-500 text-sm">Click elements below to create pairs</p>
+          <p className="text-vellum-400/60 text-sm">Click elements below to create pairs</p>
         ) : (
           <div className="space-y-2">
             {pairedEffects.map((effect, idx) => (
               <div 
                 key={idx}
-                className="flex items-center justify-between py-2 px-3 bg-zinc-700/50 rounded"
+                className="flex items-center justify-between py-2 px-3 bg-sepia-800/50/50 rounded"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg">
@@ -72,10 +72,10 @@ export function PairingPhase({
                       <span key={i}>{getElementSymbol(el)}</span>
                     ))}
                     {effect.count > 1 && (
-                      <span className="text-zinc-400 text-sm ml-1">×{effect.count}</span>
+                      <span className="text-vellum-400 text-sm ml-1">×{effect.count}</span>
                     )}
                   </span>
-                  <span className="text-zinc-300">{effect.recipe.name}</span>
+                  <span className="text-vellum-200">{effect.recipe.name}</span>
                   <span className={`text-xs px-2 py-0.5 rounded ${
                     effect.recipe.type === 'elixir' 
                       ? 'bg-blue-900/50 text-blue-300' 
@@ -90,12 +90,12 @@ export function PairingPhase({
             ))}
             
             {/* Pair removal buttons */}
-            <div className="pt-2 border-t border-zinc-700 flex flex-wrap gap-2">
+            <div className="pt-2 border-t border-sepia-700/40 flex flex-wrap gap-2">
               {assignedPairs.map((pair, idx) => (
                 <button
                   key={idx}
                   onClick={() => onRemovePair(idx)}
-                  className="px-2 py-1 bg-zinc-700 hover:bg-red-900/50 rounded text-sm transition-colors"
+                  className="px-2 py-1 bg-sepia-800/50 hover:bg-red-900/50 rounded text-sm transition-colors"
                 >
                   {getElementSymbol(pair[0])}{getElementSymbol(pair[1])} ×
                 </button>
@@ -111,7 +111,7 @@ export function PairingPhase({
       </div>
 
       {/* Remaining Elements */}
-      <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
+      <div className="elevation-base rounded-lg p-4 border border-sepia-700/40">
         <h2 className="font-semibold mb-3">
           Available Elements
           {selectedFirstIdx !== null && (
@@ -122,7 +122,7 @@ export function PairingPhase({
         </h2>
         
         {remainingArray.length === 0 ? (
-          <p className="text-zinc-500 text-sm">All elements have been paired</p>
+          <p className="text-vellum-400/60 text-sm">All elements have been paired</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {remainingArray.map((el, idx) => {
@@ -139,8 +139,8 @@ export function PairingPhase({
                     selectedFirstIdx === idx
                       ? 'bg-purple-700 ring-2 ring-purple-400'
                       : selectedFirstIdx !== null
-                        ? 'bg-zinc-700 hover:bg-purple-700/50'
-                        : 'bg-zinc-700 hover:bg-zinc-600'
+                        ? 'bg-sepia-800/50 hover:bg-purple-700/50'
+                        : 'btn-secondary'
                   }`}
                   title={previewRecipe ? `Creates: ${previewRecipe.name}` : el}
                 >
@@ -154,7 +154,7 @@ export function PairingPhase({
         {selectedFirstIdx !== null && (
           <button
             onClick={() => setSelectedFirstIdx(null)}
-            className="mt-3 text-zinc-400 hover:text-zinc-200 text-sm"
+            className="mt-3 text-vellum-400 hover:text-vellum-100 text-sm"
           >
             Cancel selection
           </button>
@@ -165,14 +165,14 @@ export function PairingPhase({
       <div className="flex gap-4">
         <button
           onClick={onBack}
-          className="px-6 py-3 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium transition-colors"
+          className="px-6 py-3 btn-secondary rounded-lg font-medium transition-colors"
         >
           ← Back
         </button>
         <button
           onClick={onProceed}
           disabled={!pairingValidation.valid || pairedEffects.length === 0}
-          className="flex-1 py-3 bg-purple-700 hover:bg-purple-600 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
+          className="flex-1 py-3 btn-primary disabled:bg-sepia-800/50 disabled:text-vellum-400/60 rounded-lg font-semibold transition-colors"
         >
           {pairedEffects.length === 0 
             ? 'Create at least one pair'

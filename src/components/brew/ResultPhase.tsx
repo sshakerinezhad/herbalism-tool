@@ -42,7 +42,7 @@ export function ResultPhase({
           {success ? '✓ Brewing Successful!' : '✗ Brewing Failed'}
         </h2>
         
-        <p className="text-zinc-300 mb-4">
+        <p className="text-vellum-200 mb-4">
           Roll: <strong>{roll}</strong> {brewingMod >= 0 ? '+' : ''}{brewingMod} = <strong>{total}</strong>
           {success ? ` ≥ ${dc} (DC)` : ` < ${dc} (DC)`}
         </p>
@@ -60,10 +60,10 @@ export function ResultPhase({
                 {type}
               </span>
             </div>
-            <p className="text-zinc-100">{description}</p>
+            <p className="text-vellum-50">{description}</p>
           </div>
         ) : (
-          <p className="text-zinc-400">
+          <p className="text-vellum-400">
             The herbs were consumed but the brewing failed. Better luck next time!
           </p>
         )}
@@ -72,14 +72,14 @@ export function ResultPhase({
       <div className="flex gap-4">
         <button
           onClick={onReset}
-          className="flex-1 py-3 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium transition-colors"
+          className="flex-1 py-3 btn-secondary rounded-lg font-medium transition-colors"
         >
           Brew Again
         </button>
         {success && (
           <Link
             href="/"
-            className="flex-1 py-3 bg-purple-700 hover:bg-purple-600 rounded-lg font-semibold transition-colors text-center"
+            className="flex-1 py-3 btn-primary rounded-lg font-semibold transition-colors text-center"
           >
             View Inventory
           </Link>
@@ -152,12 +152,12 @@ export function BatchResultPhase({
               <span className="text-green-400 text-sm">×{successCount} created</span>
             )}
           </div>
-          <p className="text-zinc-100">{description}</p>
+          <p className="text-vellum-50">{description}</p>
         </div>
 
         {/* Individual rolls */}
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-zinc-400">Roll Results (DC {dc})</h3>
+          <h3 className="text-sm font-medium text-vellum-400">Roll Results (DC {dc})</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {results.map((result, idx) => (
               <div
@@ -178,18 +178,18 @@ export function BatchResultPhase({
         </div>
 
         {/* Stats summary */}
-        <div className="mt-4 pt-4 border-t border-zinc-700/50 flex gap-6 text-sm">
+        <div className="mt-4 pt-4 border-t border-sepia-700/40/50 flex gap-6 text-sm">
           <span>
-            <span className="text-zinc-400">Successful:</span>{' '}
+            <span className="text-vellum-400">Successful:</span>{' '}
             <span className="text-green-400 font-semibold">{successCount}</span>
           </span>
           <span>
-            <span className="text-zinc-400">Failed:</span>{' '}
+            <span className="text-vellum-400">Failed:</span>{' '}
             <span className="text-red-400 font-semibold">{failCount}</span>
           </span>
           <span>
-            <span className="text-zinc-400">Herbs used:</span>{' '}
-            <span className="text-zinc-300 font-semibold">All consumed</span>
+            <span className="text-vellum-400">Herbs used:</span>{' '}
+            <span className="text-vellum-200 font-semibold">All consumed</span>
           </span>
         </div>
       </div>
@@ -197,14 +197,14 @@ export function BatchResultPhase({
       <div className="flex gap-4">
         <button
           onClick={onReset}
-          className="flex-1 py-3 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium transition-colors"
+          className="flex-1 py-3 btn-secondary rounded-lg font-medium transition-colors"
         >
           Brew Again
         </button>
         {successCount > 0 && (
           <Link
             href="/"
-            className="flex-1 py-3 bg-purple-700 hover:bg-purple-600 rounded-lg font-semibold transition-colors text-center"
+            className="flex-1 py-3 btn-primary rounded-lg font-semibold transition-colors text-center"
           >
             View Inventory
           </Link>

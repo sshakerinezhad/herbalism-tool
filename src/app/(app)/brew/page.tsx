@@ -10,6 +10,7 @@
  */
 
 import { useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useProfile } from '@/lib/profile'
 import { useAuth } from '@/lib/auth'
@@ -79,6 +80,10 @@ export default function BrewPage() {
     isLoading: recipesLoading,
     error: recipesError
   } = useCharacterRecipesNew(characterId)
+
+  // URL param for recipe pre-selection
+  const searchParams = useSearchParams()
+  const initialRecipeId = searchParams.get('recipe') ? parseInt(searchParams.get('recipe')!) : undefined
 
   // Brew state hook (Step 2b: useState declarations moved to hook)
   const brewState = useBrewState({ inventory, characterRecipes })
@@ -348,8 +353,8 @@ export default function BrewPage() {
   return (
     <div className="p-8">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold mb-1">⚗️ Brew</h1>
-        <p className="text-zinc-500 text-sm mb-4">
+        <h1 className="font-heading text-3xl text-bronze-bright mb-1">Brew</h1>
+        <p className="font-ui text-[11px] text-vellum-400/50 tracking-wide mb-4">
           Brewing modifier: {brewingMod >= 0 ? '+' : ''}{brewingMod}
         </p>
 
@@ -387,7 +392,7 @@ export default function BrewPage() {
             <button
               onClick={actions.proceedToPairing}
               disabled={totalHerbsSelected === 0}
-              className="w-full py-3 bg-purple-700 hover:bg-purple-600 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
+              className="w-full py-3 btn-primary disabled:opacity-50 disabled:pointer-events-none rounded-lg font-semibold transition-colors"
             >
               {totalHerbsSelected === 0
                 ? 'Select Herbs to Continue'
@@ -404,6 +409,7 @@ export default function BrewPage() {
             selectedRecipes={selectedRecipes}
             batchCount={batchCount}
             requiredElements={requiredElements}
+            initialRecipeId={initialRecipeId}
             onAddRecipe={actions.addRecipeSelection}
             onRemoveRecipe={actions.removeRecipeSelection}
             onBatchCountChange={actions.setBatchCount}
@@ -437,14 +443,14 @@ export default function BrewPage() {
               />
             </div>
 
-            <div className="text-sm text-zinc-400 text-center">
+            <div className="text-sm text-vellum-400 text-center">
               {totalHerbsSelected} / {MAX_HERBS_PER_BREW * batchCount} herbs selected
             </div>
 
             <div className="flex gap-4">
               <button
                 onClick={() => actions.setPhase({ phase: 'select-recipes' })}
-                className="px-6 py-3 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium transition-colors"
+                className="px-6 py-3 btn-secondary rounded-lg font-medium transition-colors"
               >
                 ← Back
               </button>
@@ -459,7 +465,7 @@ export default function BrewPage() {
                   // If void returned, hook already set phase to make-choices
                 }}
                 disabled={!herbsSatisfyRecipes}
-                className="flex-1 py-3 bg-purple-700 hover:bg-purple-600 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-lg font-semibold transition-colors"
+                className="flex-1 py-3 btn-primary disabled:opacity-50 disabled:pointer-events-none rounded-lg font-semibold transition-colors"
               >
                 {herbsSatisfyRecipes ? 'Brew!' : 'Select herbs to fulfill requirements'}
               </button>
@@ -515,7 +521,7 @@ export default function BrewPage() {
                 <>
                   <div className="text-4xl mb-4">💥</div>
                   <p className="text-xl text-red-400 mb-2">Brewing failed</p>
-                  <p className="text-sm text-stone-500 mb-4">{mutationError}</p>
+                  <p className="text-sm text-vellum-400/60 mb-4">{mutationError}</p>
                   <button
                     onClick={reset}
                     className="px-4 py-2 bg-stone-700 hover:bg-stone-600 rounded-lg text-stone-200 transition-colors"

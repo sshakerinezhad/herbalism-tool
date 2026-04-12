@@ -933,3 +933,16 @@ html {
 .sub-tab-inactive:hover {
   color: var(--ash-light);
 }
+
+/* ============================================
+   STACKABLE VALUE HIGHLIGHTS
+   Used for recipe text portions that scale
+   with potency (parsed from *...* segments).
+   ============================================ */
+
+.stackable-value {
+  font-weight: 700;
+  border-bottom: 2px dotted currentColor;
+  cursor: help;
+  padding-bottom: 1px;
+}

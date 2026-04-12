@@ -38,6 +38,7 @@ import {
   fetchCharacterRecipes,
   fetchAllHerbs,
 } from '../db/characterInventory'
+import { fetchHerbBiomes } from '../db/herbBiomes'
 import type { Biome, Skill, ArmorSlot, ArmorType, CharacterWeaponSlot, CharacterQuickSlot, CharacterWeapon, CharacterItem, CharacterArmorData } from '../types'
 
 // ============ Query Keys ============
@@ -68,6 +69,9 @@ export const queryKeys = {
   characterBrewedItems: (characterId: string) => ['characterBrewedItems', characterId] as const,
   characterRecipesNew: (characterId: string) => ['characterRecipesNew', characterId] as const,
   characterRecipeStats: (characterId: string | undefined) => ['characterRecipeStats', characterId] as const,
+
+  // Herb detail data
+  herbBiomes: (herbId: number) => ['herbBiomes', herbId] as const,
 }
 
 // ============ Query Fetchers ============
@@ -325,6 +329,21 @@ export function useItemTemplates() {
     queryKey: queryKeys.itemTemplates,
     queryFn: fetchers.itemTemplates,
     staleTime: Infinity,
+  })
+}
+
+// ============ Herb Detail Hooks ============
+
+/**
+ * Fetch biomes where a specific herb can be found (reverse lookup)
+ */
+export function useHerbBiomes(herbId: number | null) {
+  return useQuery({
+    queryKey: herbId ? queryKeys.herbBiomes(herbId) : ['herbBiomes-disabled'],
+    queryFn: () => fetchHerbBiomes(herbId!),
+    enabled: herbId !== null,
+    staleTime: 30 * 60 * 1000, // 30 min — biome data is static
+    select: (result) => result.data ?? [],
   })
 }
 

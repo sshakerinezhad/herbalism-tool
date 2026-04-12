@@ -58,7 +58,7 @@ export function RecipeRequirements({
               <div
                 key={element}
                 className={`px-2 py-1 rounded text-sm flex items-center gap-1 ${
-                  fulfilled ? 'bg-green-900/50 border border-green-700' : 'bg-sepia-800/50 border border-zinc-600'
+                  fulfilled ? 'bg-green-900/50 border border-green-700' : 'bg-sepia-800/50 border border-sepia-700/40'
                 }`}
               >
                 <span>{getElementSymbol(element)}</span>
@@ -93,7 +93,7 @@ export function RecipeRequirements({
           if (instanceCheck.every(c => c.ok)) return null
 
           return (
-            <div className="mt-2 pt-2 border-t border-zinc-600">
+            <div className="mt-2 pt-2 border-t border-sepia-700/40">
               <p className="text-amber-400 text-xs mb-1">
                 ⚠️ Need {batchCount} herb instances per element for {batchCount} brews:
               </p>

@@ -48,7 +48,7 @@ export function ResultPhase({
         </p>
 
         {success ? (
-          <div className="bg-zinc-900/50 rounded-lg p-4">
+          <div className="elevation-base rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <span className={`text-sm px-2 py-0.5 rounded ${
                 type === 'elixir' 
@@ -137,7 +137,7 @@ export function BatchResultPhase({
         </h2>
 
         {/* What was brewed */}
-        <div className="bg-zinc-900/50 rounded-lg p-4 mb-4">
+        <div className="elevation-base rounded-lg p-4 mb-4">
           <div className="flex items-center gap-2 mb-2">
             <span className={`text-sm px-2 py-0.5 rounded ${
               type === 'elixir' 

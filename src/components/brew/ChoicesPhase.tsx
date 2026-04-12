@@ -79,7 +79,7 @@ export function ChoicesPhase({
                   value={choices[choice.variable] || ''}
                   onChange={(e) => onUpdateChoice(choice.variable, e.target.value)}
                   placeholder={`Enter ${choice.variable.replace(/_/g, ' ')}`}
-                  className="w-full px-4 py-2 bg-sepia-800/50 border border-zinc-600 rounded-lg focus:outline-none focus:border-purple-500"
+                  className="w-full px-4 py-2 bg-sepia-800/50 border border-sepia-700/40 rounded-lg focus:outline-none focus:border-purple-500"
                 />
               )}
             </div>

@@ -304,9 +304,9 @@ export default function ForagePage() {
   return (
     <div className="p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-2">🔍 Forage for Herbs</h1>
+        <h1 className="font-heading text-3xl text-bronze-bright mb-2">Forage for Herbs</h1>
         {profile.name && (
-          <p className="text-zinc-400 mb-6">
+          <p className="font-ui text-[11px] text-vellum-400/50 tracking-wide mb-6">
             {profile.name} • Foraging: {foragingMod >= 0 ? '+' : ''}{foragingMod}
           </p>
         )}
@@ -336,8 +336,8 @@ export default function ForagePage() {
         {state.phase === 'rolling' && (
           <div className="flex items-center justify-center py-16">
             <div className="text-center">
-              <div className="text-4xl mb-4">🎲</div>
-              <p className="text-xl">
+              <div className="text-4xl mb-4 animate-warm-pulse">🎲</div>
+              <p className="text-xl text-vellum-100">
                 Rolling session {state.currentSession} of {state.totalSessions}...
               </p>
             </div>

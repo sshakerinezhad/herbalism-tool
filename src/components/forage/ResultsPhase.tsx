@@ -50,14 +50,14 @@ export function ResultsPhase(props: ResultsPhaseProps) {
   return (
     <div className="space-y-6">
       {/* Session Results Summary */}
-      <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
+      <div className="elevation-raised rounded-lg p-4">
         <h3 className="font-semibold mb-3">Session Results</h3>
         <div className="space-y-2">
           {sessionResults.map((result) => (
             <div key={result.sessionNumber} className="flex items-center gap-3 text-sm">
               <span className="w-6">{result.success ? '✅' : '❌'}</span>
-              <span className="text-zinc-400 w-20">Session {result.sessionNumber}:</span>
-              <span className="text-zinc-500 min-w-[80px]">{result.biome.name}</span>
+              <span className="text-vellum-400 w-20">Session {result.sessionNumber}:</span>
+              <span className="text-vellum-400/60 min-w-[80px]">{result.biome.name}</span>
               <span className="font-mono">
                 {result.checkRoll} {foragingMod >= 0 ? '+' : ''}{foragingMod} = {result.checkTotal}
               </span>
@@ -73,17 +73,17 @@ export function ResultsPhase(props: ResultsPhaseProps) {
         </div>
 
         {/* Totals */}
-        <div className="mt-4 pt-4 border-t border-zinc-700 flex gap-6 text-sm">
+        <div className="mt-4 pt-4 border-t border-sepia-700/40 flex gap-6 text-sm">
           <span>
-            <span className="text-zinc-400">Successful:</span>{' '}
+            <span className="text-vellum-400">Successful:</span>{' '}
             <span className="text-green-400 font-semibold">{successfulSessions}</span>
           </span>
           <span>
-            <span className="text-zinc-400">Failed:</span>{' '}
+            <span className="text-vellum-400">Failed:</span>{' '}
             <span className="text-red-400 font-semibold">{failedSessions}</span>
           </span>
           <span>
-            <span className="text-zinc-400">Total herbs:</span>{' '}
+            <span className="text-vellum-400">Total herbs:</span>{' '}
             <span className="text-green-400 font-semibold">{totalHerbsFound}</span>
           </span>
         </div>
@@ -91,11 +91,11 @@ export function ResultsPhase(props: ResultsPhaseProps) {
 
       {/* Herbs Found */}
       {foragedHerbs.length > 0 && (
-        <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
+        <div className="elevation-raised rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="font-semibold">Herbs Added to Inventory</h3>
-              <p className="text-zinc-400 text-sm">
+              <p className="text-vellum-400 text-sm">
                 {remainingHerbs.length} herb{remainingHerbs.length !== 1 ? 's' : ''} in inventory
                 {removedCount > 0 && (
                   <span className="text-red-400 ml-2">({removedCount} removed)</span>
@@ -117,7 +117,7 @@ export function ResultsPhase(props: ResultsPhaseProps) {
             {foragedHerbs.map((foragedHerb) => (
               <div
                 key={foragedHerb.instanceId}
-                className={`flex justify-between items-center py-2 border-b border-zinc-700 last:border-0 ${
+                className={`flex justify-between items-center py-2 border-b border-sepia-700/40 last:border-0 ${
                   foragedHerb.removed ? 'opacity-40' : ''
                 }`}
               >
@@ -128,17 +128,17 @@ export function ResultsPhase(props: ResultsPhaseProps) {
                     <button
                       onClick={() => onRemoveHerb(foragedHerb.instanceId)}
                       disabled={removingHerb === foragedHerb.instanceId || removingAll}
-                      className="w-6 h-6 flex items-center justify-center bg-red-700/50 hover:bg-red-600 disabled:bg-zinc-700 rounded text-sm transition-colors"
+                      className="w-6 h-6 flex items-center justify-center bg-red-700/50 hover:bg-red-600 disabled:bg-sepia-800/50 rounded text-sm transition-colors"
                       title="Remove from inventory"
                     >
                       {removingHerb === foragedHerb.instanceId ? '...' : '✕'}
                     </button>
                   )}
                   <div>
-                    <span className={`font-medium ${foragedHerb.removed ? 'line-through text-zinc-500' : ''}`}>
+                    <span className={`font-medium ${foragedHerb.removed ? 'line-through text-vellum-400/60' : ''}`}>
                       {foragedHerb.herb.name}
                     </span>
-                    <span className="text-zinc-400 text-sm ml-2 capitalize">
+                    <span className="text-vellum-400 text-sm ml-2 capitalize">
                       ({foragedHerb.herb.rarity})
                     </span>
                   </div>
@@ -148,7 +148,7 @@ export function ResultsPhase(props: ResultsPhaseProps) {
                     <span
                       key={j}
                       className={`px-2 py-1 rounded text-xs capitalize ${
-                        foragedHerb.removed ? 'bg-zinc-800 text-zinc-500' : 'bg-zinc-700'
+                        foragedHerb.removed ? 'bg-zinc-800 text-vellum-400/60' : 'bg-sepia-800/50'
                       }`}
                     >
                       {getElementSymbol(element)}
@@ -159,7 +159,7 @@ export function ResultsPhase(props: ResultsPhaseProps) {
             ))}
           </div>
 
-          <p className="text-zinc-500 text-xs mt-4 italic">
+          <p className="text-vellum-400/60 text-xs mt-4 italic">
             💡 Remove herbs if you gave them away to another player or foraged by mistake.
           </p>
         </div>
@@ -169,14 +169,14 @@ export function ResultsPhase(props: ResultsPhaseProps) {
       <div className="flex gap-4 flex-wrap">
         <button
           onClick={onReset}
-          className="px-6 py-3 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium transition-colors"
+          className="px-6 py-3 btn-secondary rounded-lg font-medium transition-colors"
         >
           ← Forage Again
         </button>
         {remainingHerbs.length > 0 && (
           <Link
             href="/"
-            className="px-6 py-3 bg-blue-700 hover:bg-blue-600 rounded-lg font-medium transition-colors"
+            className="px-6 py-3 btn-primary rounded-lg font-medium transition-colors"
           >
             View Inventory →
           </Link>

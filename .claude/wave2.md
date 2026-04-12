@@ -69,17 +69,30 @@ Targeted fixes and UI improvements between 2A and 2B. Not a formal wave piece �
 - **CoinPurse → CharacterBanner:** Moved CoinPurse from standalone GrimoireCard into the banner's identity column. Rewritten as compact metallic pills with inline expanding edit tray (CSS Grid `0fr→1fr` height animation). No popover/portal — stays within DOM flow, avoids `overflow-hidden` clipping.
 - **Dynamic Brewing DC:** Replaced `BREWING_DC = 15` constant with `getBrewingDC(herbCount)` → `herbCount * 2 + 6`. Updated all 3 DC check sites in brew page + result display components. Aligns with EPG formula (kickoff decision #3).
 
-### 2B — Herbalism & Inventory
+### 2B — Herbalism & Inventory ✓ COMPLETE
 
-**Functional:**
-- Inventory system style and function cleanup
-- Better brewed inventory organization
-- Herb info modal on selection
-- Stackable effects → highlighted with hover info modal (replace asterisks in recipe text)
-- Recipe page → "brew this" navigation link
-- Apply naming decisions from kickoff brainstorm
+Applied grimoire design system to all herbalism pages. Added herb info modals, stackable effect highlights, brewed inventory redesign, and recipe→brew navigation.
 
-**Visual:** Apply design system to forage, brew, inventory, recipes pages
+**What shipped (sessions 16–21, 12 commits):**
+- **CoinPurse redesign:** Portal popover with debounced auto-save (`595c203`, `6b8763b`)
+- **Oil → Balm rename:** DB, types, and UI (`a4a4112`)
+- **Utility layer:** `toRoman()`, `parseStackableText()`, `fetchHerbBiomes()`, `useHerbBiomes` hook, `.stackable-value` CSS
+- **HerbInfoModal:** Ancient scroll metaphor (wooden dowels, parchment body, dark-ink text). Sections: icon+name+rarity, element pills, description, property (conditional), found-in biomes. Universal component reused across inventory.
+- **Herb list redesign:** Element color suffusion sections, ✦ icon placeholder slots, tappable herb names (dotted underline → scroll modal), bronze quantity, grimoire search/sort
+- **Brewed items redesign:** Type = color (blue/red/amber gradients + left accent bar). Potency as Roman numeral identity ("Healing Elixir III"). Effect text always visible via stackable parsing. Click to expand → flavor + Use/Expend actions.
+- **Inventory container:** Grimoire sub-tabs (Herbs/Brewed), AddHerbModal/AddElixirModal → Modal component, ElementSummary → element-chip styling
+- **Recipe cards:** Stackable `*...*` highlights parsed to bold type-colored text with tooltip, lore in parchment style, "Brew This →" button linking to `/brew?recipe={id}`
+- **JournalPanel:** Grimoire sub-tabs, recipe stats in Cinzel, unlock modal → Modal component
+- **Forage page:** Grimoire heading, elevation panels, grimoire buttons throughout
+- **Brew page:** `?recipe={id}` URL param with auto-select on mount, grimoire styling across all sub-components
+- **InventoryPanel:** Equipment/Herbalism grimoire sub-tabs, grimoire skeleton
+
+**Minor deferred items:**
+- HerbInfoModal integration in forage ResultsPhase (tappable herb names in results)
+- HerbInfoModal integration in brew HerbSelector (tappable herb names during herb selection)
+- FilterButton component cleanup (replaced by inline TypeTab in BrewedTabContent)
+
+**Plan:** `.claude/changelog/2026-04-11-wave2b-workplan.md` | **Spec:** `docs/superpowers/specs/2026-04-11-herbalism-inventory-design.md` (content in plan) | **Mockups:** `.superpowers/brainstorm/2b-brainstorm/`
 
 ### 2C — Weapons & Combat
 

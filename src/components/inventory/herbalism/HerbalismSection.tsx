@@ -300,48 +300,39 @@ export function HerbalismSection({
 
   return (
     <>
-      {/* View Tabs */}
-      <div className="flex gap-2 mb-6">
+      {/* View Tabs — grimoire sub-tab styling */}
+      <div className="flex items-center mb-4" style={{ borderBottom: '1px solid var(--soot)' }}>
         <button
           onClick={() => setViewTab('herbs')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            viewTab === 'herbs'
-              ? 'bg-green-700 text-white'
-              : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
-          }`}
+          className={viewTab === 'herbs' ? 'sub-tab-active' : 'sub-tab-inactive'}
         >
-          🌿 Herbs
-          <span className="ml-2 text-xs opacity-70">({totalHerbs})</span>
+          Herbs
+          <span className="ml-1.5 font-ui text-[10px] opacity-50">({totalHerbs})</span>
         </button>
-        {viewTab === 'herbs' && characterId && (
-          <button
-            onClick={() => setShowAddHerb(true)}
-            className="px-3 py-2 rounded-lg text-sm font-medium bg-zinc-800 text-emerald-400 hover:bg-zinc-700 transition-colors"
-          >
-            + Add Herbs
-          </button>
-        )}
-        {isHerbalist && (
+        {(isHerbalist || characterBrewedItems.length > 0) && (
           <button
             onClick={() => setViewTab('brewed')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              viewTab === 'brewed'
-                ? 'bg-purple-700 text-white'
-                : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
-            }`}
+            className={viewTab === 'brewed' ? 'sub-tab-active' : 'sub-tab-inactive'}
           >
-            ⚗️ Brewed
-            <span className="ml-2 text-xs opacity-70">
+            Brewed
+            <span className="ml-1.5 font-ui text-[10px] opacity-50">
               ({characterBrewedItems.reduce((s: number, i: CharacterBrewedItem) => s + i.quantity, 0)})
             </span>
           </button>
         )}
-        {viewTab === 'brewed' && characterId && (
+        {/* Add button — right-aligned */}
+        {characterId && (
           <button
-            onClick={() => setShowAddElixir(true)}
-            className="px-3 py-2 rounded-lg text-sm font-medium bg-zinc-800 text-purple-400 hover:bg-zinc-700 transition-colors"
+            onClick={() => viewTab === 'herbs' ? setShowAddHerb(true) : setShowAddElixir(true)}
+            className="ml-auto font-ui text-[10px] px-3.5 py-1.5 rounded-full transition-colors"
+            style={{
+              border: '1px solid rgba(201,169,110,0.2)',
+              background: 'linear-gradient(135deg, rgba(201,169,110,0.08), rgba(201,169,110,0.03))',
+              color: 'var(--bronze-bright)',
+              cursor: 'pointer',
+            }}
           >
-            + Add Elixir
+            + Add
           </button>
         )}
       </div>

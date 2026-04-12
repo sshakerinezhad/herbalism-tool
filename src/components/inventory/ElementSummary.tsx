@@ -1,5 +1,6 @@
 /**
  * ElementSummary - Display total element counts from inventory
+ * Grimoire-styled with bronze accents.
  */
 
 import type { CharacterHerb } from '@/lib/types'
@@ -10,14 +11,11 @@ type ElementSummaryProps = {
 }
 
 export function ElementSummary({ characterHerbs }: ElementSummaryProps) {
-  // Count elements across all inventory items
   const elementCounts = new Map<string, number>()
   for (const item of characterHerbs) {
     if (!item.herb) continue
-    const elements = item.herb.elements || []
-    for (const element of elements) {
-      const current = elementCounts.get(element) || 0
-      elementCounts.set(element, current + item.quantity)
+    for (const element of item.herb.elements || []) {
+      elementCounts.set(element, (elementCounts.get(element) || 0) + item.quantity)
     }
   }
 
@@ -27,18 +25,18 @@ export function ElementSummary({ characterHerbs }: ElementSummaryProps) {
   if (sortedElements.length === 0) return null
 
   return (
-    <div className="mt-8 pt-6 border-t border-zinc-800">
-      <h3 className="text-xs font-medium uppercase tracking-wide text-zinc-500 mb-3">
+    <div className="mt-6 pt-4" style={{ borderTop: '1px solid var(--sepia-800)' }}>
+      <h3 className="font-ui text-[10px] uppercase tracking-widest text-vellum-400/40 mb-3">
         Element Totals
       </h3>
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-3">
         {sortedElements.map(([element, count]) => (
           <span
             key={element}
-            className="flex items-center gap-1.5 text-sm text-zinc-400"
+            className={`element-chip element-${element.toLowerCase()}`}
+            style={{ gap: 4 }}
           >
-            <span>{getElementSymbol(element)}</span>
-            <span>{count}</span>
+            {getElementSymbol(element)} {count}
           </span>
         ))}
       </div>

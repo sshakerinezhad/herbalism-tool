@@ -37,12 +37,12 @@ interface InventoryPanelProps {
 function InventoryDataSkeleton() {
   return (
     <div className="space-y-4 animate-pulse">
-      <div className="flex gap-2 mb-6 pb-4 border-b border-zinc-800">
-        <div className="h-10 w-32 bg-zinc-800 rounded-lg" />
-        <div className="h-10 w-32 bg-zinc-800 rounded-lg" />
+      <div className="flex gap-2 mb-6 pb-4" style={{ borderBottom: '1px solid var(--sepia-800)' }}>
+        <div className="h-10 w-32 rounded-lg" style={{ background: 'var(--grimoire-800)' }} />
+        <div className="h-10 w-32 rounded-lg" style={{ background: 'var(--grimoire-800)' }} />
       </div>
       {[1, 2, 3].map((i) => (
-        <div key={i} className="h-16 bg-zinc-800/50 rounded-lg" />
+        <div key={i} className="h-16 rounded-lg" style={{ background: 'rgba(33,30,26,0.5)' }} />
       ))}
     </div>
   )
@@ -115,29 +115,21 @@ export function InventoryPanel({ character }: InventoryPanelProps) {
     <>
       {dataError && <ErrorDisplay message={dataError.toString()} className="mb-4" />}
 
-      {/* Main Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-zinc-800 pb-4">
+      {/* Main Tabs — grimoire sub-tab styling */}
+      <div className="flex gap-1 mb-6 pb-0" style={{ borderBottom: '1px solid var(--soot)' }}>
         <button
           onClick={() => setMainTab('equipment')}
-          className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-            mainTab === 'equipment'
-              ? 'bg-red-700 text-white'
-              : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
-          }`}
+          className={mainTab === 'equipment' ? 'sub-tab-active' : 'sub-tab-inactive'}
         >
-          ⚔️ Equipment
-          <span className="ml-2 text-xs opacity-70">({totalWeapons + totalItems})</span>
+          Equipment
+          <span className="ml-1.5 font-ui text-[10px] opacity-50">({totalWeapons + totalItems})</span>
         </button>
         <button
           onClick={() => setMainTab('herbalism')}
-          className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-            mainTab === 'herbalism'
-              ? 'bg-emerald-700 text-white'
-              : 'bg-zinc-800 text-zinc-400 hover:text-zinc-200'
-          }`}
+          className={mainTab === 'herbalism' ? 'sub-tab-active' : 'sub-tab-inactive'}
         >
-          🌿 Herbalism
-          <span className="ml-2 text-xs opacity-70">({totalHerbs + totalBrewed})</span>
+          Herbalism
+          <span className="ml-1.5 font-ui text-[10px] opacity-50">({totalHerbs + totalBrewed})</span>
         </button>
       </div>
 

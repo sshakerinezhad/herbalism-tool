@@ -49,3 +49,6 @@ next-env.d.ts
 .specify/.current-feature
 **/.progress.md
 **/.speckit-state.json
+
+# superpowers brainstorm mockups
+.superpowers/brainstorm/

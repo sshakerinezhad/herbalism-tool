@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { CharacterWeapon } from '@/lib/types'
+import { computeWeaponModifiers, formatBonus } from '@/lib/weapons'
 import { getCategoryIcon } from '../types'
 
 interface WeaponCardProps {
@@ -16,6 +17,8 @@ export function WeaponCard({ weapon, isDeleting, onEdit, onDelete }: WeaponCardP
 
   const materialName = weapon.material_ref?.name || weapon.material || 'Unknown'
   const materialTier = weapon.material_ref?.tier || 1
+
+  const mods = computeWeaponModifiers(weapon, weapon.material_ref)
 
   return (
     <div
@@ -32,6 +35,10 @@ export function WeaponCard({ weapon, isDeleting, onEdit, onDelete }: WeaponCardP
             {weapon.is_two_handed && (
               <span className="text-xs bg-zinc-700 text-zinc-300 px-1.5 py-0.5 rounded">2H</span>
             )}
+            {weapon.is_shield && (
+              <span className="text-xs bg-sky-900/50 text-sky-300 px-1.5 py-0.5 rounded">🛡️ Shield</span>
+            )}
+            <span className="text-xs bg-amber-900/40 text-amber-300 px-1.5 py-0.5 rounded">{mods.makeLabel}</span>
             <span className={`text-xs px-1.5 py-0.5 rounded ${
               materialTier >= 4 ? 'bg-purple-900/50 text-purple-300' :
               materialTier >= 3 ? 'bg-blue-900/50 text-blue-300' :
@@ -62,6 +69,34 @@ export function WeaponCard({ weapon, isDeleting, onEdit, onDelete }: WeaponCardP
               </span>
             )}
           </div>
+          {/* Computed weapon contribution */}
+          {weapon.is_shield ? (
+            <div className="text-sm text-sky-400 mt-1">
+              {weapon.ac_bonus != null && (
+                <span className="font-mono">{formatBonus(weapon.ac_bonus)} AC</span>
+              )}
+              {weapon.str_requirement != null && (
+                <span className="ml-2 text-zinc-500">Requires STR {weapon.str_requirement}</span>
+              )}
+            </div>
+          ) : (
+            <div className="text-sm text-zinc-400 mt-1">
+              <span className="text-zinc-500">Attack</span>{' '}
+              <span className="font-mono text-emerald-400">{formatBonus(mods.attackBonus)}</span>
+              <span className="ml-3 text-zinc-500">Damage</span>{' '}
+              <span className="font-mono text-red-400">
+                {mods.effectiveDamageDice || '—'} {formatBonus(mods.damageBonus)}
+              </span>
+            </div>
+          )}
+
+          {(mods.noProficiency || mods.disadvantageOnAttack) && (
+            <p className="text-xs text-amber-400/80 mt-1">
+              {mods.noProficiency && '⚠ No proficiency bonus to attacks. '}
+              {mods.disadvantageOnAttack && '⚠ Disadvantage on attacks.'}
+            </p>
+          )}
+
           {weapon.notes && (
             <p className="text-xs text-zinc-500 mt-2">{weapon.notes}</p>
           )}

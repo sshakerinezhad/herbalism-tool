@@ -825,6 +825,10 @@ export async function addCustomWeapon(
     is_two_handed?: boolean
     is_magical?: boolean
     notes?: string
+    make_tier?: string
+    is_shield?: boolean
+    ac_bonus?: number | null
+    str_requirement?: number | null
   }
 ): Promise<{ data: CharacterWeapon | null; error: string | null }> {
   const { data, error } = await supabase
@@ -844,6 +848,10 @@ export async function addCustomWeapon(
       is_two_handed: weaponData.is_two_handed || false,
       is_magical: weaponData.is_magical || false,
       notes: weaponData.notes || null,
+      make_tier: weaponData.make_tier || 'standard_forged',
+      is_shield: weaponData.is_shield || false,
+      ac_bonus: weaponData.ac_bonus ?? null,
+      str_requirement: weaponData.str_requirement ?? null,
     })
     .select()
     .single()
@@ -1198,6 +1206,11 @@ export async function updateCharacterWeapon(
     is_two_handed?: boolean
     is_magical?: boolean
     notes?: string | null
+    make_tier?: string
+    is_shield?: boolean
+    ac_bonus?: number | null
+    str_requirement?: number | null
+    shield_active?: boolean
   }
 ): Promise<{ error: string | null }> {
   const { error } = await supabase

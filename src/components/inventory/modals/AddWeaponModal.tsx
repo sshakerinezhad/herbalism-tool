@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import type { WeaponTemplate, Material } from '@/lib/types'
 import { addWeaponFromTemplate, addCustomWeapon } from '@/lib/db/characters'
+import { WEAPON_PROPERTIES, MAKE_TIERS, MAKE_TIER_INFO } from '@/lib/weapons'
 import { WeaponModalMode, getCategoryIcon, formatCategory } from '../types'
 
 export interface AddWeaponModalProps {
@@ -34,13 +35,27 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
   const [customDamageDice, setCustomDamageDice] = useState('1d6')
   const [customDamageType, setCustomDamageType] = useState('slashing')
   const [customWeaponType, setCustomWeaponType] = useState('simple_melee')
-  const [customProperties, setCustomProperties] = useState('')
+  const [customProperties, setCustomProperties] = useState<string[]>([])
   const [customRangeNormal, setCustomRangeNormal] = useState('')
   const [customRangeLong, setCustomRangeLong] = useState('')
   const [customVersatileDice, setCustomVersatileDice] = useState('')
   const [customIsTwoHanded, setCustomIsTwoHanded] = useState(false)
   const [customIsMagical, setCustomIsMagical] = useState(false)
   const [customNotes, setCustomNotes] = useState('')
+  const [customMakeTier, setCustomMakeTier] = useState<string>('standard_forged')
+  const [customIsShield, setCustomIsShield] = useState(false)
+  const [customAcBonus, setCustomAcBonus] = useState('')
+  const [customStrRequirement, setCustomStrRequirement] = useState('')
+
+  const customHasVersatile = customProperties.includes('Versatile')
+  // Thrown weapons and ammunition weapons (bows/crossbows) both carry a normal/long range.
+  const customShowRange = customProperties.includes('Thrown') || customProperties.includes('Ammunition')
+
+  function toggleCustomProperty(prop: string) {
+    setCustomProperties(prev =>
+      prev.includes(prop) ? prev.filter(p => p !== prop) : [...prev, prop]
+    )
+  }
 
   const selectedTemplate = templates.find(t => t.id === selectedTemplateId)
   const selectedMaterial = materials.find(m => m.id === selectedMaterialId)
@@ -105,22 +120,22 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
         return
       }
 
-      const properties = customProperties.trim()
-        ? customProperties.split(',').map(p => p.trim().toLowerCase())
-        : []
-
       const { error } = await addCustomWeapon(characterId, {
         name: customName.trim(),
         damage_dice: customDamageDice.trim(),
         damage_type: customDamageType,
         weapon_type: customWeaponType,
-        properties,
-        range_normal: customRangeNormal ? parseInt(customRangeNormal, 10) : undefined,
-        range_long: customRangeLong ? parseInt(customRangeLong, 10) : undefined,
-        versatile_dice: customVersatileDice.trim() || undefined,
+        properties: customProperties,
+        range_normal: customShowRange && customRangeNormal ? parseInt(customRangeNormal, 10) : undefined,
+        range_long: customShowRange && customRangeLong ? parseInt(customRangeLong, 10) : undefined,
+        versatile_dice: customHasVersatile && customVersatileDice.trim() ? customVersatileDice.trim() : undefined,
         is_two_handed: customIsTwoHanded,
         is_magical: customIsMagical,
         notes: customNotes.trim() || undefined,
+        make_tier: customMakeTier,
+        is_shield: customIsShield,
+        ac_bonus: customIsShield && customAcBonus ? parseInt(customAcBonus, 10) : null,
+        str_requirement: customIsShield && customStrRequirement ? parseInt(customStrRequirement, 10) : null,
       })
 
       if (error) {
@@ -385,59 +400,122 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                 {/* Properties */}
                 <div>
                   <label className="block text-sm font-medium mb-1">Properties</label>
-                  <input
-                    type="text"
-                    value={customProperties}
-                    onChange={(e) => setCustomProperties(e.target.value)}
-                    placeholder="e.g., finesse, versatile, light (comma-separated)"
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
-                  />
-                  <p className="text-xs text-zinc-500 mt-1">
-                    Common: finesse, versatile, light, heavy, two-handed, thrown, reach, loading
-                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-zinc-900 border border-zinc-700 rounded-lg p-3">
+                    {WEAPON_PROPERTIES.map((prop) => (
+                      <label key={prop} className="flex items-center gap-2 cursor-pointer text-sm">
+                        <input
+                          type="checkbox"
+                          checked={customProperties.includes(prop)}
+                          onChange={() => toggleCustomProperty(prop)}
+                          className="rounded"
+                        />
+                        <span>{prop}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Versatile Dice */}
+                {/* Versatile Dice (only when Versatile selected) */}
+                {customHasVersatile && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Versatile Dice</label>
+                    <input
+                      type="text"
+                      value={customVersatileDice}
+                      onChange={(e) => setCustomVersatileDice(e.target.value)}
+                      placeholder="e.g., 1d10 (two-handed damage)"
+                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                    />
+                    <p className="text-xs text-zinc-500 mt-1">
+                      For versatile weapons — the damage die when wielded two-handed.
+                    </p>
+                  </div>
+                )}
+
+                {/* Range (when Thrown or Ammunition selected) */}
+                {customShowRange && (
+                  <div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Range (Normal)</label>
+                        <input
+                          type="number"
+                          value={customRangeNormal}
+                          onChange={(e) => setCustomRangeNormal(e.target.value)}
+                          placeholder="e.g., 20"
+                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Range (Long)</label>
+                        <input
+                          type="number"
+                          value={customRangeLong}
+                          onChange={(e) => setCustomRangeLong(e.target.value)}
+                          placeholder="e.g., 60"
+                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-zinc-500 mt-1">
+                      Range (normal / long) in feet, for thrown or ammunition weapons.
+                    </p>
+                  </div>
+                )}
+
+                {/* Make Tier */}
                 <div>
-                  <label className="block text-sm font-medium mb-1">Versatile Dice</label>
-                  <input
-                    type="text"
-                    value={customVersatileDice}
-                    onChange={(e) => setCustomVersatileDice(e.target.value)}
-                    placeholder="e.g., 1d10 (two-handed damage)"
+                  <label className="block text-sm font-medium mb-1">Make Tier</label>
+                  <select
+                    value={customMakeTier}
+                    onChange={(e) => setCustomMakeTier(e.target.value)}
                     className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
-                  />
+                  >
+                    {MAKE_TIERS.map((tier) => (
+                      <option key={tier} value={tier}>{MAKE_TIER_INFO[tier].label}</option>
+                    ))}
+                  </select>
                   <p className="text-xs text-zinc-500 mt-1">
-                    For versatile weapons — the damage die when wielded two-handed.
+                    {MAKE_TIER_INFO[customMakeTier as keyof typeof MAKE_TIER_INFO]?.note}
                   </p>
                 </div>
 
-                {/* Range (for ranged weapons) */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Range (Normal)</label>
+                {/* Shield */}
+                <div>
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
-                      type="number"
-                      value={customRangeNormal}
-                      onChange={(e) => setCustomRangeNormal(e.target.value)}
-                      placeholder="e.g., 80"
-                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                      type="checkbox"
+                      checked={customIsShield}
+                      onChange={(e) => setCustomIsShield(e.target.checked)}
+                      className="rounded"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Range (Long)</label>
-                    <input
-                      type="number"
-                      value={customRangeLong}
-                      onChange={(e) => setCustomRangeLong(e.target.value)}
-                      placeholder="e.g., 320"
-                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
-                    />
-                  </div>
+                    <span className="text-sm">🛡️ Is shield</span>
+                  </label>
+                  {customIsShield && (
+                    <div className="grid grid-cols-2 gap-3 mt-2">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">AC Bonus</label>
+                        <input
+                          type="number"
+                          value={customAcBonus}
+                          onChange={(e) => setCustomAcBonus(e.target.value)}
+                          placeholder="e.g., 2"
+                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">STR Requirement</label>
+                        <input
+                          type="number"
+                          value={customStrRequirement}
+                          onChange={(e) => setCustomStrRequirement(e.target.value)}
+                          placeholder="e.g., 13"
+                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <p className="text-xs text-zinc-500 -mt-1">
-                  For ranged or thrown weapons. Leave blank for melee-only.
-                </p>
 
                 {/* Flags */}
                 <div className="flex gap-6">

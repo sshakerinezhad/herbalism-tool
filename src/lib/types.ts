@@ -249,6 +249,12 @@ export type CharacterWeapon = {
   range_normal: number | null
   range_long: number | null
   versatile_dice: string | null
+  // Make-tier (forge quality) + shield attributes (Wave 2C)
+  make_tier: string
+  is_shield: boolean
+  ac_bonus: number | null
+  str_requirement: number | null
+  shield_active: boolean
   // Template references (new architecture)
   template_id: number | null
   material_id: number | null

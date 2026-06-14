@@ -542,6 +542,11 @@ export type Database = {
           updated_at: string | null
           versatile_dice: string | null
           weapon_type: string | null
+          make_tier: string
+          is_shield: boolean
+          ac_bonus: number | null
+          str_requirement: number | null
+          shield_active: boolean
         }
         Insert: {
           attachments?: Json | null
@@ -564,6 +569,11 @@ export type Database = {
           updated_at?: string | null
           versatile_dice?: string | null
           weapon_type?: string | null
+          make_tier?: string
+          is_shield?: boolean
+          ac_bonus?: number | null
+          str_requirement?: number | null
+          shield_active?: boolean
         }
         Update: {
           attachments?: Json | null
@@ -586,6 +596,11 @@ export type Database = {
           updated_at?: string | null
           versatile_dice?: string | null
           weapon_type?: string | null
+          make_tier?: string
+          is_shield?: boolean
+          ac_bonus?: number | null
+          str_requirement?: number | null
+          shield_active?: boolean
         }
         Relationships: [
           {

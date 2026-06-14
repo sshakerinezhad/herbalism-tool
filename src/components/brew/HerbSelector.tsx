@@ -154,11 +154,11 @@ export function SelectedHerbsSummary({
         <div className="space-y-2">
           {/* Selected herbs list */}
           <div className="flex flex-wrap gap-2">
-            {selectedHerbs.map(item => {
+            {selectedHerbs.map((item, idx) => {
               const qty = selectedQuantities.get(item.id) || 0
               return (
                 <div
-                  key={item.id}
+                  key={`${item.id}-${idx}`}
                   className="px-3 py-1.5 bg-purple-900/50 border border-purple-700 rounded-lg text-sm flex items-center gap-2"
                 >
                   <span>{item.herb.name}</span>

@@ -136,6 +136,12 @@ export function BatchResultPhase({
           }
         </h2>
 
+        {failCount > 0 && (
+          <p className="text-vellum-400 text-xs mb-2">
+            {failCount} failed {failCount === 1 ? 'attempt' : 'attempts'} — their ingredients were used up.
+          </p>
+        )}
+
         {/* What was brewed */}
         <div className="elevation-base rounded-lg p-4 mb-4">
           <div className="flex items-center gap-2 mb-2">

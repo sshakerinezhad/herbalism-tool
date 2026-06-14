@@ -9,7 +9,7 @@
  * - "By Recipe": Select recipes first, then find matching herbs
  */
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useProfile } from '@/lib/profile'
@@ -114,6 +114,33 @@ export default function BrewPage() {
   const loading = !profileLoaded || inventoryLoading || recipesLoading
   const error = inventoryError?.message || recipesError?.message || mutationError
 
+  // Roll mode: system auto-rolls (default, downtime) or player rolls table-side.
+  // Persisted per browser so the choice sticks.
+  const [manualRoll, setManualRoll] = useState(false)
+
+  useEffect(() => {
+    setManualRoll(localStorage.getItem('brew:manualRoll') === '1')
+  }, [])
+
+  function toggleManualRoll(next: boolean) {
+    setManualRoll(next)
+    localStorage.setItem('brew:manualRoll', next ? '1' : '0')
+  }
+
+  // Returns the natural d20 for a brew attempt. In manual mode the player enters it
+  // (the app never invents randomness in manual mode). Returns null if cancelled/invalid.
+  function getBrewRoll(attemptLabel: string): number | null {
+    if (!manualRoll) return rollD20()
+    const entry = window.prompt(`Enter your d20 roll${attemptLabel} (1-20):`)
+    if (entry === null) return null
+    const n = parseInt(entry, 10)
+    if (Number.isNaN(n) || n < 1 || n > 20) {
+      actions.setMutationError('Enter a number from 1 to 20.')
+      return null
+    }
+    return n
+  }
+
   // ============ Browser History ============
 
   // Push state when entering deep phases
@@ -152,7 +179,8 @@ export default function BrewPage() {
     if (!characterId) return
 
     const dc = getBrewingDC(totalHerbsSelected)
-    const roll = rollD20()
+    const roll = getBrewRoll('')
+    if (roll === null) { actions.setPhase({ phase: 'select-herbs' }); return }
     const total = roll + brewingMod
     const success = total >= dc
     const successCount = success ? 1 : 0
@@ -225,11 +253,15 @@ export default function BrewPage() {
       }
     }
 
-    const dc = getBrewingDC(totalHerbsSelected)
+    // DC scales with herbs used in a SINGLE brew. In batch mode totalHerbsSelected
+    // covers all `batch` brews, so divide to get the per-brew ingredient count.
+    const herbsPerBrew = batch > 0 ? Math.round(totalHerbsSelected / batch) : totalHerbsSelected
+    const dc = getBrewingDC(herbsPerBrew)
 
     if (batch === 1) {
       // Single brew: roll dice, then atomically brew
-      const roll = rollD20()
+      const roll = getBrewRoll('')
+      if (roll === null) { actions.setPhase({ phase: 'select-recipes' }); return }
       const total = roll + brewingMod
       const success = total >= dc
       const successCount = success ? 1 : 0
@@ -264,7 +296,8 @@ export default function BrewPage() {
     let successCount = 0
 
     for (let i = 0; i < batch; i++) {
-      const roll = rollD20()
+      const roll = getBrewRoll(` (brew ${i + 1} of ${batch})`)
+      if (roll === null) { actions.setPhase({ phase: 'select-recipes' }); return }
       const total = roll + brewingMod
       const success = total >= dc
 
@@ -354,9 +387,18 @@ export default function BrewPage() {
     <div className="p-8">
       <div className="max-w-3xl mx-auto">
         <h1 className="font-heading text-3xl text-bronze-bright mb-1">Brew</h1>
-        <p className="font-ui text-[11px] text-vellum-400/50 tracking-wide mb-4">
+        <p className="font-ui text-[11px] text-vellum-400/50 tracking-wide mb-2">
           Brewing modifier: {brewingMod >= 0 ? '+' : ''}{brewingMod}
         </p>
+
+        <label className="flex items-center gap-2 mb-4 text-sm text-vellum-300 select-none cursor-pointer">
+          <input
+            type="checkbox"
+            checked={manualRoll}
+            onChange={(e) => toggleManualRoll(e.target.checked)}
+          />
+          Roll the d20 myself (table-side)
+        </label>
 
         {/* Mode Toggle */}
         {(phase.phase === 'select-herbs' || phase.phase === 'select-recipes') && (

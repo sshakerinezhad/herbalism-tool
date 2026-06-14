@@ -1,44 +1,66 @@
 # Scratchpad
 
-**Branch:** `main`
-**Last session:** 2026-04-11 (session 21)
+**Branch worked on:** `claude/current-state-check-96qvio` (merged into `main` at end of this session)
+**Session date:** 2026-06-14
+**Wave:** 2C — Weapons, Combat Gear & Brew Correctness
 
-## Session 21 — what was done
+## What this session did
 
-Executed entire Wave 2B work plan (9 tasks, all committed to main):
+Brainstormed Wave 2C (brainstorming skill), wrote the design spec, then planned + executed
+Pieces 1 and 2 of 5. All committed and merged to `main`.
 
-1. **Task 1 — Utility functions** → `toRoman()`, `parseStackableText()`, `fetchHerbBiomes()`, `useHerbBiomes` hook, `.stackable-value` CSS
-2. **Task 2 — HerbInfoModal** → Scroll-themed modal (wooden dowels, parchment body, biome pills). Uses Modal as base with transparent override.
-3. **Task 3 — Herb list redesign** → HerbRow now has icon slot (✦), tappable name (dotted underline → opens HerbInfoModal), element symbols inline, bronze quantity. HerbsTabContent manages selectedHerb state.
-4. **Task 4 — Brewed items redesign** → BrewedItemCard uses type-colored gradients + left accent bar. Potency as Roman numeral identity. Effect text always visible via `parseStackableText()`. Click to expand for flavor + Use/Expend actions.
-5. **Task 5 — Inventory container** → HerbalismSection tabs → grimoire sub-tabs. AddHerbModal/AddElixirModal → `<Modal>` component. ElementSummary → element-chip styling. InventoryPanel tabs → grimoire sub-tabs.
-6. **Task 6 — Recipe cards** → RecipeCard with stackable highlights, lore in parchment style, "Brew This →" button linking to `/brew?recipe={id}`. JournalPanel → grimoire tabs, Modal for unlock.
-7. **Task 7 — Forage visual pass** → Page header → grimoire heading. SetupPhase/ResultsPhase → elevation classes, btn-primary/btn-secondary, vellum text colors.
-8. **Task 8 — Brew page** → Added `useSearchParams()` for `?recipe={id}` URL param. RecipeSelector auto-selects recipe on mount. Bulk zinc→grimoire replacements across all brew sub-components.
-9. **Task 9 — Cleanup** → Removed straggler zinc patterns from brew/forage. Build passing clean.
+**Design spec (source of truth):** `docs/superpowers/specs/2026-06-14-wave2c-weapons-combat-design.md`
 
-### Commits (9 total)
-1. `add utility functions for 2B: roman numerals, stackable text, herb biomes`
-2. `add HerbInfoModal: scroll-themed herb detail modal`
-3. `redesign herb list: element suffusion, tappable names, icon slots`
-4. `redesign brewed inventory: potency identity, visible effects, expand for flavor`
-5. `complete inventory redesign: grimoire tabs, modals, summary`
-6. `redesign recipe cards: stackable highlights, brew-this button, grimoire style`
-7. `forage page visual pass: grimoire design system applied`
-8. `brew page redesign: grimoire styling, recipe pre-select from URL param`
-9. `clean up remaining zinc patterns in brew components`
+### Piece 1 — Brew correctness  (DONE) — plan: `docs/superpowers/plans/2026-06-14-2c-brew-correctness.md`
+- Fixed batch-DC inflation: DC now uses per-brew herb count (`6 + 2*herbs-per-brew`), not the
+  batch total. (`src/app/(app)/brew/page.tsx`)
+- Added optional "roll the d20 myself" checkbox (default off; persists in localStorage
+  `brew:manualRoll`). When on, prompts for the player's d20 and computes success — app still does
+  the math, just doesn't roll.
+- Hardened the selected-herbs React key (`HerbSelector.tsx`, was the duplicate-key console bug).
+- Added "ingredients used up" note for failed batch attempts (`ResultPhase.tsx`).
+- Verified the element-pairing toggle bug was already fixed (index-based selection).
+- Removed the herbalist-only brew gate -> brewing is now recipe-based (Wave 2B intent);
+  non-herbalists brew on INT alone; added a "no recipes" empty state. Fixes the
+  "brew not available" backlog bug.
 
-## Current state
+### Piece 2 — Weapon data model + property checkboxes  (DONE) — plan: `docs/superpowers/plans/2026-06-14-2c-weapon-data-model.md`
+- Migration `supabase/migrations/014_weapon_make_and_shields.sql`: adds `make_tier`, `is_shield`,
+  `ac_bonus`, `str_requirement`, `shield_active` + a make_tier CHECK constraint.
+- Hand-updated `src/lib/types.ts` (`CharacterWeapon`) and `src/lib/database.types.ts` to match
+  (will be overwritten cleanly when `db:types` is regenerated).
+- New pure helper `src/lib/weapons.ts`: `WEAPON_PROPERTIES` (canonical 10), `MAKE_TIERS` +
+  `MAKE_TIER_INFO`, `computeWeaponModifiers(weapon, material?)`, `stepDamageDie`, `formatBonus`.
+- Add/Edit weapon modals: comma-text properties -> checkbox grid; make-tier select; shield fields.
+  Range inputs reveal for Thrown OR Ammunition (fixed a subagent regression that hid range
+  for bows/crossbows). `WeaponCard` shows computed attack/damage + make/shield badges + caveats.
 
-- On `main`, build passing, all 9 tasks committed
-- Equipment files (weapons, items) still have zinc patterns — intentionally untouched (not in Wave 2B scope)
-- HerbInfoModal integration in forage ResultsPhase not yet done (tappable herb names in forage results)
-- FilterButton component still has zinc — unused in the new BrewedTabContent (uses inline TypeTab)
+### Key decisions (confirmed with user)
+- Invariant: app rolls dice only for downtime (forage/brew); combat is always table-side.
+  No attack/damage resolution is built — make/material/ammo/AC are tracked & displayed only.
+- Equip model (Piece 3): kill the 6-slot/hands system. Profile shows a curated "Equipped
+  Weapons" list off the existing `is_equipped` flag. Retire `character_weapon_slots`. No
+  active/inactive — player decides what they're using at the table.
+- Make/materials: data + computed display only; NO live durability/honing (that's Wave 3B).
+- Special arrows: crafted at BREW time (brew output fused onto base arrows), not a weapon-side UI.
+- Everything addable raw to inventory (gifts/DM awards/purchases) — generic "Add item" path.
+- Shields are weapons in the weapons list; a shield marked "active" adds its specific AC bonus.
 
-## What to do next
+## Action required before/with deploy
+This container could NOT reach Supabase or Google Fonts, so:
+- Run `npm run db:push && npm run db:types` to apply migration 014 to the remote DB and
+  regenerate types. Until this runs, weapon add/edit will fail against prod (columns missing).
+- `next build` could not complete here (fonts blocked) — verify with a real build / `npm run dev`.
+- tsc (`npx tsc --noEmit`) is clean across all changes; lint clean on touched files (repo has some
+  pre-existing lint errors in untouched files — `useBrewState.ts`, `profile.tsx`, `characters.ts`).
 
-1. **Visual verification** — run `npm run dev` and test all pages end-to-end
-2. **HerbInfoModal in forage results** — herb names in ResultsPhase should be tappable (deferred from Task 7)
-3. **HerbInfoModal in brew HerbSelector** — herb names in brew herb selection should be tappable (deferred from Task 8)
-4. **Remove FilterButton** if no longer used (BrewedTabContent now has inline TypeTab)
-5. **Consider equipment page grimoire pass** (future wave)
+## What to do next (next session: use superpowers — writing-plans per piece; spec exists so brainstorming likely unneeded)
+- Piece 3 — Equip overhaul: Equipped Weapons list off `is_equipped`; retire
+  `character_weapon_slots` (drop table + its hand UI: `WeaponSlots.tsx`, `WeaponSlotCard.tsx`,
+  rework `EquipmentWeaponsPanel.tsx`); add a `toggleEquipped` mutation; drop slot fetch/equip hooks.
+- Piece 4 — Ammo + special arrows + raw add-to-inventory: arrow-type catalog + quantities;
+  brew-time special-arrow fusion; generic raw "Add item" path for all categories.
+- Piece 5 — AC/shield integration + grimoire visual pass: shield-active AC math + icon;
+  apply the 2.0 design system to weapon list/cards/ammo (WeaponCard still uses legacy zinc palette).
+
+See `.claude/work-plan.md` for the live checklist.

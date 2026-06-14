@@ -358,15 +358,20 @@ export default function BrewPage() {
     )
   }
 
-  // Gate: require herbalist vocation for brewing
-  if (character.vocation !== 'herbalist') {
+  // Brewing is recipe-based (Wave 2B): anyone who knows a recipe can brew.
+  // Herbalists add their proficiency bonus; others brew on INT alone.
+  const isHerbalist = character.vocation === 'herbalist'
+  const brewingMod = computeBrewingModifier(character.int, character.level, isHerbalist)
+
+  // Gate: need at least one known recipe to brew anything.
+  if (recipes.length === 0) {
     return (
       <div className="p-8">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold mb-4">Brew</h1>
+          <h1 className="font-heading text-3xl text-bronze-bright mb-4">Brew</h1>
           <div className="bg-amber-900/30 border border-amber-700 rounded-lg p-6">
             <p className="text-amber-200">
-              Only characters with the Herbalist vocation can brew elixirs and bombs.
+              You don&apos;t know any recipes yet. Learn or acquire a recipe before you can brew.
             </p>
             <Link
               href="/"
@@ -379,9 +384,6 @@ export default function BrewPage() {
       </div>
     )
   }
-
-  // Computed brewing modifier (character is guaranteed non-null and herbalist here)
-  const brewingMod = computeBrewingModifier(character.int, character.level, true)
 
   return (
     <div className="p-8">

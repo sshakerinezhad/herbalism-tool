@@ -16,6 +16,8 @@ type CharacterBannerProps = {
   maxHP: number
   armorClass: number
   armorLevel: 'none' | 'light' | 'medium' | 'heavy'
+  /** AC bonus from the active shield (null = no shield active) */
+  shieldBonus?: number | null
   // Coins
   coins: Coins
   characterId: string
@@ -45,6 +47,7 @@ export function CharacterBanner({
   maxHP,
   armorClass,
   armorLevel,
+  shieldBonus,
   coins,
   characterId,
   onMoneyChanged,
@@ -168,6 +171,14 @@ export function CharacterBanner({
                   </div>
                 </div>
               </div>
+
+              {/* Active shield bonus bubble */}
+              {shieldBonus != null && (
+                <div className="flex items-center gap-1 bg-grimoire-850 rounded border border-sky-700/40 px-2">
+                  <span className="text-sm">&#x1F6E1;</span>
+                  <span className="text-sm font-bold text-sky-300">+{shieldBonus}</span>
+                </div>
+              )}
 
               {/* Initiative */}
               <div className="flex-1 bg-grimoire-850 rounded border border-sepia-700/40 p-2">

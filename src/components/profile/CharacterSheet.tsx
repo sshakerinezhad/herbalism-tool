@@ -261,6 +261,10 @@ function CharacterSheetContent({
   // Calculate AC from armor
   const { totalAC, armorLevel } = calculateArmorClass(characterArmor, allArmorSlots, character.dex)
 
+  // Derive active shield bonus (shown separately — NOT added to AC)
+  const activeShield = weapons.find((w) => w.is_shield && w.is_equipped && w.shield_active)
+  const shieldBonus = activeShield?.ac_bonus ?? null
+
   // Armor management - called by ArmorDiagram
   async function handleSetArmor(slotId: number, armorType: ArmorType | null) {
     setArmorError(null)
@@ -291,6 +295,7 @@ function CharacterSheetContent({
         maxHP={maxHP}
         armorClass={totalAC}
         armorLevel={armorLevel}
+        shieldBonus={shieldBonus}
         coins={{
           platinum: character.platinum,
           gold: character.gold,

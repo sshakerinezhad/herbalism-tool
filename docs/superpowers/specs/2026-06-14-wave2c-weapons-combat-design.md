@@ -54,6 +54,26 @@ built to be the future prerequisite data for 3B techniques.
 "recipe-based access" decision and likely causing the backlog "Brew option not available" bug.
 Confirm whether removing this gate belongs in 2C.
 
+## Pieces 3–5 — confirmed details (2026-06-22 brainstorm)
+
+Refinements confirmed before writing the 3/4/5 plan
+(`docs/superpowers/plans/2026-06-22-2c-pieces-345.md`):
+
+- **Equip (P3):** the equipped list just surfaces what weapons are "on hand" so the player can glance
+  and pick what to use at the table. Driven by `is_equipped`; `character_weapon_slots` retired. The
+  slot-init trigger is rewritten to keep seeding `character_quick_slots` (quick slots stay).
+- **Special arrows (P4):** stored as `character_items` ammo rows (`ammo_type='arrow'`,
+  `properties.source='fused_bomb'`). Fusion is an **inventory action on a bomb only** (not at the brew
+  screen): pick a bomb → Fuse → quantity capped at `min(bombs owned, base arrows owned)`. **1 bomb + 1
+  base arrow → 1 special arrow.** Atomic RPC removes bombs + base arrows, adds/stacks special arrows.
+- **Raw-add (P4):** herbs and brewed items get "Add" paths (a DM/another player can gift anything);
+  weapons/gear/ammo already have add modals. Raw brewed-add is recipe-based so type/effects stay valid.
+- **Shield AC (P5):** only **one** shield active at a time; the active shield must be equipped
+  ("wielding"). The main AC bubble keeps base AC; a **secondary bubble** beside it shows the shield
+  bonus (e.g. `+2`) only while wielding it — shield AC is **never summed** into the base number.
+- **Visual pass (P5):** restyle touched legacy-zinc UI (`WeaponCard`, weapon modals) to grimoire 2.0;
+  build new P3/P4 UI in grimoire 2.0 from the start.
+
 ## Verification
 
 `npm run build` + `npm run lint` after each piece (repo convention; `/verify` optional). Manual

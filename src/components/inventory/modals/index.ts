@@ -13,6 +13,3 @@ export type { EditWeaponModalProps } from './EditWeaponModal'
 
 export { FuseArrowsModal } from './FuseArrowsModal'
 export type { FuseArrowsModalProps } from './FuseArrowsModal'
-
-export { AddBrewedModal } from './AddBrewedModal'
-export type { AddBrewedModalProps } from './AddBrewedModal'

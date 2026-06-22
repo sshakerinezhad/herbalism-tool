@@ -307,25 +307,6 @@ export async function fuseBombsToArrows(
 }
 
 /**
- * Raw-add a brewed item from a recipe (gifts/DM awards).
- */
-export async function addBrewedItem(
-  characterId: string,
-  recipe: Recipe,
-  quantity: number = 1
-): Promise<{ error: string | null }> {
-  const { error } = await supabase.from('character_brewed').insert({
-    character_id: characterId,
-    type: recipe.type,
-    effects: [recipe.name],
-    computed_description: recipe.recipe_text ?? recipe.description ?? recipe.name,
-    choices: {},
-    quantity,
-  })
-  return { error: error?.message ?? null }
-}
-
-/**
  * Initialize all base (non-secret) recipes for a character
  * Called during character creation for herbalist vocation
  */

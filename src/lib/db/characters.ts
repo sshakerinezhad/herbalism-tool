@@ -1189,6 +1189,18 @@ export async function deleteCharacterWeapon(weaponId: string): Promise<{
   return { error: null }
 }
 
+/** Mark a weapon as on-hand (equipped) or not. */
+export async function toggleEquipped(
+  weaponId: string,
+  isEquipped: boolean
+): Promise<{ error: string | null }> {
+  const { error } = await supabase
+    .from('character_weapons')
+    .update({ is_equipped: isEquipped })
+    .eq('id', weaponId)
+  return { error: error?.message ?? null }
+}
+
 /**
  * Update a character weapon's fields
  */

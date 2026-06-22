@@ -23,7 +23,7 @@ import type { ViewTab, SortMode, BrewedTypeFilter } from '@/components/inventory
 import { HerbsTabContent } from './HerbsTabContent'
 import { BrewedTabContent } from './BrewedTabContent'
 import { AddHerbModal } from './AddHerbModal'
-import { AddElixirModal } from './AddElixirModal'
+import { AddBrewedModal } from '@/components/inventory/modals/AddBrewedModal'
 
 interface HerbalismSectionProps {
   characterHerbs: CharacterHerb[]
@@ -64,7 +64,7 @@ export function HerbalismSection({
 
   // Modal state
   const [showAddHerb, setShowAddHerb] = useState(false)
-  const [showAddElixir, setShowAddElixir] = useState(false)
+  const [showAddBrewed, setShowAddBrewed] = useState(false)
 
   // View state
   const [viewTab, setViewTab] = useState<ViewTab>('herbs')
@@ -340,7 +340,7 @@ export function HerbalismSection({
         {/* Add button — right-aligned */}
         {characterId && (
           <button
-            onClick={() => viewTab === 'herbs' ? setShowAddHerb(true) : setShowAddElixir(true)}
+            onClick={() => viewTab === 'herbs' ? setShowAddHerb(true) : setShowAddBrewed(true)}
             className="ml-auto font-ui text-[10px] px-3.5 py-1.5 rounded-full transition-colors"
             style={{
               border: '1px solid rgba(201,169,110,0.2)',
@@ -418,11 +418,11 @@ export function HerbalismSection({
         />
       )}
 
-      {/* Add Elixir Modal */}
-      {showAddElixir && characterId && (
-        <AddElixirModal
+      {/* Add Brewed Modal */}
+      {showAddBrewed && characterId && (
+        <AddBrewedModal
           characterId={characterId}
-          onClose={() => setShowAddElixir(false)}
+          onClose={() => setShowAddBrewed(false)}
           onSuccess={() => onBrewedChanged()}
         />
       )}

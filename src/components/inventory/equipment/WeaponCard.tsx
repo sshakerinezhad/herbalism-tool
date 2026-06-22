@@ -23,8 +23,8 @@ export function WeaponCard({ weapon, isDeleting, onEdit, onDelete, onToggleEquip
 
   return (
     <div
-      className={`bg-zinc-800 rounded-lg p-4 border transition-opacity ${
-        weapon.is_magical ? 'border-purple-700/50' : 'border-zinc-700'
+      className={`bg-grimoire-850 top-edge-highlight rounded-lg p-4 border transition-opacity ${
+        weapon.is_magical ? 'border-purple-700/50' : 'border-sepia-700'
       } ${isDeleting ? 'opacity-50' : ''}`}
     >
       <div className="flex items-start justify-between">
@@ -34,7 +34,7 @@ export function WeaponCard({ weapon, isDeleting, onEdit, onDelete, onToggleEquip
             {weapon.is_magical && <span className="text-purple-400">✨</span>}
             <h3 className="font-medium">{weapon.name}</h3>
             {weapon.is_two_handed && (
-              <span className="text-xs bg-zinc-700 text-zinc-300 px-1.5 py-0.5 rounded">2H</span>
+              <span className="text-xs bg-grimoire-800 text-vellum-300 px-1.5 py-0.5 rounded border border-sepia-700">2H</span>
             )}
             {weapon.is_shield && (
               <span className="text-xs bg-sky-900/50 text-sky-300 px-1.5 py-0.5 rounded">🛡️ Shield</span>
@@ -47,12 +47,12 @@ export function WeaponCard({ weapon, isDeleting, onEdit, onDelete, onToggleEquip
               materialTier >= 4 ? 'bg-purple-900/50 text-purple-300' :
               materialTier >= 3 ? 'bg-blue-900/50 text-blue-300' :
               materialTier >= 2 ? 'bg-green-900/50 text-green-300' :
-              'bg-zinc-700 text-zinc-400'
+              'bg-grimoire-800 text-vellum-400'
             }`}>
               {materialName}
             </span>
           </div>
-          <div className="text-sm text-zinc-400 mt-1">
+          <div className="text-sm text-vellum-300 mt-1">
             {weapon.damage_dice && (
               <span className="text-red-400 font-mono">{weapon.damage_dice}</span>
             )}
@@ -60,7 +60,7 @@ export function WeaponCard({ weapon, isDeleting, onEdit, onDelete, onToggleEquip
               <span className="ml-2">{weapon.damage_type}</span>
             )}
             {weapon.properties && weapon.properties.length > 0 && (
-              <span className="ml-2 text-zinc-500">
+              <span className="ml-2 text-vellum-400">
                 • {weapon.properties.join(', ')}
               </span>
             )}
@@ -68,7 +68,7 @@ export function WeaponCard({ weapon, isDeleting, onEdit, onDelete, onToggleEquip
               <span className="ml-2 text-amber-400 font-mono">/ {weapon.versatile_dice}</span>
             )}
             {weapon.range_normal && (
-              <span className="ml-2 text-zinc-500">
+              <span className="ml-2 text-vellum-400">
                 — {weapon.range_normal}/{weapon.range_long || '—'} ft
               </span>
             )}
@@ -80,14 +80,14 @@ export function WeaponCard({ weapon, isDeleting, onEdit, onDelete, onToggleEquip
                 <span className="font-mono">{formatBonus(weapon.ac_bonus)} AC</span>
               )}
               {weapon.str_requirement != null && (
-                <span className="ml-2 text-zinc-500">Requires STR {weapon.str_requirement}</span>
+                <span className="ml-2 text-vellum-400">Requires STR {weapon.str_requirement}</span>
               )}
             </div>
           ) : (
-            <div className="text-sm text-zinc-400 mt-1">
-              <span className="text-zinc-500">Attack</span>{' '}
-              <span className="font-mono text-emerald-400">{formatBonus(mods.attackBonus)}</span>
-              <span className="ml-3 text-zinc-500">Damage</span>{' '}
+            <div className="text-sm text-vellum-400 mt-1">
+              <span className="text-vellum-400">Attack</span>{' '}
+              <span className="font-mono text-bronze-bright">{formatBonus(mods.attackBonus)}</span>
+              <span className="ml-3 text-vellum-400">Damage</span>{' '}
               <span className="font-mono text-red-400">
                 {mods.effectiveDamageDice || '—'} {formatBonus(mods.damageBonus)}
               </span>
@@ -102,7 +102,7 @@ export function WeaponCard({ weapon, isDeleting, onEdit, onDelete, onToggleEquip
           )}
 
           {weapon.notes && (
-            <p className="text-xs text-zinc-500 mt-2">{weapon.notes}</p>
+            <p className="text-xs text-vellum-400 mt-2">{weapon.notes}</p>
           )}
         </div>
 
@@ -116,7 +116,7 @@ export function WeaponCard({ weapon, isDeleting, onEdit, onDelete, onToggleEquip
           </button>
           <button
             onClick={onEdit}
-            className="text-xs px-2 py-1 text-zinc-400 hover:text-blue-400 transition-colors"
+            className="text-xs px-2 py-1 text-vellum-400 hover:text-bronze-bright transition-colors"
             title="Edit weapon"
           >
             ✏️
@@ -132,7 +132,7 @@ export function WeaponCard({ weapon, isDeleting, onEdit, onDelete, onToggleEquip
               </button>
               <button
                 onClick={() => setShowConfirm(false)}
-                className="text-xs px-2 py-1 bg-zinc-700 hover:bg-zinc-600 rounded transition-colors"
+                className="text-xs px-2 py-1 bg-grimoire-800 hover:bg-grimoire-700 border border-sepia-700 rounded transition-colors text-vellum-300"
               >
                 Cancel
               </button>
@@ -140,7 +140,7 @@ export function WeaponCard({ weapon, isDeleting, onEdit, onDelete, onToggleEquip
           ) : (
             <button
               onClick={() => setShowConfirm(true)}
-              className="text-xs px-2 py-1 text-zinc-400 hover:text-red-400 transition-colors"
+              className="text-xs px-2 py-1 text-vellum-400 hover:text-red-400 transition-colors"
             >
               🗑️
             </button>

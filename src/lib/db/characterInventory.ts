@@ -285,6 +285,46 @@ export async function unlockCharacterRecipe(
   return { error: error?.message || null }
 }
 
+// ============ Bomb Fusion ============
+
+/**
+ * Fuse N bombs (by character_brewed id) onto N base arrows -> N special arrows.
+ */
+export async function fuseBombsToArrows(
+  characterId: string,
+  brewedId: number,
+  count: number
+): Promise<{ error: string | null }> {
+  const { data, error } = await supabase.rpc('fuse_bombs_to_arrows', {
+    p_character_id: characterId,
+    p_brewed_id: brewedId,
+    p_count: count,
+  })
+  if (error) return { error: error.message }
+  const result = data as { error?: string } | null
+  if (result?.error) return { error: result.error }
+  return { error: null }
+}
+
+/**
+ * Raw-add a brewed item from a recipe (gifts/DM awards).
+ */
+export async function addBrewedItem(
+  characterId: string,
+  recipe: Recipe,
+  quantity: number = 1
+): Promise<{ error: string | null }> {
+  const { error } = await supabase.from('character_brewed').insert({
+    character_id: characterId,
+    type: recipe.type,
+    effects: [recipe.name],
+    computed_description: recipe.recipe_text ?? recipe.description ?? recipe.name,
+    choices: {},
+    quantity,
+  })
+  return { error: error?.message ?? null }
+}
+
 /**
  * Initialize all base (non-secret) recipes for a character
  * Called during character creation for herbalist vocation

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { deleteCharacterWeapon } from '@/lib/db/characters'
+import { deleteCharacterWeapon, toggleEquipped } from '@/lib/db/characters'
 import type { CharacterWeapon } from '@/lib/types'
 import { WeaponCard } from './WeaponCard'
 import { EditWeaponModal } from '../modals'
@@ -41,6 +41,15 @@ export function WeaponsTab({
     setDeletingId(weaponId)
     const { error } = await deleteCharacterWeapon(weaponId)
     setDeletingId(null)
+    if (error) {
+      setError(error)
+    } else {
+      onWeaponDeleted()
+    }
+  }
+
+  async function handleToggleEquip(weapon: CharacterWeapon) {
+    const { error } = await toggleEquipped(weapon.id, !weapon.is_equipped)
     if (error) {
       setError(error)
     } else {
@@ -91,6 +100,7 @@ export function WeaponsTab({
                 isDeleting={deletingId === weapon.id}
                 onEdit={() => setEditingWeapon(weapon)}
                 onDelete={() => handleDelete(weapon.id)}
+                onToggleEquip={() => handleToggleEquip(weapon)}
               />
             ))}
           </div>

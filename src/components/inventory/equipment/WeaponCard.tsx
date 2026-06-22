@@ -10,9 +10,10 @@ interface WeaponCardProps {
   isDeleting: boolean
   onEdit: () => void
   onDelete: () => void
+  onToggleEquip: () => void
 }
 
-export function WeaponCard({ weapon, isDeleting, onEdit, onDelete }: WeaponCardProps) {
+export function WeaponCard({ weapon, isDeleting, onEdit, onDelete, onToggleEquip }: WeaponCardProps) {
   const [showConfirm, setShowConfirm] = useState(false)
 
   const materialName = weapon.material_ref?.name || weapon.material || 'Unknown'
@@ -37,6 +38,9 @@ export function WeaponCard({ weapon, isDeleting, onEdit, onDelete }: WeaponCardP
             )}
             {weapon.is_shield && (
               <span className="text-xs bg-sky-900/50 text-sky-300 px-1.5 py-0.5 rounded">🛡️ Shield</span>
+            )}
+            {weapon.is_equipped && (
+              <span className="text-xs bg-bronze-muted/30 text-bronze-bright px-1.5 py-0.5 rounded">On hand</span>
             )}
             <span className="text-xs bg-amber-900/40 text-amber-300 px-1.5 py-0.5 rounded">{mods.makeLabel}</span>
             <span className={`text-xs px-1.5 py-0.5 rounded ${
@@ -103,6 +107,13 @@ export function WeaponCard({ weapon, isDeleting, onEdit, onDelete }: WeaponCardP
         </div>
 
         <div className="flex flex-col items-end gap-1 ml-4">
+          <button
+            onClick={onToggleEquip}
+            className="text-xs px-2 py-1 rounded border border-sepia-700 text-vellum-400 hover:text-bronze-bright transition-colors"
+            title={weapon.is_equipped ? 'Remove from on-hand' : 'Put on hand'}
+          >
+            {weapon.is_equipped ? 'Unequip' : 'Equip'}
+          </button>
           <button
             onClick={onEdit}
             className="text-xs px-2 py-1 text-zinc-400 hover:text-blue-400 transition-colors"

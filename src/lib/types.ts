@@ -263,23 +263,6 @@ export type CharacterWeapon = {
   material_ref?: Material | null
 }
 
-/** Hand type for weapon slots */
-export type WeaponHand = 'right' | 'left'
-
-/** A weapon slot (3 per hand, Elden Ring style) */
-export type CharacterWeaponSlot = {
-  id: string
-  character_id: string
-  hand: WeaponHand
-  slot_number: WeaponSlotNumber
-  weapon_id: string | null
-  is_active: boolean
-  selected_ammo_id: string | null
-  // Joined data
-  weapon?: CharacterWeapon | null
-  selected_ammo?: CharacterItem | null
-}
-
 /** A quick slot for combat items */
 export type CharacterQuickSlot = {
   id: string
@@ -310,9 +293,6 @@ export type CharacterItem = {
 }
 
 // ============ Slot Number Types ============
-
-/** Valid weapon slot numbers (3 per hand) */
-export type WeaponSlotNumber = 1 | 2 | 3
 
 /** Valid quick slot numbers (6 total) */
 export type QuickSlotNumber = 1 | 2 | 3 | 4 | 5 | 6
@@ -423,7 +403,6 @@ export type CharacterWithRelations = Character & {
   armor: Array<CharacterArmorPiece & { slot: ArmorSlot }>
   weapons: CharacterWeapon[]
   items: CharacterItem[]
-  weapon_slots: CharacterWeaponSlot[]
   quick_slots: CharacterQuickSlot[]
 }
 

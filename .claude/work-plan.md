@@ -19,9 +19,17 @@ Active: **Wave 2C — Weapons, Combat Gear & Brew Correctness**
         reveals for Thrown OR Ammunition; WeaponCard shows computed attack/damage + make/shield badges.
       - tsc clean. **User must run `npm run db:push && npm run db:types`** to apply 014 + regen types.
       - WeaponCard still uses legacy zinc palette — grimoire restyle happens in Piece 5.
-- [ ] **Piece 3 — Equip overhaul** (Equipped Weapons list off `is_equipped`; retire `character_weapon_slots`)
-- [ ] **Piece 4 — Ammo, special arrows (brew-time fusion) & raw add-to-inventory**
+- [x] **Piece 3 — Equip overhaul** — plan: `docs/superpowers/plans/2026-06-22-2c-pieces-345.md`
+      - Equipped Weapons list off `is_equipped`; `toggleEquipped` mutation; `EquippedWeaponsList`;
+        equip toggle on WeaponCard. Migration `015` (drop `character_weapon_slots`, keep quick-slot
+        init) APPLIED to prod via Management API + recorded in schema_migrations; types regenerated.
+        tsc + lint clean. Reviewed: compliant. (Minor: dead slot types remain in types.ts — sweep later.)
+- [~] **Piece 4 — Ammo, special arrows (bomb→arrow fusion) & raw add-to-inventory** — in progress
+      - Migration `016` (`fuse_bombs_to_arrows` RPC, 1 bomb+1 base arrow→1 special arrow) APPLIED +
+        recorded + types regenerated. Special arrows = `character_items` ammo with `properties.source`.
+        TS wrappers + fuse UI + raw-add herb/brewed modals being built.
 - [ ] **Piece 5 — AC/shield integration + grimoire visual pass**
+      - Shield AC shown as secondary bubble (one active shield at a time); zinc→grimoire restyle.
 
 ## Open item to confirm
 

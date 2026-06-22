@@ -1065,9 +1065,10 @@ export async function toggleEquipped(
   weaponId: string,
   isEquipped: boolean
 ): Promise<{ error: string | null }> {
+  // Unequipping a shield also stops it being wielded (clears stale shield_active).
   const { error } = await supabase
     .from('character_weapons')
-    .update({ is_equipped: isEquipped })
+    .update(isEquipped ? { is_equipped: true } : { is_equipped: false, shield_active: false })
     .eq('id', weaponId)
   return { error: error?.message ?? null }
 }

@@ -152,21 +152,21 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-zinc-800 rounded-lg border border-zinc-700 max-w-2xl w-full max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-zinc-700">
-          <h3 className="font-medium text-lg">Add Weapon</h3>
-          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-200">✕</button>
+      <div className="bg-grimoire-850 rounded-lg border border-sepia-700 max-w-2xl w-full max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b border-sepia-700">
+          <h3 className="font-medium text-lg text-vellum-100">Add Weapon</h3>
+          <button onClick={onClose} className="text-vellum-400 hover:text-vellum-200">✕</button>
         </div>
 
         {/* Mode Tabs */}
-        <div className="flex border-b border-zinc-700">
+        <div className="flex border-b border-sepia-700">
           <button
             type="button"
             onClick={() => setMode('template')}
             className={`flex-1 py-3 text-sm font-medium transition-colors ${
               mode === 'template'
-                ? 'bg-zinc-700 text-white border-b-2 border-emerald-500'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-grimoire-800 text-vellum-100 border-b-2 border-bronze-bright'
+                : 'text-vellum-400 hover:text-vellum-200'
             }`}
           >
             📋 From Template
@@ -176,8 +176,8 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
             onClick={() => setMode('custom')}
             className={`flex-1 py-3 text-sm font-medium transition-colors ${
               mode === 'custom'
-                ? 'bg-zinc-700 text-white border-b-2 border-purple-500'
-                : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-grimoire-800 text-vellum-100 border-b-2 border-purple-500'
+                : 'text-vellum-400 hover:text-vellum-200'
             }`}
           >
             ✨ Custom Weapon
@@ -195,12 +195,12 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search weapons..."
-                    className="flex-1 px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                    className="flex-1 px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100"
                   />
                   <select
                     value={categoryFilter}
                     onChange={(e) => setCategoryFilter(e.target.value)}
-                    className="px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                    className="px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100"
                   >
                     <option value="all">All Types</option>
                     <option value="simple_melee">Simple Melee</option>
@@ -213,10 +213,10 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                 {/* Weapon Selection */}
                 <div>
                   <label className="block text-sm font-medium mb-2">Select Weapon Type *</label>
-                  <div className="max-h-48 overflow-y-auto bg-zinc-900 rounded-lg border border-zinc-700 p-2 space-y-3">
+                  <div className="max-h-48 overflow-y-auto bg-grimoire-950 rounded-lg border border-sepia-700 p-2 space-y-3">
                     {Object.entries(groupedTemplates).map(([category, categoryTemplates]) => (
                       <div key={category}>
-                        <div className="text-xs text-zinc-500 uppercase tracking-wide mb-1 px-2">
+                        <div className="text-xs text-vellum-400 uppercase tracking-wide mb-1 px-2">
                           {getCategoryIcon(category)} {formatCategory(category)}
                         </div>
                         <div className="grid grid-cols-2 gap-1">
@@ -227,12 +227,12 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                               onClick={() => setSelectedTemplateId(template.id)}
                               className={`text-left p-2 rounded transition-colors ${
                                 selectedTemplateId === template.id
-                                  ? 'bg-emerald-700 text-white'
-                                  : 'hover:bg-zinc-800'
+                                  ? 'bg-bronze-muted/40 text-vellum-100 border border-bronze-muted/60'
+                                  : 'hover:bg-grimoire-800 text-vellum-200'
                               }`}
                             >
                               <div className="text-sm font-medium">{template.name}</div>
-                              <div className="text-xs text-zinc-400">
+                              <div className="text-xs text-vellum-400">
                                 {template.damage_dice} {template.damage_type}
                               </div>
                             </button>
@@ -241,19 +241,19 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                       </div>
                     ))}
                     {Object.keys(groupedTemplates).length === 0 && (
-                      <p className="text-center text-zinc-500 py-4">No weapons match your search</p>
+                      <p className="text-center text-vellum-400 py-4">No weapons match your search</p>
                     )}
                   </div>
                 </div>
 
                 {/* Selected Weapon Preview */}
                 {selectedTemplate && (
-                  <div className="bg-zinc-900 rounded-lg p-3 border border-emerald-700/50">
+                  <div className="bg-grimoire-950 rounded-lg p-3 border border-bronze-muted/40">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-lg">{getCategoryIcon(selectedTemplate.category)}</span>
                       <span className="font-medium">{selectedTemplate.name}</span>
                     </div>
-                    <div className="text-sm text-zinc-400 grid grid-cols-2 gap-2">
+                    <div className="text-sm text-vellum-300 grid grid-cols-2 gap-2">
                       <div>Damage: <span className="text-red-400">{selectedTemplate.damage_dice} {selectedTemplate.damage_type}</span></div>
                       {selectedTemplate.versatile_dice && (
                         <div>Versatile: <span className="text-amber-400">{selectedTemplate.versatile_dice}</span></div>
@@ -274,7 +274,7 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                   <select
                     value={selectedMaterialId}
                     onChange={(e) => setSelectedMaterialId(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                    className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100"
                   >
                     {materials.map(m => (
                       <option key={m.id} value={m.id}>
@@ -285,7 +285,7 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                     ))}
                   </select>
                   {selectedMaterial?.description && (
-                    <p className="text-xs text-zinc-500 mt-1">{selectedMaterial.description}</p>
+                    <p className="text-xs text-vellum-400 mt-1">{selectedMaterial.description}</p>
                   )}
                 </div>
 
@@ -298,7 +298,7 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                       value={templateCustomName}
                       onChange={(e) => setTemplateCustomName(e.target.value)}
                       placeholder={selectedTemplate?.name || 'e.g., Oathkeeper'}
-                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                      className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100"
                     />
                   </div>
                   <div className="flex items-end pb-2">
@@ -320,7 +320,7 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                     value={templateNotes}
                     onChange={(e) => setTemplateNotes(e.target.value)}
                     rows={2}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500 resize-none"
+                    className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100 resize-none"
                     placeholder="Special properties, enchantments..."
                   />
                 </div>
@@ -328,7 +328,7 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
             ) : (
               /* Custom Mode */
               <>
-                <p className="text-sm text-zinc-400 mb-2">
+                <p className="text-sm text-vellum-400 mb-2">
                   Create a fully custom weapon for homebrew, magical items, or unique gear.
                 </p>
 
@@ -340,7 +340,7 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                     value={customName}
                     onChange={(e) => setCustomName(e.target.value)}
                     placeholder="e.g., Flame Tongue, Vorpal Blade"
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                    className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100"
                   />
                 </div>
 
@@ -353,7 +353,7 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                       value={customDamageDice}
                       onChange={(e) => setCustomDamageDice(e.target.value)}
                       placeholder="e.g., 1d8, 2d6"
-                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                      className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100"
                     />
                   </div>
                   <div>
@@ -361,7 +361,7 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                     <select
                       value={customDamageType}
                       onChange={(e) => setCustomDamageType(e.target.value)}
-                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                      className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100"
                     >
                       <option value="slashing">Slashing</option>
                       <option value="piercing">Piercing</option>
@@ -386,7 +386,7 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                   <select
                     value={customWeaponType}
                     onChange={(e) => setCustomWeaponType(e.target.value)}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                    className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100"
                   >
                     <option value="simple_melee">Simple Melee</option>
                     <option value="simple_ranged">Simple Ranged</option>
@@ -400,7 +400,7 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                 {/* Properties */}
                 <div>
                   <label className="block text-sm font-medium mb-1">Properties</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-zinc-900 border border-zinc-700 rounded-lg p-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-grimoire-950 border border-sepia-700 rounded-lg p-3">
                     {WEAPON_PROPERTIES.map((prop) => (
                       <label key={prop} className="flex items-center gap-2 cursor-pointer text-sm">
                         <input
@@ -424,9 +424,9 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                       value={customVersatileDice}
                       onChange={(e) => setCustomVersatileDice(e.target.value)}
                       placeholder="e.g., 1d10 (two-handed damage)"
-                      className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                      className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100"
                     />
-                    <p className="text-xs text-zinc-500 mt-1">
+                    <p className="text-xs text-vellum-400 mt-1">
                       For versatile weapons — the damage die when wielded two-handed.
                     </p>
                   </div>
@@ -443,7 +443,7 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                           value={customRangeNormal}
                           onChange={(e) => setCustomRangeNormal(e.target.value)}
                           placeholder="e.g., 20"
-                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                          className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100"
                         />
                       </div>
                       <div>
@@ -453,11 +453,11 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                           value={customRangeLong}
                           onChange={(e) => setCustomRangeLong(e.target.value)}
                           placeholder="e.g., 60"
-                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                          className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100"
                         />
                       </div>
                     </div>
-                    <p className="text-xs text-zinc-500 mt-1">
+                    <p className="text-xs text-vellum-400 mt-1">
                       Range (normal / long) in feet, for thrown or ammunition weapons.
                     </p>
                   </div>
@@ -469,13 +469,13 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                   <select
                     value={customMakeTier}
                     onChange={(e) => setCustomMakeTier(e.target.value)}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                    className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100"
                   >
                     {MAKE_TIERS.map((tier) => (
                       <option key={tier} value={tier}>{MAKE_TIER_INFO[tier].label}</option>
                     ))}
                   </select>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-vellum-400 mt-1">
                     {MAKE_TIER_INFO[customMakeTier as keyof typeof MAKE_TIER_INFO]?.note}
                   </p>
                 </div>
@@ -500,7 +500,7 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                           value={customAcBonus}
                           onChange={(e) => setCustomAcBonus(e.target.value)}
                           placeholder="e.g., 2"
-                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                          className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100"
                         />
                       </div>
                       <div>
@@ -510,7 +510,7 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                           value={customStrRequirement}
                           onChange={(e) => setCustomStrRequirement(e.target.value)}
                           placeholder="e.g., 13"
-                          className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500"
+                          className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100"
                         />
                       </div>
                     </div>
@@ -546,7 +546,7 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
                     value={customNotes}
                     onChange={(e) => setCustomNotes(e.target.value)}
                     rows={3}
-                    className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500 resize-none"
+                    className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100 resize-none"
                     placeholder="Describe special properties, enchantments, lore..."
                   />
                 </div>
@@ -555,22 +555,18 @@ export function AddWeaponModal({ characterId, templates, materials, onClose, onS
           </div>
 
           {/* Footer */}
-          <div className="flex gap-3 p-4 border-t border-zinc-700">
+          <div className="flex gap-3 p-4 border-t border-sepia-700">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium transition-colors"
+              className="btn btn-secondary flex-1 py-2 rounded-lg font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving || (mode === 'template' && !selectedTemplateId) || (mode === 'custom' && !customName.trim())}
-              className={`flex-1 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 ${
-                mode === 'template'
-                  ? 'bg-emerald-700 hover:bg-emerald-600'
-                  : 'bg-purple-700 hover:bg-purple-600'
-              }`}
+              className="btn btn-primary flex-1 py-2 rounded-lg font-medium disabled:opacity-50"
             >
               {saving ? 'Adding...' : 'Add Weapon'}
             </button>

@@ -87,12 +87,12 @@ export function EditWeaponModal({ weapon, onClose, onSuccess, setError }: EditWe
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
       <form
         onSubmit={handleSubmit}
-        className="bg-zinc-900 rounded-xl border border-zinc-700 max-w-lg w-full max-h-[90vh] flex flex-col"
+        className="bg-grimoire-850 rounded-xl border border-sepia-700 max-w-lg w-full max-h-[90vh] flex flex-col"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-zinc-700">
-          <h2 className="text-lg font-semibold">Edit Weapon</h2>
-          <button type="button" onClick={onClose} className="text-zinc-400 hover:text-zinc-200">✕</button>
+        <div className="flex items-center justify-between p-4 border-b border-sepia-700">
+          <h2 className="text-lg font-semibold text-vellum-100">Edit Weapon</h2>
+          <button type="button" onClick={onClose} className="text-vellum-400 hover:text-vellum-200">✕</button>
         </div>
 
         {/* Scrollable content */}
@@ -101,7 +101,7 @@ export function EditWeaponModal({ weapon, onClose, onSuccess, setError }: EditWe
           <div>
             <label className="block text-sm font-medium mb-1">Weapon Name *</label>
             <input type="text" value={name} onChange={e => setName(e.target.value)}
-              className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500" />
+              className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100" />
           </div>
 
           {/* Damage */}
@@ -109,12 +109,12 @@ export function EditWeaponModal({ weapon, onClose, onSuccess, setError }: EditWe
             <div>
               <label className="block text-sm font-medium mb-1">Damage Dice</label>
               <input type="text" value={damageDice} onChange={e => setDamageDice(e.target.value)}
-                placeholder="e.g., 1d8" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500" />
+                placeholder="e.g., 1d8" className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Damage Type</label>
               <select value={damageType} onChange={e => setDamageType(e.target.value)}
-                className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500">
+                className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100">
                 <option value="slashing">Slashing</option>
                 <option value="piercing">Piercing</option>
                 <option value="bludgeoning">Bludgeoning</option>
@@ -136,7 +136,7 @@ export function EditWeaponModal({ weapon, onClose, onSuccess, setError }: EditWe
           <div>
             <label className="block text-sm font-medium mb-1">Weapon Category</label>
             <select value={weaponType} onChange={e => setWeaponType(e.target.value)}
-              className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500">
+              className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100">
               <option value="simple_melee">Simple Melee</option>
               <option value="simple_ranged">Simple Ranged</option>
               <option value="martial_melee">Martial Melee</option>
@@ -149,7 +149,7 @@ export function EditWeaponModal({ weapon, onClose, onSuccess, setError }: EditWe
           {/* Properties */}
           <div>
             <label className="block text-sm font-medium mb-1">Properties</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-zinc-900 border border-zinc-700 rounded-lg p-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-grimoire-950 border border-sepia-700 rounded-lg p-3">
               {WEAPON_PROPERTIES.map((prop) => (
                 <label key={prop} className="flex items-center gap-2 cursor-pointer text-sm">
                   <input
@@ -170,8 +170,8 @@ export function EditWeaponModal({ weapon, onClose, onSuccess, setError }: EditWe
               <label className="block text-sm font-medium mb-1">Versatile Dice</label>
               <input type="text" value={versatileDice} onChange={e => setVersatileDice(e.target.value)}
                 placeholder="e.g., 1d10 (two-handed damage)"
-                className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500" />
-              <p className="text-xs text-zinc-500 mt-1">
+                className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100" />
+              <p className="text-xs text-vellum-400 mt-1">
                 For versatile weapons — the damage die when wielded two-handed.
               </p>
             </div>
@@ -184,15 +184,15 @@ export function EditWeaponModal({ weapon, onClose, onSuccess, setError }: EditWe
                 <div>
                   <label className="block text-sm font-medium mb-1">Range (Normal)</label>
                   <input type="number" value={rangeNormal} onChange={e => setRangeNormal(e.target.value)}
-                    placeholder="e.g., 20" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500" />
+                    placeholder="e.g., 20" className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">Range (Long)</label>
                   <input type="number" value={rangeLong} onChange={e => setRangeLong(e.target.value)}
-                    placeholder="e.g., 60" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500" />
+                    placeholder="e.g., 60" className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100" />
                 </div>
               </div>
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-xs text-vellum-400 mt-1">
                 Range (normal / long) in feet, for thrown or ammunition weapons.
               </p>
             </div>
@@ -202,12 +202,12 @@ export function EditWeaponModal({ weapon, onClose, onSuccess, setError }: EditWe
           <div>
             <label className="block text-sm font-medium mb-1">Make Tier</label>
             <select value={makeTier} onChange={e => setMakeTier(e.target.value)}
-              className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500">
+              className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100">
               {MAKE_TIERS.map((tier) => (
                 <option key={tier} value={tier}>{MAKE_TIER_INFO[tier].label}</option>
               ))}
             </select>
-            <p className="text-xs text-zinc-500 mt-1">
+            <p className="text-xs text-vellum-400 mt-1">
               {MAKE_TIER_INFO[makeTier as keyof typeof MAKE_TIER_INFO]?.note}
             </p>
           </div>
@@ -223,12 +223,12 @@ export function EditWeaponModal({ weapon, onClose, onSuccess, setError }: EditWe
                 <div>
                   <label className="block text-sm font-medium mb-1">AC Bonus</label>
                   <input type="number" value={acBonus} onChange={e => setAcBonus(e.target.value)}
-                    placeholder="e.g., 2" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500" />
+                    placeholder="e.g., 2" className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">STR Requirement</label>
                   <input type="number" value={strRequirement} onChange={e => setStrRequirement(e.target.value)}
-                    placeholder="e.g., 13" className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500" />
+                    placeholder="e.g., 13" className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100" />
                 </div>
               </div>
             )}
@@ -250,19 +250,19 @@ export function EditWeaponModal({ weapon, onClose, onSuccess, setError }: EditWe
           <div>
             <label className="block text-sm font-medium mb-1">Description / Notes</label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3}
-              className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:border-zinc-500 resize-none"
+              className="w-full px-3 py-2 bg-grimoire-950 border border-sepia-700 rounded-lg focus:outline-none focus:border-bronze-muted text-vellum-100 resize-none"
               placeholder="Special properties, enchantments, lore..." />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 p-4 border-t border-zinc-700">
+        <div className="flex gap-3 p-4 border-t border-sepia-700">
           <button type="button" onClick={onClose}
-            className="flex-1 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-medium transition-colors">
+            className="btn btn-secondary flex-1 py-2 rounded-lg font-medium">
             Cancel
           </button>
           <button type="submit" disabled={saving || !name.trim()}
-            className="flex-1 py-2 bg-blue-700 hover:bg-blue-600 rounded-lg font-medium transition-colors disabled:opacity-50">
+            className="btn btn-primary flex-1 py-2 rounded-lg font-medium disabled:opacity-50">
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>

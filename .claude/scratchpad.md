@@ -61,13 +61,28 @@ Pieces 1 and 2 of 5. All committed and merged to `main`.
 - Still-open browser verification (couldn't run the app here): brew batch DC + roll-myself checkbox;
   weapon Add/Edit modals + WeaponCard computed modifiers.
 
-## What to do next (next session: use superpowers — writing-plans per piece; spec exists so brainstorming likely unneeded)
-- Piece 3 — Equip overhaul: Equipped Weapons list off `is_equipped`; retire
-  `character_weapon_slots` (drop table + its hand UI: `WeaponSlots.tsx`, `WeaponSlotCard.tsx`,
-  rework `EquipmentWeaponsPanel.tsx`); add a `toggleEquipped` mutation; drop slot fetch/equip hooks.
-- Piece 4 — Ammo + special arrows + raw add-to-inventory: arrow-type catalog + quantities;
-  brew-time special-arrow fusion; generic raw "Add item" path for all categories.
-- Piece 5 — AC/shield integration + grimoire visual pass: shield-active AC math + icon;
-  apply the 2.0 design system to weapon list/cards/ammo (WeaponCard still uses legacy zinc palette).
+## What's left in WAVE 2 (two chunks, not just 2C)
+
+### A) Rest of 2C — Pieces 3-5 (spec: `docs/superpowers/specs/2026-06-14-wave2c-weapons-combat-design.md`)
+- **Piece 3 — Equip overhaul** [no fresh brainstorm — already decided; go to writing-plans]:
+  Equipped Weapons list off `is_equipped`; retire `character_weapon_slots` (drop table + its hand UI:
+  `WeaponSlots.tsx`, `WeaponSlotCard.tsx`, rework `EquipmentWeaponsPanel.tsx`); add a `toggleEquipped`
+  mutation; drop slot fetch/equip hooks.
+- **Piece 4 — Ammo + special arrows + raw add-to-inventory** [DO a short focused brainstorm first —
+  the *what* is decided but the *how* isn't: arrow-type catalog data model, brew-time fusion UX, the
+  generic "Add item" flow]: arrow-type catalog + quantities; brew-time special-arrow fusion; generic
+  raw "Add item" path for all categories.
+- **Piece 5 — AC/shield integration + grimoire visual pass** [no fresh brainstorm — go to writing-plans]:
+  shield-active AC math + icon; apply the 2.0 design system to weapon list/cards/ammo (WeaponCard still
+  uses legacy zinc palette).
+
+### B) Deferred 2A visual pass [NEEDS its own brainstorm — wave2.md says so] (spec: `docs/superpowers/specs/2026-03-12-profile-navigation-restructure.md`)
+Navigation/routing shipped in 2A, but the visual pass was punted. Outstanding:
+- Character bar improvements (trait modals, skill proficiencies)
+- Mobile responsive nav collapse
+- Character creation wizard restyling
+- Design-system polish on profile/settings/character-creation page content (moved as-is, never styled)
+
+After both chunks land, Wave 2 is complete. (Wave 3+ — e.g. 3B Martial Mastery engine — is future.)
 
 See `.claude/work-plan.md` for the live checklist.

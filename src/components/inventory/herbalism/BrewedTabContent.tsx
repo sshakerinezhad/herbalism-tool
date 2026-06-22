@@ -25,6 +25,8 @@ interface BrewedTabContentProps {
   onCancelConfirm: () => void
   onShowExpendAll: (id: number) => void
   onCancelExpendAll: () => void
+  /** Called when user clicks "Fuse to arrows" on a bomb card */
+  onFuse?: (item: CharacterBrewedItem) => void
 }
 
 const TYPE_TAB_META: Record<string, { label: string; icon: string }> = {
@@ -48,6 +50,7 @@ export function BrewedTabContent(props: BrewedTabContentProps) {
     onCancelConfirm,
     onShowExpendAll,
     onCancelExpendAll,
+    onFuse,
   } = props
 
   if (brewedItems.length === 0) {
@@ -110,6 +113,7 @@ export function BrewedTabContent(props: BrewedTabContentProps) {
               onCancelExpendAll()
             }}
             onShowExpendAll={() => onShowExpendAll(item.id)}
+            onFuse={item.type === 'bomb' && onFuse ? () => onFuse(item) : undefined}
           />
         ))}
       </div>

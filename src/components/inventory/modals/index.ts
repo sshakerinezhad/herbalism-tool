@@ -10,3 +10,6 @@ export type { AddItemModalProps } from './AddItemModal'
 
 export { EditWeaponModal } from './EditWeaponModal'
 export type { EditWeaponModalProps } from './EditWeaponModal'
+
+export { FuseArrowsModal } from './FuseArrowsModal'
+export type { FuseArrowsModalProps } from './FuseArrowsModal'

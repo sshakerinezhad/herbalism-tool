@@ -23,6 +23,8 @@ type BrewedItemCardProps = {
   onExpendAll: () => void
   onCancelConfirm: () => void
   onShowExpendAll: () => void
+  /** For bomb-type items only: opens the FuseArrowsModal in the parent */
+  onFuse?: () => void
 }
 
 // Type-based visual system (color = type, no badges)
@@ -99,6 +101,7 @@ export function BrewedItemCard({
   onExpendAll,
   onCancelConfirm,
   onShowExpendAll,
+  onFuse,
 }: BrewedItemCardProps) {
   const [expanded, setExpanded] = useState(false)
 
@@ -217,6 +220,11 @@ export function BrewedItemCard({
                   {item.quantity > 1 && (
                     <button onClick={onShowExpendAll} disabled={isDeleting} className="btn-secondary font-ui text-[10px] px-4 py-1.5 rounded-full">
                       Expend All
+                    </button>
+                  )}
+                  {item.type === 'bomb' && onFuse && (
+                    <button onClick={onFuse} disabled={isDeleting} className="btn-secondary font-ui text-[10px] px-4 py-1.5 rounded-full">
+                      Fuse to arrows
                     </button>
                   )}
                 </>

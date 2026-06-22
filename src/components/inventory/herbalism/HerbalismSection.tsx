@@ -15,9 +15,10 @@ import {
   removeCharacterHerbs,
   consumeCharacterBrewedItem,
 } from '@/lib/db/characterInventory'
-import { queryKeys } from '@/lib/hooks/queries'
+import { queryKeys, useCharacterItems, useInvalidateQueries } from '@/lib/hooks/queries'
 import { getPrimaryElement, ELEMENT_ORDER, RARITY_ORDER } from '@/lib/constants'
 import { ElementSummary } from '@/components/inventory'
+import { FuseArrowsModal } from '@/components/inventory/modals/FuseArrowsModal'
 import type { ViewTab, SortMode, BrewedTypeFilter } from '@/components/inventory/types'
 import { HerbsTabContent } from './HerbsTabContent'
 import { BrewedTabContent } from './BrewedTabContent'
@@ -44,6 +45,22 @@ export function HerbalismSection({
   setError,
 }: HerbalismSectionProps) {
   const queryClient = useQueryClient()
+  const { invalidateCharacterBrewedItems, invalidateCharacterItems } = useInvalidateQueries()
+
+  // Fuse modal state
+  const [fuseTarget, setFuseTarget] = useState<CharacterBrewedItem | null>(null)
+
+  // Base arrow count (base arrows = ammo category, ammo_type === 'arrow', no fused_bomb source)
+  const { data: characterItems = [] } = useCharacterItems(characterId)
+  const baseArrowCount = useMemo(() => {
+    return characterItems
+      .filter(i =>
+        i.category === 'ammo' &&
+        i.ammo_type === 'arrow' &&
+        !(i.properties as Record<string, unknown> | null)?.source
+      )
+      .reduce((sum, i) => sum + i.quantity, 0)
+  }, [characterItems])
 
   // Modal state
   const [showAddHerb, setShowAddHerb] = useState(false)
@@ -383,6 +400,7 @@ export function HerbalismSection({
             setDeleteAllBrewedConfirmId(id)
           }}
           onCancelExpendAll={() => setDeleteAllBrewedConfirmId(null)}
+          onFuse={(item) => setFuseTarget(item)}
         />
       )}
 
@@ -406,6 +424,20 @@ export function HerbalismSection({
           characterId={characterId}
           onClose={() => setShowAddElixir(false)}
           onSuccess={() => onBrewedChanged()}
+        />
+      )}
+
+      {/* Fuse Arrows Modal */}
+      {fuseTarget && characterId && (
+        <FuseArrowsModal
+          bomb={fuseTarget}
+          baseArrowCount={baseArrowCount}
+          characterId={characterId}
+          onClose={() => setFuseTarget(null)}
+          onDone={() => {
+            invalidateCharacterBrewedItems(characterId)
+            invalidateCharacterItems(characterId)
+          }}
         />
       )}
     </>

@@ -1105,6 +1105,27 @@ export async function updateCharacterWeapon(
   return { error: null }
 }
 
+/** Make one shield active (or pass null to deactivate all). Only one active at a time. */
+export async function setActiveShield(
+  characterId: string,
+  weaponId: string | null
+): Promise<{ error: string | null }> {
+  const { error: e1 } = await supabase
+    .from('character_weapons')
+    .update({ shield_active: false })
+    .eq('character_id', characterId)
+    .eq('is_shield', true)
+  if (e1) return { error: e1.message }
+  if (weaponId) {
+    const { error: e2 } = await supabase
+      .from('character_weapons')
+      .update({ shield_active: true })
+      .eq('id', weaponId)
+    if (e2) return { error: e2.message }
+  }
+  return { error: null }
+}
+
 /**
  * Consume (use) a character item
  * Uses RPC for atomic operation

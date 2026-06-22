@@ -94,16 +94,40 @@ Applied grimoire design system to all herbalism pages. Added herb info modals, s
 
 **Plan:** `.claude/changelog/2026-04-11-wave2b-workplan.md` | **Spec:** `docs/superpowers/specs/2026-04-11-herbalism-inventory-design.md` (content in plan) | **Mockups:** `.superpowers/brainstorm/2b-brainstorm/`
 
-### 2C — Weapons & Combat
+### 2C — Weapons, Combat Gear & Brew Correctness ✓ COMPLETE
 
-**Functional:**
-- Weapon equip system overhaul (DB slots at `character_weapon_slots` exist but have no UI)
-- Two-handed slot behavior (grey out off-hand but still allow adding weapons)
-- Custom weapon properties → checkboxes (currently comma-separated text)
-- Better equipped weapons organization
-- Ammo tracking
-- Special arrows (combine arrows + bomb/elixir — depends on 2B herbalism being done)
+Rebuilt weapons/combat gear and fixed brewing correctness across 5 pieces. **Invariant:** the app
+rolls dice only for downtime (forage/brew); combat is always resolved table-side — make/material/
+ammo/AC are tracked & displayed, never auto-resolved.
 
-**Visual:** Apply design system to weapon slots, equipment panel, combat items
+**Spec (source of truth):** `docs/superpowers/specs/2026-06-14-wave2c-weapons-combat-design.md`
 
-**Note:** Consider `martial-mastery-spec.md` during brainstorm — weapon/armor decisions here affect Wave 3B
+- **Piece 1 — Brew correctness** (plan `…/plans/2026-06-14-2c-brew-correctness.md`): per-brew DC
+  (`6 + 2×herbs-per-brew`, not batch total); optional "roll d20 myself" checkbox; hardened
+  selected-herb React key; failed-batch "ingredients used up" note; removed herbalist-only brew gate
+  (recipe-based access).
+- **Piece 2 — Weapon data model** (plan `…/plans/2026-06-14-2c-weapon-data-model.md`, migration
+  `014`): `make_tier`/`is_shield`/`ac_bonus`/`str_requirement`/`shield_active` columns; `src/lib/
+  weapons.ts` helpers (`WEAPON_PROPERTIES`, `MAKE_TIERS`, `computeWeaponModifiers`); Add/Edit modals →
+  property checkbox grid + make-tier + shield fields; `WeaponCard` shows computed attack/damage.
+- **Pieces 3–5** (plan `…/plans/2026-06-22-2c-pieces-345.md`):
+  - **P3 Equip overhaul** (migration `015`): retired `character_weapon_slots`; equipped weapons now
+    driven by `is_equipped`; new `EquippedWeaponsList`, `toggleEquipped`, equip toggle + "On hand"
+    badge on `WeaponCard`; quick-slot init preserved.
+  - **P4 Ammo, special arrows & raw-add** (migrations `016`+`017`): `fuse_bombs_to_arrows` RPC
+    (1 bomb + 1 base arrow → 1 special arrow, atomic, consumes across all base-arrow stacks); special
+    arrows are `character_items` ammo with `properties.source='fused_bomb'`; `FuseArrowsModal` on bomb
+    cards; raw-add via existing `AddHerbModal` + `AddElixirModal`.
+  - **P5 AC/shield + visual pass**: `setActiveShield` (one active at a time); shield bonus shown as a
+    secondary `+N` bubble beside AC (base AC unchanged); "Wield" toggle on equipped shields;
+    `WeaponCard` + weapon modals + `WeaponsTab` restyled to grimoire 2.0.
+
+**DB:** migrations `014`–`017` applied to prod (`cliiijgqzwkiknukfgqc`) via the Management API SQL
+endpoint (pooler egress blocked in-container) and recorded in `schema_migrations`; types regenerated.
+`tsc` + lint clean; `npm run build` only fails on blocked Google-Fonts egress (environmental — verify
+on a normal machine).
+
+**Deferred (out of scope, noted for later):** item-UI restyle (`ItemCard`/`AddItemModal`/`ItemsTab`
+still use zinc); stale `character_weapon_slots` mention in `src/lib/ARCHITECTURE.md`.
+
+**Note:** Consider `martial-mastery-spec.md` for Wave 3B — weapon/armor decisions here feed into it.

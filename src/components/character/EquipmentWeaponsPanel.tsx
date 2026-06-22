@@ -38,6 +38,7 @@ interface EquipmentWeaponsPanelProps {
   // Weapon props
   weapons: CharacterWeapon[]
   onUnequip: (id: string) => void
+  onToggleShield?: (weaponId: string, active: boolean) => void
 }
 
 // ============ Component ============
@@ -51,6 +52,7 @@ export function EquipmentWeaponsPanel({
   onSetArmor,
   weapons,
   onUnequip,
+  onToggleShield,
 }: EquipmentWeaponsPanelProps) {
   const [locked, setLocked] = useState(true)
 
@@ -103,7 +105,7 @@ export function EquipmentWeaponsPanel({
 
         {/* Equipped Weapons */}
         <div className="flex-1 p-3">
-          <EquippedWeaponsList weapons={weapons} onUnequip={onUnequip} />
+          <EquippedWeaponsList weapons={weapons} onUnequip={onUnequip} onToggleShield={onToggleShield} />
         </div>
       </div>
     </div>

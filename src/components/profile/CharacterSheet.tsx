@@ -30,6 +30,7 @@ import {
   setCharacterArmor,
   removeCharacterArmor,
   toggleEquipped,
+  setActiveShield,
 } from '@/lib/db/characters'
 import {
   QuickSlots,
@@ -182,6 +183,7 @@ export function CharacterSheet({ character, userEmail }: CharacterSheetProps) {
       onArmorChanged={() => invalidateCharacterArmor(character.id)}
       onMoneyChanged={() => invalidateCharacter(character.user_id)}
       onUnequip={async (id) => { await toggleEquipped(id, false); invalidateCharacterWeapons(character.id) }}
+      onToggleShield={async (id, active) => { await setActiveShield(character.id, active ? id : null); invalidateCharacterWeapons(character.id) }}
       onQuickSlotsChanged={() => invalidateQuickSlots(character.id)}
       profile={profile}
       isProfileLoaded={isProfileLoaded}
@@ -208,6 +210,7 @@ function CharacterSheetContent({
   onArmorChanged,
   onMoneyChanged,
   onUnequip,
+  onToggleShield,
   onQuickSlotsChanged,
   profile,
   isProfileLoaded,
@@ -228,6 +231,7 @@ function CharacterSheetContent({
   onArmorChanged: () => void
   onMoneyChanged: () => void
   onUnequip: (id: string) => void
+  onToggleShield: (id: string, active: boolean) => void
   onQuickSlotsChanged: () => void
   profile: { name: string }
   isProfileLoaded: boolean
@@ -316,6 +320,7 @@ function CharacterSheetContent({
         onSetArmor={handleSetArmor}
         weapons={weapons}
         onUnequip={onUnequip}
+        onToggleShield={onToggleShield}
       />
 
       {/* Armor Error Display */}

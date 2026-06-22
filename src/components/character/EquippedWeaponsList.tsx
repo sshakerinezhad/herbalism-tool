@@ -10,7 +10,7 @@ interface EquippedWeaponsListProps {
   onToggleShield?: (weaponId: string, active: boolean) => void
 }
 
-export function EquippedWeaponsList({ weapons, onUnequip }: EquippedWeaponsListProps) {
+export function EquippedWeaponsList({ weapons, onUnequip, onToggleShield }: EquippedWeaponsListProps) {
   const equipped = weapons.filter((w) => w.is_equipped)
 
   if (equipped.length === 0) {
@@ -39,6 +39,19 @@ export function EquippedWeaponsList({ weapons, onUnequip }: EquippedWeaponsListP
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {w.is_shield && onToggleShield && (
+                <button
+                  onClick={() => onToggleShield(w.id, !w.shield_active)}
+                  className={`text-xs px-2 py-1 rounded border transition-colors ${
+                    w.shield_active
+                      ? 'bg-grimoire-800 text-bronze-bright border-bronze-muted/60 hover:border-bronze-bright'
+                      : 'bg-grimoire-800 text-vellum-400 border-sepia-700 hover:text-vellum-200'
+                  }`}
+                  title={w.shield_active ? 'Stop wielding shield' : 'Wield shield'}
+                >
+                  {w.shield_active ? 'Wielding' : 'Wield'}
+                </button>
+              )}
               <button
                 onClick={() => onUnequip(w.id)}
                 className="text-xs px-2 py-1 rounded bg-grimoire-800 text-vellum-400 border border-sepia-700 hover:bg-grimoire-700 transition-colors"

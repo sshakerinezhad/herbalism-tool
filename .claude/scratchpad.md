@@ -1,6 +1,6 @@
 # Scratchpad
 
-**Branch worked on:** `claude/current-state-check-96qvio` (merged into `main` at end of this session)
+**Branch worked on:** `claude/current-state-check-96qvio` (merged into `main`; both at `277d3a5`)
 **Session date:** 2026-06-14
 **Wave:** 2C — Weapons, Combat Gear & Brew Correctness
 
@@ -27,8 +27,8 @@ Pieces 1 and 2 of 5. All committed and merged to `main`.
 ### Piece 2 — Weapon data model + property checkboxes  (DONE) — plan: `docs/superpowers/plans/2026-06-14-2c-weapon-data-model.md`
 - Migration `supabase/migrations/014_weapon_make_and_shields.sql`: adds `make_tier`, `is_shield`,
   `ac_bonus`, `str_requirement`, `shield_active` + a make_tier CHECK constraint.
-- Hand-updated `src/lib/types.ts` (`CharacterWeapon`) and `src/lib/database.types.ts` to match
-  (will be overwritten cleanly when `db:types` is regenerated).
+- Updated `src/lib/types.ts` (`CharacterWeapon`); `src/lib/database.types.ts` was regenerated
+  from the live schema after the migration was applied (see below).
 - New pure helper `src/lib/weapons.ts`: `WEAPON_PROPERTIES` (canonical 10), `MAKE_TIERS` +
   `MAKE_TIER_INFO`, `computeWeaponModifiers(weapon, material?)`, `stepDamageDie`, `formatBonus`.
 - Add/Edit weapon modals: comma-text properties -> checkbox grid; make-tier select; shield fields.
@@ -46,13 +46,20 @@ Pieces 1 and 2 of 5. All committed and merged to `main`.
 - Everything addable raw to inventory (gifts/DM awards/purchases) — generic "Add item" path.
 - Shields are weapons in the weapons list; a shield marked "active" adds its specific AC bonus.
 
-## Action required before/with deploy
-This container could NOT reach Supabase or Google Fonts, so:
-- Run `npm run db:push && npm run db:types` to apply migration 014 to the remote DB and
-  regenerate types. Until this runs, weapon add/edit will fail against prod (columns missing).
-- `next build` could not complete here (fonts blocked) — verify with a real build / `npm run dev`.
-- tsc (`npx tsc --noEmit`) is clean across all changes; lint clean on touched files (repo has some
-  pre-existing lint errors in untouched files — `useBrewState.ts`, `profile.tsx`, `characters.ts`).
+## DB / deploy status
+- Migration `014` is APPLIED to the remote DB and recorded in `supabase_migrations.schema_migrations`
+  (version `014 / weapon_make_and_shields`). Applied via the Supabase Management API SQL endpoint
+  because this container's egress blocks direct Postgres (`db push` timed out on the pooler);
+  Management API over HTTPS worked. `database.types.ts` was regenerated from the live schema and
+  committed. Prod DB and `main` are aligned — weapon add/edit works against prod.
+- SECURITY: a Supabase personal access token (`sbp_…`) and the DB password were pasted in chat this
+  session. User was asked to rotate the DB password and revoke the access token. Confirm/rotate.
+- `next build` could NOT complete in-container (Google Fonts egress blocked) — verify with a real
+  build / `npm run dev` on a normal machine. tsc (`npx tsc --noEmit`) is clean across all changes;
+  lint clean on touched files (repo has pre-existing lint errors in untouched files —
+  `useBrewState.ts`, `profile.tsx`, `characters.ts`).
+- Still-open browser verification (couldn't run the app here): brew batch DC + roll-myself checkbox;
+  weapon Add/Edit modals + WeaponCard computed modifiers.
 
 ## What to do next (next session: use superpowers — writing-plans per piece; spec exists so brainstorming likely unneeded)
 - Piece 3 — Equip overhaul: Equipped Weapons list off `is_equipped`; retire

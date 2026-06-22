@@ -462,64 +462,6 @@ export type Database = {
           },
         ]
       }
-      character_weapon_slots: {
-        Row: {
-          character_id: string
-          created_at: string | null
-          hand: string
-          id: string
-          is_active: boolean
-          selected_ammo_id: string | null
-          slot_number: number
-          updated_at: string | null
-          weapon_id: string | null
-        }
-        Insert: {
-          character_id: string
-          created_at?: string | null
-          hand: string
-          id?: string
-          is_active?: boolean
-          selected_ammo_id?: string | null
-          slot_number: number
-          updated_at?: string | null
-          weapon_id?: string | null
-        }
-        Update: {
-          character_id?: string
-          created_at?: string | null
-          hand?: string
-          id?: string
-          is_active?: boolean
-          selected_ammo_id?: string | null
-          slot_number?: number
-          updated_at?: string | null
-          weapon_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "character_weapon_slots_character_id_fkey"
-            columns: ["character_id"]
-            isOneToOne: false
-            referencedRelation: "characters"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "character_weapon_slots_selected_ammo_id_fkey"
-            columns: ["selected_ammo_id"]
-            isOneToOne: false
-            referencedRelation: "character_items"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "character_weapon_slots_weapon_id_fkey"
-            columns: ["weapon_id"]
-            isOneToOne: false
-            referencedRelation: "character_weapons"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       character_weapons: {
         Row: {
           ac_bonus: number | null

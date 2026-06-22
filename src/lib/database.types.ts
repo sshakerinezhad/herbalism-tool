@@ -522,6 +522,7 @@ export type Database = {
       }
       character_weapons: {
         Row: {
+          ac_bonus: number | null
           attachments: Json | null
           character_id: string
           created_at: string | null
@@ -530,7 +531,9 @@ export type Database = {
           id: string
           is_equipped: boolean
           is_magical: boolean
+          is_shield: boolean
           is_two_handed: boolean
+          make_tier: string
           material: string
           material_id: number | null
           name: string
@@ -538,17 +541,15 @@ export type Database = {
           properties: Json | null
           range_long: number | null
           range_normal: number | null
+          shield_active: boolean
+          str_requirement: number | null
           template_id: number | null
           updated_at: string | null
           versatile_dice: string | null
           weapon_type: string | null
-          make_tier: string
-          is_shield: boolean
-          ac_bonus: number | null
-          str_requirement: number | null
-          shield_active: boolean
         }
         Insert: {
+          ac_bonus?: number | null
           attachments?: Json | null
           character_id: string
           created_at?: string | null
@@ -557,7 +558,9 @@ export type Database = {
           id?: string
           is_equipped?: boolean
           is_magical?: boolean
+          is_shield?: boolean
           is_two_handed?: boolean
+          make_tier?: string
           material?: string
           material_id?: number | null
           name: string
@@ -565,17 +568,15 @@ export type Database = {
           properties?: Json | null
           range_long?: number | null
           range_normal?: number | null
+          shield_active?: boolean
+          str_requirement?: number | null
           template_id?: number | null
           updated_at?: string | null
           versatile_dice?: string | null
           weapon_type?: string | null
-          make_tier?: string
-          is_shield?: boolean
-          ac_bonus?: number | null
-          str_requirement?: number | null
-          shield_active?: boolean
         }
         Update: {
+          ac_bonus?: number | null
           attachments?: Json | null
           character_id?: string
           created_at?: string | null
@@ -584,7 +585,9 @@ export type Database = {
           id?: string
           is_equipped?: boolean
           is_magical?: boolean
+          is_shield?: boolean
           is_two_handed?: boolean
+          make_tier?: string
           material?: string
           material_id?: number | null
           name?: string
@@ -592,15 +595,12 @@ export type Database = {
           properties?: Json | null
           range_long?: number | null
           range_normal?: number | null
+          shield_active?: boolean
+          str_requirement?: number | null
           template_id?: number | null
           updated_at?: string | null
           versatile_dice?: string | null
           weapon_type?: string | null
-          make_tier?: string
-          is_shield?: boolean
-          ac_bonus?: number | null
-          str_requirement?: number | null
-          shield_active?: boolean
         }
         Relationships: [
           {

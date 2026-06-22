@@ -1,7 +1,7 @@
 /**
  * EquipmentWeaponsPanel Component
  *
- * Unified panel combining ArmorDiagram and WeaponSlots.
+ * Unified panel combining ArmorDiagram and EquippedWeaponsList.
  * Single "Equipment" header with shared lock toggle.
  *
  * Layout (desktop):
@@ -20,9 +20,9 @@
 'use client'
 
 import { useState } from 'react'
-import type { ArmorSlot, ArmorType, CharacterWeaponSlot, CharacterWeapon } from '@/lib/types'
+import type { ArmorSlot, ArmorType, CharacterWeapon } from '@/lib/types'
 import { ArmorDiagram, type CharacterArmorData } from '@/components/ArmorDiagram'
-import { WeaponSlots } from './WeaponSlots'
+import { EquippedWeaponsList } from './EquippedWeaponsList'
 
 // ============ Types ============
 
@@ -36,10 +36,8 @@ interface EquipmentWeaponsPanelProps {
   onSetArmor: (slotId: number, armorType: ArmorType | null) => void
 
   // Weapon props
-  characterId: string
-  weaponSlots: CharacterWeaponSlot[]
   weapons: CharacterWeapon[]
-  onWeaponSlotsChanged: () => void
+  onUnequip: (id: string) => void
 }
 
 // ============ Component ============
@@ -51,10 +49,8 @@ export function EquipmentWeaponsPanel({
   armorLevel,
   strengthScore,
   onSetArmor,
-  characterId,
-  weaponSlots,
   weapons,
-  onWeaponSlotsChanged,
+  onUnequip,
 }: EquipmentWeaponsPanelProps) {
   const [locked, setLocked] = useState(true)
 
@@ -105,15 +101,9 @@ export function EquipmentWeaponsPanel({
           />
         </div>
 
-        {/* Weapon Slots (compact mode - no header) */}
+        {/* Equipped Weapons */}
         <div className="flex-1 p-3">
-          <WeaponSlots
-            characterId={characterId}
-            weaponSlots={weaponSlots}
-            weapons={weapons}
-            onUpdate={onWeaponSlotsChanged}
-            compact={true}
-          />
+          <EquippedWeaponsList weapons={weapons} onUnequip={onUnequip} />
         </div>
       </div>
     </div>

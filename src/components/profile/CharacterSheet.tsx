@@ -17,7 +17,6 @@ import {
   useCharacterArmor,
   useArmorSlots,
   useSkills,
-  useCharacterWeaponSlots,
   useCharacterQuickSlots,
   useCharacterWeapons,
   useCharacterItems,
@@ -30,6 +29,7 @@ import { ProfileSkeleton, ErrorDisplay, GrimoireCard, SectionHeader, Button } fr
 import {
   setCharacterArmor,
   removeCharacterArmor,
+  toggleEquipped,
 } from '@/lib/db/characters'
 import {
   QuickSlots,
@@ -116,7 +116,7 @@ function calculateArmorClass(
 
 export function CharacterSheet({ character, userEmail }: CharacterSheetProps) {
   const { profile, isLoaded: isProfileLoaded, loadError: profileLoadError, sessionsUsedToday, longRest } = useProfile()
-  const { invalidateCharacterArmor, invalidateCharacter, invalidateWeaponSlots, invalidateQuickSlots } = useInvalidateQueries()
+  const { invalidateCharacterArmor, invalidateCharacter, invalidateCharacterWeapons, invalidateQuickSlots } = useInvalidateQueries()
 
   // Sub-data queries (character is guaranteed to exist by parent)
   const {
@@ -140,11 +140,6 @@ export function CharacterSheet({ character, userEmail }: CharacterSheetProps) {
   } = useSkills()
 
   const {
-    data: weaponSlots = [],
-    isLoading: weaponSlotsLoading,
-  } = useCharacterWeaponSlots(character.id)
-
-  const {
     data: quickSlots = [],
     isLoading: quickSlotsLoading,
   } = useCharacterQuickSlots(character.id)
@@ -166,7 +161,7 @@ export function CharacterSheet({ character, userEmail }: CharacterSheetProps) {
 
   // Show skeleton while sub-data loads
   const subDataLoading = skillsLoading || armorLoading || slotsLoading || allSkillsLoading ||
-    weaponSlotsLoading || quickSlotsLoading || weaponsLoading || itemsLoading || brewedLoading
+    quickSlotsLoading || weaponsLoading || itemsLoading || brewedLoading
 
   if (subDataLoading) {
     return <ProfileSkeleton />
@@ -180,14 +175,13 @@ export function CharacterSheet({ character, userEmail }: CharacterSheetProps) {
       allSkills={allSkills}
       characterArmor={characterArmor}
       allArmorSlots={allArmorSlots}
-      weaponSlots={weaponSlots}
       quickSlots={quickSlots}
       weapons={weapons}
       items={items}
       brewedItems={brewedItems}
       onArmorChanged={() => invalidateCharacterArmor(character.id)}
       onMoneyChanged={() => invalidateCharacter(character.user_id)}
-      onWeaponSlotsChanged={() => invalidateWeaponSlots(character.id)}
+      onUnequip={async (id) => { await toggleEquipped(id, false); invalidateCharacterWeapons(character.id) }}
       onQuickSlotsChanged={() => invalidateQuickSlots(character.id)}
       profile={profile}
       isProfileLoaded={isProfileLoaded}
@@ -207,14 +201,13 @@ function CharacterSheetContent({
   allSkills,
   characterArmor,
   allArmorSlots,
-  weaponSlots,
   quickSlots,
   weapons,
   items,
   brewedItems,
   onArmorChanged,
   onMoneyChanged,
-  onWeaponSlotsChanged,
+  onUnequip,
   onQuickSlotsChanged,
   profile,
   isProfileLoaded,
@@ -228,14 +221,13 @@ function CharacterSheetContent({
   allSkills: import('@/lib/types').Skill[]
   characterArmor: CharacterArmorData[]
   allArmorSlots: ArmorSlot[]
-  weaponSlots: import('@/lib/types').CharacterWeaponSlot[]
   quickSlots: import('@/lib/types').CharacterQuickSlot[]
   weapons: import('@/lib/types').CharacterWeapon[]
   items: import('@/lib/types').CharacterItem[]
   brewedItems: import('@/lib/types').CharacterBrewedItem[]
   onArmorChanged: () => void
   onMoneyChanged: () => void
-  onWeaponSlotsChanged: () => void
+  onUnequip: (id: string) => void
   onQuickSlotsChanged: () => void
   profile: { name: string }
   isProfileLoaded: boolean
@@ -317,10 +309,8 @@ function CharacterSheetContent({
         armorLevel={armorLevel}
         strengthScore={character.str}
         onSetArmor={handleSetArmor}
-        characterId={character.id}
-        weaponSlots={weaponSlots}
         weapons={weapons}
-        onWeaponSlotsChanged={onWeaponSlotsChanged}
+        onUnequip={onUnequip}
       />
 
       {/* Armor Error Display */}

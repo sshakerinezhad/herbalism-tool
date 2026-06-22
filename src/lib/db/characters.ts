@@ -6,19 +6,15 @@
  */
 
 import { supabase } from '../supabase'
-import type { 
-  Character, 
-  CharacterCreationData, 
-  Skill, 
+import type {
+  Character,
+  CharacterCreationData,
+  Skill,
   ArmorSlot,
-  CharacterStats,
   ArmorType,
   CharacterWeapon,
-  CharacterWeaponSlot,
   CharacterQuickSlot,
   CharacterItem,
-  WeaponHand,
-  WeaponSlotNumber,
   QuickSlotNumber,
   WeaponTemplate,
   Material,
@@ -591,131 +587,6 @@ export async function upsertCharacterSkills(
 
   if (insertError) {
     return { error: insertError.message }
-  }
-
-  return { error: null }
-}
-
-// ============ Weapon Slot Operations ============
-
-/**
- * Fetch all weapon slots for a character (with joined weapon data)
- */
-export async function fetchCharacterWeaponSlots(characterId: string): Promise<{
-  data: CharacterWeaponSlot[] | null
-  error: string | null
-}> {
-  const { data, error } = await supabase
-    .from('character_weapon_slots')
-    .select(`
-      id,
-      character_id,
-      hand,
-      slot_number,
-      weapon_id,
-      is_active,
-      selected_ammo_id,
-      character_weapons (*),
-      character_items (*)
-    `)
-    .eq('character_id', characterId)
-    .order('hand')
-    .order('slot_number')
-
-  if (error) {
-    return { data: null, error: error.message }
-  }
-
-  const transformed = (data || []).map(row => ({
-    id: row.id,
-    character_id: row.character_id,
-    hand: row.hand as WeaponHand,
-    slot_number: row.slot_number as 1 | 2 | 3,
-    weapon_id: row.weapon_id,
-    is_active: row.is_active,
-    selected_ammo_id: row.selected_ammo_id,
-    weapon: row.character_weapons as unknown as CharacterWeapon | null,
-    selected_ammo: row.character_items as unknown as CharacterItem | null,
-  }))
-
-  return { data: transformed, error: null }
-}
-
-/**
- * Equip a weapon to a slot
- */
-export async function equipWeaponToSlot(
-  characterId: string,
-  hand: WeaponHand,
-  slotNumber: WeaponSlotNumber,
-  weaponId: string | null
-): Promise<{ error: string | null }> {
-  const { error } = await supabase
-    .from('character_weapon_slots')
-    .update({ weapon_id: weaponId })
-    .eq('character_id', characterId)
-    .eq('hand', hand)
-    .eq('slot_number', slotNumber)
-
-  if (error) {
-    return { error: error.message }
-  }
-
-  return { error: null }
-}
-
-/**
- * Set the active weapon slot for a hand
- */
-export async function setActiveWeaponSlot(
-  characterId: string,
-  hand: WeaponHand,
-  slotNumber: WeaponSlotNumber
-): Promise<{ error: string | null }> {
-  // First, deactivate all slots for this hand
-  const { error: deactivateError } = await supabase
-    .from('character_weapon_slots')
-    .update({ is_active: false })
-    .eq('character_id', characterId)
-    .eq('hand', hand)
-
-  if (deactivateError) {
-    return { error: deactivateError.message }
-  }
-
-  // Then activate the selected slot
-  const { error: activateError } = await supabase
-    .from('character_weapon_slots')
-    .update({ is_active: true })
-    .eq('character_id', characterId)
-    .eq('hand', hand)
-    .eq('slot_number', slotNumber)
-
-  if (activateError) {
-    return { error: activateError.message }
-  }
-
-  return { error: null }
-}
-
-/**
- * Set selected ammo for a weapon slot (for ranged weapons)
- */
-export async function setWeaponSlotAmmo(
-  characterId: string,
-  hand: WeaponHand,
-  slotNumber: WeaponSlotNumber,
-  ammoItemId: string | null
-): Promise<{ error: string | null }> {
-  const { error } = await supabase
-    .from('character_weapon_slots')
-    .update({ selected_ammo_id: ammoItemId })
-    .eq('character_id', characterId)
-    .eq('hand', hand)
-    .eq('slot_number', slotNumber)
-
-  if (error) {
-    return { error: error.message }
   }
 
   return { error: null }

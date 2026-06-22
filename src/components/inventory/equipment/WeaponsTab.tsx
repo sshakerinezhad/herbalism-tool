@@ -16,7 +16,6 @@ interface WeaponsTabProps {
 
 export function WeaponsTab({
   weapons,
-  characterId,
   onAddWeapon,
   onWeaponDeleted,
   setError,

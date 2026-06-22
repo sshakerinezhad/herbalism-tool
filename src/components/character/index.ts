@@ -7,11 +7,7 @@
 export { CoinPurse } from './CoinPurse'
 export type { CoinType, Coins, CoinPurseProps } from './CoinPurse'
 
-export { WeaponSlots } from './WeaponSlots'
-export type { WeaponSlotsProps } from './WeaponSlots'
-
-export { WeaponSlotCard, getWeaponIcon, WEAPON_ICONS } from './WeaponSlotCard'
-export type { WeaponSlotCardProps } from './WeaponSlotCard'
+export { EquippedWeaponsList } from './EquippedWeaponsList'
 
 export { QuickSlots } from './QuickSlots'
 export type { QuickSlotsProps } from './QuickSlots'

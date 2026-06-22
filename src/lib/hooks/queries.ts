@@ -23,7 +23,6 @@ import {
   fetchCharacterArmor,
   fetchArmorSlots,
   fetchSkills,
-  fetchCharacterWeaponSlots,
   fetchCharacterQuickSlots,
   fetchCharacterWeapons,
   fetchCharacterItems,
@@ -39,7 +38,7 @@ import {
   fetchAllHerbs,
 } from '../db/characterInventory'
 import { fetchHerbBiomes } from '../db/herbBiomes'
-import type { Biome, Skill, ArmorSlot, ArmorType, CharacterWeaponSlot, CharacterQuickSlot, CharacterWeapon, CharacterItem, CharacterArmorData } from '../types'
+import type { Biome, Skill } from '../types'
 
 // ============ Query Keys ============
 // Centralized query keys for consistency and easy invalidation
@@ -51,7 +50,6 @@ export const queryKeys = {
   character: (userId: string) => ['character', userId] as const,
   characterSkills: (characterId: string) => ['characterSkills', characterId] as const,
   characterArmor: (characterId: string) => ['characterArmor', characterId] as const,
-  characterWeaponSlots: (characterId: string) => ['characterWeaponSlots', characterId] as const,
   characterQuickSlots: (characterId: string) => ['characterQuickSlots', characterId] as const,
   characterWeapons: (characterId: string) => ['characterWeapons', characterId] as const,
   characterItems: (characterId: string) => ['characterItems', characterId] as const,
@@ -188,12 +186,6 @@ const fetchers = {
     }
   },
 
-  characterWeaponSlots: async (characterId: string) => {
-    const result = await fetchCharacterWeaponSlots(characterId)
-    if (result.error) throw new Error(result.error)
-    return result.data || []
-  },
-  
   characterQuickSlots: async (characterId: string) => {
     const result = await fetchCharacterQuickSlots(characterId)
     if (result.error) throw new Error(result.error)
@@ -396,17 +388,6 @@ export function useCharacterRecipeStats(characterId: string | undefined) {
 // ============ Equipment Hooks ============
 
 /**
- * Fetch character's weapon slots (with equipped weapons)
- */
-export function useCharacterWeaponSlots(characterId: string | null) {
-  return useQuery({
-    queryKey: queryKeys.characterWeaponSlots(characterId ?? ''),
-    queryFn: () => fetchers.characterWeaponSlots(characterId!),
-    enabled: !!characterId,
-  })
-}
-
-/**
  * Fetch character's quick slots (with assigned items)
  */
 export function useCharacterQuickSlots(characterId: string | null) {
@@ -464,11 +445,6 @@ export function useInvalidateQueries() {
       queryClient.invalidateQueries({ queryKey: queryKeys.characterSkills(characterId) })
     },
     
-    /** Invalidate weapon slots after equipping/removing weapons */
-    invalidateWeaponSlots: (characterId: string) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.characterWeaponSlots(characterId) })
-    },
-    
     /** Invalidate quick slots after assigning/removing items */
     invalidateQuickSlots: (characterId: string) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.characterQuickSlots(characterId) })
@@ -510,7 +486,6 @@ export function useInvalidateQueries() {
       queryClient.invalidateQueries({ queryKey: ['character'] })
       queryClient.invalidateQueries({ queryKey: ['characterSkills'] })
       queryClient.invalidateQueries({ queryKey: ['characterArmor'] })
-      queryClient.invalidateQueries({ queryKey: ['characterWeaponSlots'] })
       queryClient.invalidateQueries({ queryKey: ['characterQuickSlots'] })
       queryClient.invalidateQueries({ queryKey: ['characterWeapons'] })
       queryClient.invalidateQueries({ queryKey: ['characterItems'] })
